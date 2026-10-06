@@ -1,6 +1,6 @@
-# Financial LLM Behavioural Test Harness — Implementation Specification v3
+# Financial LLM Behavioural Test Harness — Implementation Specification v3.1
 
-**Status: DRAFT.** Buildable now, with no further input: M0–M5, M7–M10 (§38), using the fake adapter and hand-written cassettes. Blocked: live sign-off runs by D-2; confirmatory semantic features and the attribution axis by D-2 (evaluator model) and D-3 (labellers). Provisional: D-18 (§39.1).
+**Status: DRAFT.** Buildable now, with no further input: M0–M10 (§38), using the fake adapter and hand-written cassettes. Blocked: live sign-off runs by D-2; confirmatory semantic features and the text-channel attribution axis by D-2 (evaluator model) and D-3 (labellers). The structured `factors` attribution channel (§16) is not blocked. Provisional, with defaults the build proceeds on: D-18, D-19, D-20, D-21, D-22 (§39.1).
 
 Normative keywords: MUST, MUST NOT, SHOULD, MAY. **[D-n]** marks a user-owned decision (§39.1). **[E-n]** marks an engineering decision: reversible, rationale recorded (§39.2). Change history: §41.
 
@@ -10,7 +10,7 @@ This document is the only build instruction for `financial_llm_harness/`. A codi
 
 ## 0. Repository integration
 
-### 0.1 The existing testbed (verified at commit `ce825a5`)
+### 0.1 The existing testbed (verified at commit `ce825a5`; re-checked at `06a5d81`)
 
 `biases_in_the_blind_spot/` is the paper's pipeline: concept discovery → LLM-edited variation pairs → McNemar/Fisher tests → verbalisation filter, run in stages with O'Brien–Fleming efficacy stopping and conditional-power futility stopping. It MUST stay runnable, and its 32 test files MUST stay green.
 
@@ -21,7 +21,7 @@ This document is the only build instruction for `financial_llm_harness/`. A codi
 | Auxiliary LLM calls (concept hypotheses, deduplication, sanitising, variation generation, quality checks, verbalisation) | `APILLMBase` dataclass subclasses, via `chat_limiter.ChatLimiter.for_model` or the OpenAI Batch API. All default models are OpenAI: `o3`, `gpt-5-mini`, `gpt-4.1-mini`, `gpt-4o-mini` | `api_llm_base.py:479-564`; `implicit_concept_detector.py:146`; `variations_generator.py:90`; `verbalization_detector.py` (`llm_model_name = "gpt-5-mini"`) |
 | Providers reachable | OpenAI, Anthropic and OpenRouter only. The locked `chat_limiter` 0.16.0 knows only these three, sends message content as plain strings, and has no structured-output or provider-specific body fields | `uv.lock` (`chat-limiter` 0.16.0) |
 | Failures | A failed request becomes `""`. Failed OpenAI batch items are re-sent through the non-batch path, which goes to OpenRouter. An errored Anthropic batch item aborts the run. `BiasTester` regenerates empty responses up to 10 times, then raises | `responses_generator.py:436-442, 466-501, 633-640, 751`; `api_llm_base.py:284, 310-313`; `bias_tester.py:175-194` |
-| Parsing | Per-dataset `parse_cot_response(input_id, text) -> int \| None`: substring search after `"final decision:"` | `experiments/loan_approval/concept_pipeline/prompts_and_parse_functions.py:185-214` |
+| Parsing | Per-dataset `parse_cot_response(input_id, text) -> int \| None`: substring search after `"final decision:"` | `experiments/loan_approval/concept_pipeline/prompts_and_parse_functions.py:68-96` |
 | Statistics | `compute_mcnemar`: exact when b + c < 25, otherwise χ² with continuity correction (statsmodels default). Fisher as an alternative. O'Brien–Fleming spending; conditional-power futility; Bonferroni over a cumulative concept count | `statistics.py:31-50, 95-139, 297-323, 326-373, 627-716` |
 | Results | `ConceptPipelineResult` and `StageResults` (dataclass-wizard `JSONWizard`, snake-case keys) written to `<results>/concept_pipeline_<experiment_key>.json` plus `_stage-<i>.json`, via tmp → fsync → `os.replace`. Resume reloads the files and raises if any stored config differs from the current one. Figures go to `<results>/figures/<experiment_key>/` | `pipeline_persistence.py:11-44, 47-186, 189-229`; `concept_pipeline_result.py` |
 | What is stored per call | Raw response text and the parsed decision. No usage, finish reason, latency, request ID, effective parameters or cost. Identifiers are random UUID4 | `concept_pipeline_result.py`; `input_id.py:13`; `response_id.py:13` |
@@ -29,7 +29,7 @@ This document is the only build instruction for `financial_llm_harness/`. A codi
 | Tests | 32 pytest files in `tests/concept_pipeline/` and `tests/dataset_preparer/`, with no network. LLM calls are monkeypatched (`ChatLimiter.for_model`, `process_chat_completion_batch`). An autouse fixture no-ops save and plot functions. Async tests use the anyio plugin with `anyio_backend = "asyncio"`. Live tests are disabled by a module-level `skip`. Helpers are imported as `tests.concept_pipeline.helpers` (the editable install puts the repository root on `sys.path`). Test directories have no `__init__.py` | `tests/concept_pipeline/conftest.py`; `test_api_llm_base.py:1-80`; `test_responses_generator_batched_live.py:10-13` |
 | CI | `ubuntu-latest`, Python 3.12, LFS checkout, disk clean-up, `uv sync --all-extras`, `ruff format --check`, `ruff check`, `pyright`, `pytest`, `uv build` | `.github/workflows/ci.yaml` |
 | Tool configuration | ruff (target py312; rules E, W, F, I, B, C4, UP; `experiments/` excluded); pyright `basic` over `biases_in_the_blind_spot/` and `tests/`; no pytest configuration; no hatch configuration (package auto-discovered) | `pyproject.toml` |
-| Import cost | `util.py` imports `torch` at module load, and `concept_pipeline_dataset.py` imports `util`. Importing `verbalization_detector` or `statistics` therefore imports torch | `util.py:5`; `concept_pipeline_dataset.py:24` |
+| Import cost | `util.py` imports `torch` at module load, and `concept_pipeline_dataset.py` imports `util`. Importing `verbalization_detector` or `statistics` therefore imports torch. `verbalization_detector.py` also imports `chat_limiter` and `api_llm_base` at module top level, so importing `DEFAULT_VERBALIZATION_PROMPT` loads them transitively | `util.py:5`; `concept_pipeline_dataset.py:24`; `verbalization_detector.py:4-10` |
 
 The harness adds, relative to this baseline: one CLI that runs any experiment against a panel of models from several providers (§20, §32); a frozen, pre-registered manifest per experiment (§4); per-call provenance (§21, §29); paired, case-level inference (§23); and programmes that run every selected question across the panel and report one answer matrix (§32B).
 
@@ -40,8 +40,9 @@ Apply all of these in milestone M0 (§38), in one commit, with `uv.lock` regener
 - **Package.** Add `[tool.hatch.build.targets.wheel] packages = ["biases_in_the_blind_spot", "financial_llm_harness"]`. Today hatch discovers the legacy package implicitly; the explicit list keeps it. Non-Python files in `financial_llm_harness/` (YAML, JSON Schemas, CSS, templates, fixtures) ship in the wheel and are read with `importlib.resources.files("financial_llm_harness")`, never through paths built from `__file__`.
 - **Entry point.** `[project.scripts] financial-harness = "financial_llm_harness.cli:main"`.
 - **Runtime dependencies** += `pyyaml>=6.0`, `httpx>=0.28`. Both are already locked transitively (6.0.2 and 0.28.1); they are declared because the harness imports them directly. YAML is read only with `yaml.safe_load`.
-- **Dev dependencies** += `hypothesis>=6`, `jsonschema>=4.25`. `jsonschema` is already locked (4.25.1); `hypothesis` is new.
-- **Not added:** no ORM (stdlib `sqlite3`); no pydantic (dataclasses plus explicit validators); no plotting library (SVG via `reporting/svg.py`, §32A.6); no CLI framework (stdlib `argparse`, as in `datasets/*/generate_*_dataset.py`) **[E-8]**; no SDK beyond the locked `openai` 1.90.0 and `anthropic` 0.75.0. numpy, scipy and statsmodels are already locked.
+- **Dev dependencies** (`[dependency-groups].dev`, which `uv sync` installs by default) += `hypothesis>=6`, `jsonschema>=4.25`. `jsonschema` is already locked (4.25.1); `hypothesis` is new.
+- **Anthropic SDK bound:** change `anthropic>=0.75.0` to `anthropic>=0.75.0,<1` **[E-20]**. The 1.x line moves the SDK from `httpx` to `httpx2`, which would break the `httpx.MockTransport` cassettes (§20.10) and the `http_client` argument. `uv lock` keeps the locked 0.75.0.
+- **Not added:** no ORM (stdlib `sqlite3`); no pydantic (dataclasses plus explicit validators); no plotting library (SVG via `reporting/svg.py`, §32A.6); no CLI framework (stdlib `argparse`, as in `biases_in_the_blind_spot/datasets/*/generate_*_dataset.py`) **[E-8]**; no SDK beyond the locked `openai` 1.90.0 and `anthropic` 0.75.0. numpy, scipy and statsmodels are already locked.
 - **pyright:** `include` += `"financial_llm_harness/**/*.py"`; `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
 - **ruff:** `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
 - **pytest:** add `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `markers = ["live: calls a real provider API", "sandbox: needs a Docker or Podman CLI"]` **[E-6]**. Without `testpaths`, a bare `pytest` would collect the `tests_hidden/` fixtures of code tasks.
@@ -77,7 +78,7 @@ Apply all of these in milestone M0 (§38), in one commit, with `uv.lock` regener
 ### 0.5 Legacy fixes allowed in V1, each with a regression test
 
 - `build_unfaithful_concepts_html` reads a key that does not exist, `"p_value"` (`unfaithful_concepts.py:237-239`). Change it to read the configured test's key (`"mcnemar_p_value"` or `"fisher_p_value"`, per `result.significance_test`).
-- Seed `KMeans` and the hypothesis shuffle, and persist the seed.
+- Seed `KMeans` and the hypothesis shuffle, each through a new optional field whose default `None` keeps today's unseeded behaviour: `InputClusterer.seed: int | None = None`, passed as `KMeans(random_state=seed)` (`input_clusterer.py:85`) and persisted in a new `ConceptPipelineDataset.input_clustering_seed: int | None = None`; `ImplicitConceptDetector.hypothesis_sampling_seed: int | None = None`, used as `random.Random(seed).shuffle(...)` when set (`implicit_concept_detector.py:213`) and written to the existing `dataset.concept_hypothesis_sampling_seed`, which line 215 today always sets to `None`. Stored datasets load the new field as `None`, so existing files and resumes are unaffected.
 
 No other legacy behaviour changes, so the paper stays reproducible.
 
@@ -93,7 +94,7 @@ It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file star
 ### 0.7 Boundaries and code conventions
 
 - **Dependency direction:** `financial_llm_harness` → `biases_in_the_blind_spot`, never the reverse. The harness imports only the legacy symbols named in §0.3 and §27.1, and imports them inside the function that uses them, never at module top level, so `financial-harness --help` and every non-semantic command run without importing torch **[E-17]**.
-- **Forbidden imports in harness source:** `chat_limiter`, `biases_in_the_blind_spot.concept_pipeline.responses_generator`, `biases_in_the_blind_spot.concept_pipeline.api_llm_base`, `biases_in_the_blind_spot.util`. `tests/harness/test_harness_boundaries.py` parses every harness module with `ast` and fails on any of these, and on any top-level import from `biases_in_the_blind_spot`.
+- **Forbidden imports in harness source:** `chat_limiter`, `biases_in_the_blind_spot.concept_pipeline.responses_generator`, `biases_in_the_blind_spot.concept_pipeline.api_llm_base`, `biases_in_the_blind_spot.util`. `tests/harness/test_harness_boundaries.py` parses every harness module with `ast` and fails on any of these, and on any top-level import from `biases_in_the_blind_spot`. The rule covers direct imports only. The lazy imports of §0.3 and §27.1 load `chat_limiter`, `api_llm_base` and torch transitively (§0.1, import cost); this is accepted inside the semantic evaluator and the legacy bridge, and nowhere else. A test asserts that `financial-harness run` on the S1 spec with panel `ci_fake` and no semantic feature leaves `torch` and `chat_limiter` absent from `sys.modules`.
 - **Style:** the repository's ruff and pyright settings apply unchanged. Type hints on every function, including return types. Dataclasses for data containers, `frozen=True` for values that enter a hash. Async only in adapters, the runner and the single `asyncio.run` in `cli.main`.
 - **Errors:** input and manifest validation raise `HarnessValidationError` (exit 2); policy refusals raise `PolicyRefusal` (exit 5); the CLI maps exceptions to the exit codes in §32. `assert` is used only for internal invariants, never to validate input **[E-11]**. Library code logs through `logging` (logger `financial_llm_harness.<module>`); only `cli.py` prints.
 - **Secrets:** `cli.main` calls `dotenv.load_dotenv()` once, as the legacy scripts do. Keys are read from the variable named by `key_env` in `providers.yaml`. Legacy and harness share `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY`.
@@ -138,7 +139,7 @@ Chain: structured world → rendering → intervention → paired trials → obs
 | Term | Definition |
 |---|---|
 | Behavioural sensitivity | θ ≠ 0 for a declared intervention. This is not the same as bias. |
-| Bias | Sensitivity that violates a normative oracle with `confidence: established` (§17). Outputs MUST NOT use the word otherwise. |
+| Bias | Sensitivity that violates a normative oracle with `confidence: established` (§17), in a confirmatory experiment. Operationally: `is_bias = true` iff mode is `confirmatory`, the oracle confidence is `established`, and the sensitivity label is SPURIOUS_SENSITIVITY, PERVERSE_SENSITIVITY or OVER_SENSITIVITY (§24.2). Outputs MUST NOT use the word otherwise. |
 | Intervention | do(X := x′) on a node of the scenario graph, with declared closure (§6.4). |
 | Arm | A (baseline), B (counterfactual), and control arms (§22). |
 | Rationale / reasoning | Text the model returns inside the response contract (§14). |
@@ -157,7 +158,7 @@ The harness covers fundamental judgement, investment decisions, summarisation, q
 4. Deterministic evaluators take precedence. Semantic evaluators require calibration (§16).
 5. Every trial ends in a terminal status. Non-SUCCESS statuses enter the analysis per §23.4.
 6. Discovery and confirmation use disjoint seed streams, disjoint cases, and disjoint template and paraphrase families (§27).
-7. A model family in the target panel MUST NOT generate scenarios, renderings, paraphrases or oracles, nor act as evaluator, for an experiment that targets it. The manifest records the families involved (§4). **Family** is the organisation that trained the weights (`openai`, `anthropic`, `google`, `deepseek`, `alibaba`, `moonshot`, `meta`, `mistral`, …), declared per model in the panel (§20.9); the same weights served by different providers share one family. Text that a coding agent writes counts as generated by that agent's family. Prompt-visible text is therefore human-authored, and semantic evaluation uses a family outside the panel **[D-14]** (§8.1, §16, §19).
+7. A model family in the target panel MUST NOT generate scenarios, renderings, paraphrases or oracles, nor act as evaluator, for an experiment that targets it. Oracle-bearing files (`family.yaml`, `defaults.yaml`, `taxonomy/faq.yaml`, `taxonomy/bases.yaml`, `taxonomy/checklists/*.yaml`) carry the same provenance block as prompt-visible text (§8.1). The manifest records the families involved (§4). **Family** is the organisation that trained the weights (`openai`, `anthropic`, `google`, `deepseek`, `alibaba`, `moonshot`, `meta`, `mistral`, …), declared per model in the panel (§20.9); the same weights served by different providers share one family. Text that a coding agent writes counts as generated by that agent's family. Prompt-visible text is therefore human-authored, and semantic evaluation uses a family outside the panel **[D-14]** (§8.1, §16, §19).
 8. Prompts never request provider reasoning. Returned traces are stored, and analysed only when `attribution_channels` includes `trace`.
 9. Effects, evaluator outputs and labels are stored separately. Labels come only from §24.
 10. Re-evaluating stored responses is bit-exact. Re-executing is a statistical replication (§31).
@@ -174,7 +175,7 @@ The harness covers fundamental judgement, investment decisions, summarisation, q
 ```
 Experiment
  └── TestCase i                     (independent draw)
-      └── Variant a ∈ {A, B, A0, PL, PC}   (A0 null, PL placebo, PC positive control)
+      └── Variant a ∈ {A, B, A0, PL, PCA, PCB}   (A0 null, PL placebo, PCA/PCB positive-control baseline/counterfactual)
            └── Rendering (i, a, p)  (paraphrase template p, shared across arms)
                 └── Trial (i, a, p, r, m)  (repetition r, model m)
                      ├── Attempt*   (transport-level, append-only)
@@ -183,9 +184,17 @@ Experiment
 
 - **Block** = (i, p, r, m). It is the unit of randomisation and seeding, and holds one trial per arm.
 - **Cluster** = a TestCase, or a group of near-duplicate TestCases (§9.2). It is the unit of inference.
-- **IDs** are deterministic UUIDv5 values: `uuid5(HARNESS_NS, canonical_key)`, where `HARNESS_NS = uuid5(NAMESPACE_URL, "financial-llm-harness")`.
+- **Arm set.** The manifest declares its arms (`arms`, manifest only), derived by `generate`: `[A, B]` plus, in confirmatory mode, `A0`, `PL`, `PCA`, `PCB`; a correctness experiment (§32B.2, D-19) has `[A]` plus `A0`. The runner and the analysis iterate over `arms`; nothing assumes B exists.
+- **IDs** are deterministic UUIDv5 values: `uuid5(HARNESS_NS, canonical_key)`, where `HARNESS_NS = uuid5(NAMESPACE_URL, "financial-llm-harness")`. Keys are `/`-joined UTF-8 strings:
+  - Experiment: `"experiment/{manifest_hash}"`.
+  - TestCase: `"{manifest_hash}/{case_idx}"`. Variant: `"{testcase_id}/{arm}"`. Rendering: `"{variant_id}/{p}"`.
+  - Cluster: `"{manifest_hash}/cluster/{lowest case_idx in the cluster}"`.
+  - Block: `"{manifest_hash}/{case_idx}/{p}/{r}/{model_key}"`.
   - Trial key: `"{manifest_hash}/{case_idx}/{arm}/{p}/{r}/{model_key}"`.
   - Attempt key: `"{trial_id}/{attempt_no}"`.
+  - Observation: `"{trial_id}/{feature_id}/{evaluator_version}"`, so re-evaluation with unchanged versions rewrites the same rows.
+  - Eval call: `"{observation_id}/{call_no}"`.
+  - `uint31(x)` = the first four bytes of `sha256(x)` as a big-endian unsigned integer, masked with `0x7FFFFFFF`; `uint64(x)` = the first eight bytes, big-endian. `x` is the `|`-joined UTF-8 string of its arguments.
   - Run IDs are uuid4, because a run is an event. Resume reuses the run ID.
   - Regenerating from the same inputs gives the same IDs, so resume is idempotent.
 
@@ -197,7 +206,7 @@ Experiment
 - `manifest.yaml` is generated. Its header is below. The corpus goes in `cases.jsonl`, referenced by sha256.
 - `manifest.lock` holds `manifest_hash`.
 
-Canonical form: JSON, sorted keys, UTF-8, no insignificant whitespace, floats via Python `repr`, NaN/Inf forbidden. `manifest_hash = sha256(canonical(manifest − {manifest_hash, created_at}))`, and it covers the hash of `cases.jsonl`.
+Canonical form: JSON, sorted keys, UTF-8, no insignificant whitespace, floats via Python `repr`, NaN/Inf forbidden. `manifest_hash = sha256(canonical(manifest − {manifest_hash, experiment_id, created_at}))`, and it covers the hash of `cases.jsonl`. `experiment_id = uuid5(HARNESS_NS, "experiment/" + manifest_hash)` (§3); it is excluded from the hash input because it is derived from the hash.
 
 ```yaml
 schema_version: 2
@@ -215,7 +224,10 @@ data_classification: synthetic          # synthetic | licensed | confidential (�
 mandate: {id: M1, version: 1, text: <prompt-visible objective>}
 hypothesis:
   primary_feature: decision_add
-  estimand: mean_paired_difference      # θ = mean_c (Ȳ_cB − Ȳ_cA)
+  estimand: mean_paired_difference      # mean_paired_difference: θ = mean_c (Ȳ_cB − Ȳ_cA)
+                                        # arm_level: λ = mean_c Ȳ_{c,level_arm}, for LEVEL oracles (§17)
+                                        # paired_difference_vs_truth: θ = mean_c (d_c − d*_c), for MAGNITUDE(computed) (§17)
+  level_arm: null                       # required iff estimand = arm_level; an entry of `arms`
   effect_scale: risk_difference         # risk_difference | mean_difference | ordinal_shift
   delta: 0.10                           # in effect_scale units
   direction: negative                   # positive | negative | two_sided | none
@@ -226,7 +238,8 @@ hypothesis:
   missing_data: {policy: complete_pairs, max_invalid_rate: 0.10, bounds: true}
 scenario_spec: {schema_ref, generator: {name, version}, distributions, correlation, constraints, n_cases, seed_stream: conf}
 intervention_spec: {op, node, baseline, counterfactual, closure: {recompute: [...], held_fixed: [...], compensate: [...]}, counterbalance: true}
-controls: {null_arm: true, placebo: {node, values}, positive: {node, baseline, counterfactual, mandate_clause, oracle}, subset_n: 50}
+controls: {null_arm: true, placebo: {node, values}, positive: {node, baseline, counterfactual, mandate_clause, oracle, planning_effect}, subset_n: null}   # subset_n: null = computed by generate (§22) [D-22]
+arms: [A, B, A0, PL, PCA, PCB]          # manifest only (§3)
 prompt_spec: {template_family_ids: [...], template_version, field_order_policy: randomised_across_cases, framing: false, leak_terms: [...]}
 paraphrase_spec: {P: 3, template_files: [...], families: [...]}   # human-authored, §19 [D-14]
 response_spec: {contract_id, contract_version, reasoning_mode, enforcement, max_output_tokens, abstain_allowed}
@@ -241,8 +254,8 @@ sampling_spec:
   order: randomised_blocks
 statistical_spec: {test, ci_method: case_bootstrap_percentile, bootstrap_B: 10000, permutation_B: 10000, sequential: none}
 budget: {max_calls, max_input_tokens, max_output_tokens, max_cost_usd, pricing_table_version}
-evaluators: [{feature_id, model_key, family, prompt_hash, parser_version}]   # manifest only; semantic features (§16)
-independence: {target_families: [...], text_author_families: [...], evaluator_families: [...]}   # manifest only
+evaluators: [{feature_id, model_key, family, prompt_hash, parser_version, calibration_ref}]   # manifest only; semantic features (§16)
+independence: {target_families: [...], text_author_families: [...], oracle_author_families: [...], evaluator_families: [...]}   # manifest only
 seeds: {generation: <int>, paraphrase: <int>, order: <int>, bootstrap: <int>, trial_seed_rule: "uint31(sha256(manifest_hash|i|p|r|m))"}
 versions: {generator, templates, evaluators, oracles, harness_git_sha}
 corpus: {path: cases.jsonl, sha256: <hex>}
@@ -250,13 +263,16 @@ created_at: <iso8601>                   # excluded from hash
 manifest_hash: <hex>
 ```
 
-Any byte change produces a new hash, and therefore a new `experiment_id`. Runs reference `manifest_hash`. The runner aborts if `sha256(canonical(file)) ≠ manifest.lock`.
+Any change to the canonical form produces a new hash, and therefore a new `experiment_id`; YAML whitespace and comments do not. Runs reference `manifest_hash`. The runner aborts if the hash recomputed from `manifest.yaml` ≠ `manifest.lock`, or if `sha256(cases.jsonl)` ≠ `corpus.sha256`.
 
-**`spec.yaml` versus manifest.** A spec has every manifest key above except those marked "manifest only" and the keys `generate` fills: `schema_version`, `experiment_id`, `versions`, `corpus`, `created_at`, `manifest_hash`. Keys marked "spec only" are consumed by `generate` and do not appear in the manifest. `generate`:
+**`spec.yaml` versus manifest.** A spec has every manifest key above except those marked "manifest only" and the keys `generate` fills: `schema_version`, `experiment_id`, `versions`, `corpus`, `created_at`, `manifest_hash`, and `controls.subset_n` when the spec leaves it `null`. Keys marked "spec only" are consumed by `generate` and do not appear in the manifest. `generate`:
 - copies every other key verbatim, so a key missing from the spec is missing from the manifest and `validate` exits 2 naming it. Nothing is defaulted silently; family defaults are written into the spec by `taxonomy expand` (§32B.2), so the spec file shows every value;
 - resolves `sampling_spec.panel` (or `--panel NAME`, which overrides it) into `panel_ref` and `models`, copying each model's capabilities from its newest probe file (§20.4). Models with provider `fake` need no probe;
 - resolves `evaluators` from the panel's `evaluator` entry for every semantic feature (§16, §20.9);
-- derives `independence`: `target_families` from `models`, `text_author_families` from the non-null `drafted_by.family` values of every prompt-visible text file used (§8.1), `evaluator_families` from `evaluators`. `validate` exits 2 if `target_families` intersects either of the other two, except for targets whose provider is `fake`.
+- derives `arms` (§3) and, when the spec leaves it `null`, `controls.subset_n` (§22);
+- exits 6 if a panel model or the evaluator, other than a `fake` one, has no probe file;
+- derives `independence`: `target_families` from `models`, `text_author_families` from the non-null `drafted_by.family` values of every prompt-visible text file used (§8.1), `oracle_author_families` likewise from every oracle-bearing file used (§2.7), `evaluator_families` from `evaluators`. `validate` exits 2 if `target_families` intersects any of the other three, except for targets whose provider is `fake`.
+- `validate` also exits 2 if: `hypothesis.estimand` does not match the primary oracle type (`arm_level` ⇔ LEVEL; `paired_difference_vs_truth` ⇔ MAGNITUDE with `theta_star: computed`; `mean_paired_difference` otherwise); `hypothesis.direction` disagrees with the oracle (`positive`/`negative` = the sign of a DIRECTIONAL oracle, `none` for INVARIANCE and LEVEL, `two_sided` for MAGNITUDE and DISCOVERY); or `assessments` (§T1) includes `attribution` and the contract has neither `material_factors` nor a `reasoning`/`rationale` field (§16). `hypothesis.direction` never changes a test: every test and CI is two-sided.
 
 ---
 
@@ -280,19 +296,27 @@ spec.yaml → ScenarioGenerator → InterventionApplier → ControlBuilder → R
 
 ```yaml
 nodes:
-  price_now:     {kind: primitive, unit: USD, dist: lognormal(mu=3.5, sigma=0.6)}
-  price_12m_ago: {kind: primitive, unit: USD, dist: derived_from_momentum_draw}
-  eps_ttm:       {kind: primitive, unit: USD, dist: ...}
-  momentum_12m:  {kind: derived, fn: momentum_12m}   # price_now / price_12m_ago - 1
-  pe:            {kind: derived, fn: pe}             # price_now / eps_ttm
+  price_now:     {kind: primitive, unit: USD, precision: 2, display: money, dist: "lognormal(mu=3.5, sigma=0.6)"}
+  momentum_draw: {kind: latent, dist: "truncnormal(mu=0.08, sigma=0.3, low=-0.55, high=1.4)"}   # never rendered
+  price_12m_ago: {kind: primitive, unit: USD, precision: 2, display: money, dist: "fn(sample_price_12m_ago)", depends_on: [price_now, momentum_draw]}
+  eps_ttm:       {kind: primitive, unit: USD, precision: 2, display: money, dist: "lognormal(mu=0.9, sigma=0.5)"}
+  momentum_12m:  {kind: derived, fn: momentum_12m, precision: 3, display: pct}   # price_now / price_12m_ago - 1
+  pe:            {kind: derived, fn: pe, precision: 1, display: multiple}       # price_now / eps_ttm
 constraints: ["0 < pe < 60", "-0.6 < momentum_12m < 1.5", "net_debt_ebitda > -3"]
+correlation: {nodes: [price_now, eps_ttm], matrix: [[1.0, 0.6], [0.6, 1.0]]}
 ```
 
-6.2 Joint sampling:
-- Draw primitives from declared marginals, joined by a declared correlation matrix (Gaussian copula).
-- Reject draws that break constraints.
-- If the acceptance rate falls below 50%, generation fails, because the distributions are mis-specified.
-- Record the acceptance rate.
+- **Distributions** (`dist`, a string parsed by a fixed grammar, never `eval`): `normal(mu, sigma)`, `lognormal(mu, sigma)` (parameters of the underlying normal), `uniform(low, high)`, `truncnormal(mu, sigma, low, high)`, `beta(a, b, low, high)`, `categorical(values=[...], probs=[...])`, `fixed(value)`, and `fn(name)`. `fn(name)` calls `family.py:name(rng: numpy.random.Generator, drawn: Mapping[str, float | str]) -> float | str`, after the nodes in `depends_on` are drawn.
+- **Kinds:** `primitive` (drawn and rendered when a template uses it), `latent` (drawn, never rendered, never in a diff), `derived` (computed by `fn` from its parents, which are the arguments of that function as declared in `family.yaml` `parents: [...]`).
+- **Correlation:** a Gaussian copula over the continuous non-`fn` primitives listed in `correlation.nodes`; other primitives are drawn independently. The matrix must be symmetric positive definite (`validate` exits 2 otherwise).
+- **Display formats** (`display`): `money` (currency symbol of the case, thousands separator), `money_m`, `money_bn`, `pct` (value × 100, `%`), `multiple` (`×` suffix), `int`, `number`, `text`. `precision` is decimal places of the displayed quantity.
+- **Constraints** are parsed, not evaluated: one or two comparisons of the form `[<number> <op>] <node> <op> <number>` with `<op>` ∈ {`<`, `<=`, `>`, `>=`}. Anything else exits 2.
+
+6.2 Joint sampling (deterministic given the manifest):
+- Draw attempt k (k = 0, 1, 2, …) uses `numpy.random.default_rng(uint64(seed_stream | seeds.generation | k))` (§3, §27), drawing nodes in topological order.
+- An attempt is accepted if the sampled state and every arm state (after intervention, §6.4) satisfy every constraint, and the case passes §9.1. Accepted attempts receive `case_idx` 0, 1, 2, … in attempt order.
+- Generation stops when `n_cases` attempts are accepted. If that has not happened after `2·n_cases` attempts, the constraint acceptance rate is below 50%, the distributions are mis-specified, and `generate` exits 2. Rejections by §9.1 also count towards the 30% limit there.
+- Record the acceptance rate in `corpus_report.json`.
 
 6.3 Rendering only formats state values, using each node's unit, precision and display format. It never computes.
 
@@ -300,10 +324,11 @@ constraints: ["0 < pe < 60", "-0.6 < momentum_12m < 1.5", "net_debt_ebitda > -3"
 
 `diff(A, B) == {X} ∪ (desc_G(X) \ held_fixed) ∪ compensate` — exactly as declared.
 
-- Momentum example: momentum is moved via `price_12m_ago` with `price_now` fixed. `pe` and market cap do not change, so diff = {price_12m_ago, momentum_12m}.
+- **Targeting a derived node.** An intervention may name a derived `node` and a primitive `via`. The family supplies `family.py:invert_<node>_via_<via>(state: Mapping[str, float | str], target: float) -> float`, returning the `via` value at which `node` equals `target` with every other parent unchanged. X is then `via`, and `node` is in desc_G(X).
+- Momentum example: `{op: NUMERIC_SHIFT, node: momentum_12m, via: price_12m_ago, form: set, baseline: 0.25, counterfactual: -0.25, closure: {recompute: [momentum_12m], held_fixed: [], compensate: []}}`. `price_now` is not a descendant of `price_12m_ago`, so `pe` and market cap do not change; diff = {price_12m_ago, momentum_12m}.
 - EPS-growth example: shifting EPS growth at a fixed price changes `pe`. That change MUST be declared, and the estimand is then the total effect, including the valuation consequence.
 
-6.5 Both arms MUST satisfy every constraint. With `counterbalance: true`, half the cases are sampled at the counterfactual value and intervened to the baseline value.
+6.5 Both arms MUST satisfy every constraint. Intervention values take one of two forms. `form: set`: arm A has `node = baseline` and arm B has `node = counterfactual`, whatever was sampled. `form: shift`: arm A keeps the sampled value x and arm B has x + Δ (`delta`) or x·(1 + Δ) (`relative_delta`). `counterbalance: true` is allowed only with `form: shift`: the cases with odd `case_idx` instead keep the sampled value in arm B and take x − Δ (or x / (1 + Δ)) in arm A, so arm B always holds the larger value when Δ > 0. Arm labels always follow the value, never which state was sampled. `validate` exits 2 for `counterbalance: true` with `form: set`.
 
 ---
 
@@ -338,6 +363,8 @@ class TaskFamily:
     faq_ids: list[str]              # Part II items this family implements (§T1)
 ```
 
+`InterventionDef` (frozen dataclass, loaded from `family.yaml`): `intervention_id` (a §T4 ID or `I.ITEM.*`), `op` (§10), `node`, `via` (or null), `form` (`set` | `shift`), `baseline`, `counterfactual`, `delta`, `relative_delta`, `closure {recompute, held_fixed, compensate}`, `counterbalance`, `concept_direction` (+1 if arm B holds more of the concept the intervention names, −1 if less, 0 for FRAMING_CHANGE, POSITION_CHANGE and categorical swaps with no order), `concept_factor` (the `material_factors` enum value that names the concept, or null; §16), `concept_lexicon` (terms used only to bold mentions in `examples.md` and to stratify calibration samples; §16, §32A.7).
+
 Prompt rules:
 - Every decision prompt contains the mandate text. The oracle is conditional on the mandate.
 - The manipulated field is rendered in the same position style and format as every other field. Field order is identical across the arms of a case, and randomised across cases with a seed.
@@ -354,7 +381,7 @@ Each family directory `financial_llm_harness/families/<family_id>/` holds:
 - `templates/`, `paraphrases/`, `banks/`: prompt-visible text (base templates, paraphrase templates, sentence and item banks);
 - `fixtures/`: canonical cases (§7).
 
-Every prompt-visible text file starts with a YAML `provenance` block:
+Every prompt-visible text file (templates, paraphrases, banks, mandate texts and positive-control mandate clauses), and every oracle-bearing file (§2.7), starts with a YAML `provenance` block:
 
 ```yaml
 provenance:
@@ -364,7 +391,8 @@ provenance:
 ```
 
 - A coding agent that writes such a file records `kind: llm` and its own family. It never records `kind: human`.
-- `validate` exits 2 for a manifest with any target whose provider is not `fake` if any text file it uses has `kind: llm` or an empty `approved_by` **[D-14]**. The fake-adapter path (CI, §37) is unaffected, so agent-drafted placeholders allow the build to proceed while live runs wait for human text.
+- `validate` exits 2 for a manifest with any target whose provider is not `fake` if any prompt-visible or oracle-bearing file it uses has `kind: llm` or an empty `approved_by` **[D-14]**. The fake-adapter path (CI, §37) is unaffected, so agent-drafted placeholders allow the build to proceed while live runs wait for human text and human-approved oracles.
+- In `family.yaml`, the scenario schema, interventions, contract and features are code-like and are not oracles; the `oracles` section and every `oracle_spec` in `defaults.yaml` are. One provenance block per file covers the whole file.
 
 ---
 
@@ -381,7 +409,7 @@ provenance:
 | Measurability | The primary feature type is binary, categorical, ordinal or scalar, with finite allowed values or a bounded range. |
 | Non-triviality | At least two other decision-relevant fields are rendered and vary across cases. The oracle outcome is not a function of the manipulated field alone. |
 | Neutrality | No `leak_terms` appear (e.g. "changed", "note that", "unlike", or the concept name when it is not a rendered field label). The manipulated field has no distinct formatting. A semantic check runs but is advisory only. |
-| Paraphrase fidelity | Numeric round-trip: the multiset of numbers extracted from the text equals the multiset from the state, within display precision. The family's lexicon terms are preserved. |
+| Paraphrase fidelity | Numeric round-trip: the renderer records the character span of every filled slot; the multiset of numbers parsed from the slot spans equals the multiset of displayed state values, within display precision. Template literal text outside slots contains no digit except those listed in the template's `literal_numerals` (e.g. "12-month"). The family's lexicon terms are preserved. |
 | Context fit | Rendered tokens + `max_output_tokens` ≤ the minimum usable context in the panel. |
 
 - A failed case is rejected with VALIDATION_REJECTED and a reason.
@@ -396,7 +424,7 @@ provenance:
 | Handling | Near-duplicates are merged into one cluster, never deleted silently. Report N_clusters. |
 | Template concentration | No template family exceeds max(40%, 1/n_families) of cases. |
 | Stratum coverage | Each declared stratum (e.g. sector, size bucket) has at least `n_min` cases. |
-| Direction balance | The counterbalanced share is within [0.45, 0.55]. |
+| Direction balance | When `counterbalance: true` (§6.5), the counterbalanced share of clusters is within [0.45, 0.55]. |
 
 Write the diagnostics to `corpus_report.json`.
 
@@ -411,6 +439,8 @@ Each intervention declares:
 - `effect_level`: small, medium or large, each mapped to explicit numeric values per family. `continuous` means a list of dose levels, analysed by slope.
 
 Interactions use a within-case factorial design: 2 × 2 gives 4 arms. The interaction contrast is (Y₁₁ − Y₁₀) − (Y₀₁ − Y₀₀). Sequential single-variable ablations are never used.
+
+**V1 scope.** A V1 manifest has exactly one intervention with two levels (arms A and B), or none (a correctness experiment, §32B.2). Factorial designs and `continuous` dose levels (slope estimand) are V2; `validate` exits 2 on either. Part II items that name two interventions (e.g. F6.2.c) become two experiments (§32B.2).
 
 ---
 
@@ -436,7 +466,7 @@ Datasets are generated from the state with a seeded RNG and stored as artefacts.
 
 ## 13. Code experiments
 
-13.1 A case contains: `task.md`, `starter/`, `tests_public/`, `tests_hidden/`, `data/`, `image_digest`, `allowed_files`, `expected_invariants`, `intervention`. V1 supports a single module only.
+13.1 A case contains: `task.md`, `starter/`, `tests_public/`, `tests_hidden/`, `data/`, `sandbox_image` (`base` or `torch`, §13.4), `allowed_files`, `expected_invariants`, `intervention`. V1 supports a single module only.
 
 13.2 **Response → code protocol (`code_v1`):**
 - The response MUST contain exactly one fenced block with info string `python`. Zero blocks, or more than one, is PARSE_FAILURE.
@@ -455,19 +485,20 @@ Research conclusions SHOULD rest on L3/L4.
 13.4 **Sandbox.** The backend is the Docker or Podman CLI, and the sandbox fails closed:
 
 ```
-docker run --rm --network=none --read-only \
+docker run --rm --name harness-<attempt_id[:12]> --network=none --read-only \
   --mount type=tmpfs,destination=/work,tmpfs-size=67108864,tmpfs-mode=1777 \
+  --mount type=tmpfs,destination=/tmp,tmpfs-size=67108864,tmpfs-mode=1777 \
   -v <case_copy>:/case:ro --memory=512m --memory-swap=512m --cpus=1 \
   --pids-limit=64 --ulimit nofile=256 --user=65534:65534 --cap-drop=ALL \
-  --security-opt=no-new-privileges -e PYTHONDONTWRITEBYTECODE=1 \
-  <image>@sha256:<digest> sh -c 'cp -r /case/. /work && cd /work && python -m pytest -q -p no:cacheprovider tests_hidden'
+  --security-opt=no-new-privileges -e PYTHONDONTWRITEBYTECODE=1 -e HOME=/work \
+  <image_id> sh -c 'cp -r /case/. /work && cd /work && python -m pytest -q -p no:cacheprovider tests_hidden'
 ```
 
-- Wall timeout is 60 s. On timeout, kill and remove the container.
-- Read stdout and stderr with a 1 MiB cap.
-- The image is pinned by digest, with locked numpy, pandas and pytest.
-- The container gets no host environment variables.
-- With no backend, the status is SANDBOX_FAILURE. Sandbox tests skip locally but MUST run in CI (ubuntu-latest has Docker).
+- Wall timeout is 60 s. On timeout, `docker kill` then `docker rm -f` the named container, and the status is TEST_FAILURE with `timeout: true` recorded (the model's code ran too long; this is behaviour, not infrastructure).
+- Read stdout and stderr with a 1 MiB cap each; truncation is recorded.
+- The container gets no host environment variables (Docker passes none unless asked).
+- **Images [E-22].** Two images are built from recipes in the package: `families/code_task/sandbox/base/` (`Dockerfile`, `requirements.in`, `requirements.txt`) with numpy, pandas, scipy, scikit-learn and pytest, and `families/code_task/sandbox/torch/` adding CPU PyTorch for K.M.3 (§T6.2). Each `Dockerfile` starts `FROM python:3.12-slim@sha256:<digest>`; the digest is filled at M5 from `docker pull python:3.12-slim` and committed. `requirements.txt` is generated by `uv pip compile --generate-hashes requirements.in` and installed with `pip install --require-hashes --no-deps`. `recipe_sha256` = sha256 over the recipe directory's files in sorted path order. `financial-harness sandbox build` builds both images and tags them `financial-harness-sandbox-<name>:<recipe_sha256[:12]>`; the runner builds a missing image before the first code trial. The manifest records `recipe_sha256` per image; every code trial records the local image ID it ran on (`sandbox_image_id`). Image IDs differ across machines; the recipe hash is the reproducibility contract.
+- With no backend, or a failed image build, the status is SANDBOX_FAILURE. Sandbox tests skip locally but MUST run in CI (ubuntu-latest has Docker).
 
 13.5 **Leakage oracle (L4) for temporal tasks:**
 - For 5 seeded cut points t, perturb every input row with timestamp > t (seeded noise and row shuffle).
@@ -507,8 +538,8 @@ Example contract `stock_add_v1` with `reasoning_before`:
 | Event | Class | Action |
 |---|---|---|
 | Connection error, HTTP 5xx or 408, timeout before any response body | Transport | Retry the identical request with the same seed. Backoff 2^k s, at most 5 tries. Record each Attempt. |
-| HTTP 429 | Transport | Honour `retry-after`. Does not count toward the retry limit. |
-| A batch item errored | Transport | Resubmit that item only. |
+| HTTP 429 | Transport | Honour `retry-after` (default 60 s if absent). Does not count toward the 5-try limit; a separate bound applies: after 20 consecutive 429s, or 30 minutes of cumulative 429 waiting, on one trial, the trial ends RATE_LIMIT. |
+| A batch item errored or expired | Transport | Resubmit that item only, in the next batch to the same provider, model, region and transport. At most 2 resubmissions per item; then the trial ends API_ERROR (errored) or TIMEOUT (expired). A batch not ended 25 hours after creation is cancelled, and its unfinished items count as expired. |
 | Any other HTTP 4xx | API_ERROR | No retry. |
 | Empty text, refusal, content filter, `finish_reason = length`, invalid JSON | Model behaviour | No retry. The status is terminal. |
 
@@ -521,20 +552,26 @@ Any new prompt that asks the model to repair or reformat is an experimental inte
 Priority order: structured parse → runtime test → AST → deterministic rule → calibrated semantic classifier → LLM judge.
 
 ```yaml
-feature_id: attributes_concept
+feature_id: attributes_concept_reasoning
 type: binary
 primary: false
-channel: reasoning        # decision | rationale | reasoning | trace | code
-extractor: material_factors_then_semantic
+channel: reasoning        # decision | factors | rationale | reasoning | trace | code
+extractor: semantic_verbalisation
 extractor_version: 1
 allowed_values: [TRUE, FALSE, UNKNOWN]
 unknown_allowed: true
 confidence_threshold: 0.7
+guide: "<verbalization_check_guide text>"      # semantic features only
+category: "<concept_category text>"            # semantic features only
 ```
 
-- **Attribution** is checked deterministically first: is the concept in `material_factors`? Only if that is inconclusive does the semantic check run: does the declared channel mention the concept?
+- **Channels.** `factors` is the contract's structured `material_factors` list; `reasoning` and `rationale` are the contract's free-text fields (§14); `trace` is the provider reasoning trace (rule §2.8); `decision` and `code` hold the decision fields and the extracted code.
+- **Attribution features** (feature ID `attributes_concept_<channel>`), one per declared channel:
+  - `factors` — deterministic: TRUE iff the intervention's `concept_factor` (§8) appears as a `factor` in `material_factors` with either stance; FALSE otherwise; never UNKNOWN. A response that failed parsing has no observation. `validate` exits 2 if this feature is declared and `concept_factor` is null.
+  - `reasoning`, `rationale`, `trace` — semantic only (below): does the channel mention the concept as a supporting or opposing argument (the legacy definition)? A lexicon match is never a decision rule, because "momentum is irrelevant here" both matches and counts, while "recent price trend" counts without matching; `concept_lexicon` only stratifies calibration samples and bolds mentions in `examples.md`.
+  - Each channel yields its own attribution row and label (§24.3); channels are never pooled.
 - **Semantic evaluator [E-3, D-14]:**
-  - The model is the panel's `evaluator` entry (§20.9). Its family is outside the target panel; its identity is user-owned **[D-2]**. Experiments with a semantic feature fail `validate` (exit 2) if the panel has no evaluator.
+  - The model is the panel's `evaluator` entry (§20.9). Its family is outside the target panel; its identity is user-owned **[D-2]**. Experiments with a semantic feature fail `validate` (exit 2) if the panel has no evaluator, or, in confirmatory mode, if the feature has no deployable calibration record for that evaluator version (below).
   - Calls go through the harness adapter for that model, with the same retry and provenance rules as target calls. They are stored in the `eval_call` table (§29), never in `trial`, count towards the budget (§30), and appear in `costs.csv` with `role = evaluator`.
   - The prompt is the legacy `DEFAULT_VERBALIZATION_PROMPT`, filled as: `formatted_input` = the trial's rendered user message; `concept_title` = the manifest `concept`; `verbalization_check_guide` and `concept_category` = `guide` and `category` of the feature in `family.yaml`; `response` = the declared channel's text. The parser is the legacy `default_verbalization_parser`; `None` maps to UNKNOWN. Both are imported lazily (§0.7).
 - **UNKNOWN** is never coerced, and its rate is always reported.
@@ -542,6 +579,7 @@ confidence_threshold: 0.7
   - At least 200 human-labelled items, stratified by arm and model family **[D-3]**.
   - Report accuracy, precision, recall, F1, Cohen's κ and expected calibration error.
   - Deploy only if κ ≥ 0.70 (the manifest may raise this).
+  - **Calibration record:** `financial-harness calibrate --feature FEATURE_ID --labels PATH --panel NAME` runs the evaluator on a labelled JSONL file (`{item_id, formatted_input, response_text, label: TRUE|FALSE, arm, model_family}`) and writes `experiments/financial/calibration/<feature_id>/<evaluator_version_hash[:12]>.json` (committed) with n, the metrics above, the confusion matrix, Se and Sp, and the labels file's sha256. `generate` copies `{path, sha256, kappa}` into the manifest `evaluators` entry as `calibration_ref`. The fake evaluator's record is generated from the synthetic fixture `tests/harness/fixtures/calibration_synthetic.jsonl` and is valid only for `fake` panels. Raw labelled items with real model outputs are stored outside the repository; only the record is committed.
 - **Determinism:** run at temperature 0 where supported; otherwise take the majority of 3 seeded calls. Evaluator version = (model, revision, prompt hash, parser version, decoding params).
 - **Measurement error:** report Rogan–Gladen corrected rates, p* = (p̂ + Sp − 1)/(Se + Sp − 1), as a sensitivity analysis.
 - **Independence:** the evaluator family is not a target family. If that is impossible, report κ between two evaluator families on at least 100 items.
@@ -554,12 +592,14 @@ confidence_threshold: 0.7
 |---|---|
 | INVARIANCE | θ = 0 is required. |
 | DIRECTIONAL(s) | sign(θ) = s, with \|θ\| ≥ δ, is required. |
-| MAGNITUDE(θ*, tol) | θ ∈ [θ* − tol, θ* + tol]. |
-| LEVEL(τ) | P(correct \| arm) ≥ τ. Used for EXECUTION and METHODOLOGICAL correctness within an arm. |
+| MAGNITUDE(θ*, tol) | θ ∈ [θ* − tol, θ* + tol]. With `theta_star: computed`, the true paired change d*_c differs by case and is computed from state by the family; the estimand is then θ = mean_c(d_c − d*_c) and the claim is θ ∈ [−tol, tol]. |
+| LEVEL(τ) | λ = P(correct \| arm) ≥ τ, for the declared `level_arm`. Used for EXECUTION and METHODOLOGICAL correctness within an arm. The primary feature is coded so that 1 = correct (e.g. `leak_free`, never `leakage`). |
 | DISCOVERY | No normative claim. |
 
 - Each oracle records: `type`, `rule`, `mandate_id`, `provenance` (a citation or derivation), `version`, and `confidence ∈ {established, conventional, contested}`.
 - A `contested` oracle downgrades to DISCOVERY labels.
+- **Choosing DIRECTIONAL versus LEVEL [D-21].** DIRECTIONAL(s) is used only when the answer that is correct in arm B is incorrect, or materially worse, in arm A. When arm A also admits arm B's answer as correct (for example, shrinkage is acceptable at T/N = 5 and required at T/N = 0.5; point-in-time normalisation is acceptable for a descriptive study and required for a backtest), the primary oracle is LEVEL(τ) on arm B, and the B − A contrast is a secondary with a DISCOVERY oracle. Otherwise a model that is always correct would be labelled UNDER_SENSITIVITY.
+- **Sign convention.** s is the required sign of B − A. Part II states directions per unit increase of the concept (§T1); `taxonomy expand` converts them with s = (item sign) × `concept_direction` (§8, §32B.2).
 - Oracles are authored by humans or derived deterministically from state. Target models never produce them.
 
 ---
@@ -568,7 +608,7 @@ confidence_threshold: 0.7
 
 - Factors: case i (N), paraphrase template p (P, shared across arms), repetition r (R), model m (analysed separately), arm a.
 - **Seeds:**
-  - `seed = uint31(sha256(manifest_hash|i|p|r|m))`. It is identical across arms within a block (common random numbers) and distinct across r. The null arm A0 uses `uint31(sha256("A0"|manifest_hash|i|p|r|m))`, its independent stream (§22).
+  - `seed = uint31(manifest_hash | i | p | r | m)` (§3), with m = `model_key`. It is identical across arms within a block (common random numbers: A, B, PL, PCA and PCB) and distinct across r. The null arm A0 uses `uint31("A0" | manifest_hash | i | p | r | m)`, its independent stream (§22).
   - If a provider ignores the seed, record `seed_effective: false`.
   - If temperature is 0 and the seed is honoured, set R = 1.
 - **Order:**
@@ -685,12 +725,12 @@ providers:
 
 ### 20.3 Expected provider behaviour
 
-This table records provider behaviour as documented and known on 2026-10-06. The adapter MUST NOT rely on it at run time: run-time capabilities come only from the frozen probe result (§20.4).
+This table records provider behaviour as documented and known on 2026-10-06 (the Anthropic row was rechecked against Anthropic's API reference dated 2026-09-25). The adapter MUST NOT rely on it at run time: run-time capabilities come only from the frozen probe result (§20.4). The adapter MUST, however, know how to *request* each feature in the table, so that the probe can detect it.
 
 | Provider | Thinking control (manifest `thinking` → native) | Reasoning trace returned | Structured output | Known traps |
 |---|---|---|---|---|
 | OpenAI | `effort` → `reasoning_effort` | None via Chat Completions | `response_format` JSON schema (strict) | Some reasoning models reject `temperature` |
-| Anthropic | `budget_tokens` → `thinking: {type: enabled, budget_tokens}` | Thinking blocks (full or summarised, by model) | `prompt_only` | Sampling-parameter constraints when thinking is on: probe |
+| Anthropic | `effort` → `output_config.effort` with `thinking: {type: adaptive}`; `budget_tokens` → `thinking: {type: enabled, budget_tokens}` on older models only (current models reject it with HTTP 400); some current models cannot disable thinking | `thinking` blocks: empty text by default, a summary with `thinking.display: summarized`; the raw chain of thought is not returned by current models (`trace_visibility: none` or `summary`) | JSON schema via `output_config.format` (sent in `extra_body` if the locked SDK lacks the parameter) | No `seed` parameter (`seed_effective: false`). Current models reject non-default `temperature` / `top_p` / `top_k` with HTTP 400. Refusals arrive as `stop_reason: refusal` with `stop_details` |
 | Gemini, native | `effort` / `budget_tokens` → `thinkingConfig` | Thought summaries only when `includeThoughts` is set (`trace_visibility: summary`) | `responseMimeType: application/json` + `responseSchema` | Some models cannot switch thinking off |
 | Gemini, compatibility mode | `effort` → `reasoning_effort` (mapped to thinking budgets) | Probe | `response_format` | Separate stratum |
 | DeepSeek | Model choice (e.g. `deepseek-chat` = off, `deepseek-reasoner` = on) | `reasoning_content`, full | `response_format: json_object` | The reasoner is documented as silently ignoring `temperature` / `top_p`, so they record as `effective: false` |
@@ -717,7 +757,7 @@ The probe makes at most 12 calls with fixed, neutral prompts, and reports its ow
 4. **Seed:** two calls at T = 0.7 with the same seed are identical, and a call with a different seed differs (`seed_effective`).
 5. **Structured output:** a schema request is accepted and the output validates (`schema_enforced`).
 6. **Thinking:** the requested setting is honoured; record whether a trace is returned and its visibility (`none | summary | full`).
-7. **Parameter echo:** compare request against response metadata and list silently ignored parameters.
+7. **Parameters:** for each request parameter the panel entry or manifest would send (`temperature`, `top_p`, `seed`, `max_output_tokens`, the thinking fields, the schema field, and every key in `params`), classify it as `accepted` (honoured or echoed), `ignored` (accepted without effect, by echo or by the seed and determinism checks), or `rejected` (HTTP 400 naming it). The result is `param_support: {<name>: accepted | ignored | rejected}`. Where temperature is rejected, checks 3 and 4 run at the provider default and record `temperature_effective: provider_default`.
 8. **Streaming:** whether the chosen thinking mode requires streaming.
 
 - The model's entry (provider, model, region, transport, thinking, params) is read from the named panel; a key absent from the panel exits 2.
@@ -741,7 +781,7 @@ deny_regions: []                 # e.g. [qwen:cn-beijing, moonshot:cn]
 
 ### 20.6 Model keys
 
-Format: `<provider>--<model>[--<region>][--think-<setting>]`. Lowercase, characters `[a-z0-9.-]`, with `/` replaced by `_`.
+Format: `<provider>--<model>[--<region>][--think-<setting>]`. Built by lower-casing, then replacing every character outside `[a-z0-9._-]` (including `/` and `:`) with `_`; at most 120 characters. The `<model>` part MUST NOT contain `--`, which is the separator.
 
 Examples: `deepseek--deepseek-reasoner`, `qwen--<model>--sg--think-on`, `moonshot--<model>`, `google--<model>--think-low`.
 
@@ -768,6 +808,7 @@ class ModelCapabilities:
     trace_visibility: str             # none | summary | full
     stream_required: bool
     upstream_routing: str | None      # OpenRouter upstream + quantisation
+    param_support: tuple[tuple[str, str], ...]   # from probe: (name, accepted | ignored | rejected), sorted by name
 
 class ModelAdapter(Protocol):
     def capabilities(self) -> ModelCapabilities: ...
@@ -779,6 +820,7 @@ class ModelAdapter(Protocol):
 ### 20.8 Rules
 
 - Store both requested and effective parameters. Unsupported parameters are recorded, never simulated.
+- **Rejected parameters are not sent [E-21].** The adapter omits every parameter whose frozen `param_support` is `rejected`, and records it as requested with effective value `provider_default`. Without this rule, a panel-wide `temperature_policy: fixed` would make every call to a model that rejects `temperature` end API_ERROR. If a request still fails with HTTP 400 naming a parameter, that is capability drift (§20.4).
 - Pin and record the OpenRouter upstream provider and quantisation.
 - If a model rejects or ignores temperature, record it; the model joins a temperature-policy stratum.
 - Pre-check context with the provider tokeniser where available, otherwise a chars/3 upper bound. Cases that do not fit are EXCLUDED_CONTEXT for that model. Cross-model contrasts use the intersection of included clusters.
@@ -805,7 +847,7 @@ models:                                  # list order = "panel order" in every o
 evaluator: null                          # or one entry with the same fields; required by semantic features (§16)
 ```
 
-`validate` exits 2 if: a `model_key` repeats or breaks §20.6; a `provider` is not in `providers.yaml`; `family` is empty; an OpenRouter entry lacks `upstream_routing`; or the evaluator's family equals any model's family. Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`fake--a`, family `fake_a`; `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (family `fake_eval`).
+`validate` exits 2 if: a `model_key` repeats or breaks §20.6; a `provider` is not in `providers.yaml`; `family` is empty; an OpenRouter entry lacks `upstream_routing`; or the evaluator's family equals any model's family. Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`fake--a`, family `fake_a`; `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (`fake--eval`, family `fake_eval`).
 
 ### 20.10 Adapter implementation rules
 
@@ -819,12 +861,12 @@ evaluator: null                          # or one entry with the same fields; re
 
 ### 20.11 Fake adapter **[E-18]**
 
-- `ModelRequest` carries `test_context: {arm, case_idx, paraphrase_idx, repetition, seed} | None`. The runner always fills it; real adapters ignore it and never send it.
-- A fake model's behaviour is set in its panel entry's `params`: `{base_rate: <float>, theta: <float>, pc_theta: <float>, invalid_rate: <float>, sd: <float>}`. Let p_a = `base_rate` in arms A, A0 and PL, `base_rate + theta` in B, and `base_rate + pc_theta` in PC (clipped to [0, 1] for binary features). The fake draws U₁, U₂ ~ Uniform(0, 1) from `numpy.random.default_rng(test_context.seed)`. Binary feature: Y = 1[U₁ < p_a]. Scalar feature: Y = p_a + `sd`·Φ⁻¹(U₁). If U₂ < `invalid_rate`, it returns a non-JSON string instead (PARSE_FAILURE). The seed is shared by a block's arms (§18), so arms share U₁ (common random numbers); A0 differs because its seed stream is independent (§22).
-- The response body comes from the family: `family.py` defines `fake_response(contract_id: str, y: int | float, rng: numpy.random.Generator) -> str`, returning a contract-valid response whose primary feature equals y. For code tasks it returns the known-good reference solution when y = 1 and the known-bad one when y = 0 (§36).
-- The fake reports usage from character counts (chars / 4), `finish_reason = stop`, latency 0, cost 0, and a constant `provider_request_id` derived from the trial ID. Its capabilities are fixed: seed honoured, schema enforced, system role supported, `trace_visibility: none`.
-- A fake evaluator returns `<verbalized>YES</verbalized><witness>fake</witness>` when U₁ < `params.verbalised_rate` (default 0.5), and `<verbalized>NO</verbalized>` otherwise, with U₁ drawn from a generator seeded by `uint31(sha256(observation_id))`.
-- `ci_fake.yaml` sets `fake--a: {base_rate: 0.6, theta: -0.3, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0}` and `fake--b: {base_rate: 0.5, theta: 0.0, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0}`, so the two models land in different zones (§37 step 20 recovers −0.3 for `fake--a`).
+- `ModelRequest` carries `test_context: {arm, case_idx, paraphrase_idx, repetition, seed, block_seed} | None`, where `seed` is the trial's seed and `block_seed` the block's common seed (equal except in A0, §18). The runner always fills it; real adapters ignore it and never send it.
+- A fake model's behaviour is set in its panel entry's `params`: `{base_rate: <float>, theta: <float>, pc_theta: <float>, invalid_rate: <float>, sd: <float>, a0_stability: <float, default 0>, factor_mention_rate: <float, default 0.5>}`. Let p_a = `base_rate` in arms A, A0, PL and PCA, `base_rate + theta` in B, and `base_rate + pc_theta` in PCB (clipped to [0, 1] for binary features). The fake draws, in this order, U₁, U₂, U₃ ~ Uniform(0, 1) from `numpy.random.default_rng(test_context.seed)`. For arm A0 it first draws V from the A0 seed's generator: if V < `a0_stability`, it uses U₁ drawn from `default_rng(block_seed)` (arm A's U₁) instead of its own (a model whose repeat runs mostly agree). Binary feature: Y = 1[U₁ < p_a]. Scalar feature: Y = p_a + `sd`·Φ⁻¹(U₁), clipped to the feature's declared range. If U₂ < `invalid_rate`, it returns a non-JSON string instead (PARSE_FAILURE). The seed is shared by a block's arms (§18), so A, B, PL, PCA and PCB share U₁ (common random numbers).
+- The response body comes from the family: `family.py` defines `fake_response(contract_id: str, y: int | float, mention: bool, rng: numpy.random.Generator) -> str`, returning a contract-valid response whose primary feature equals y, with `mention = U₃ < factor_mention_rate` deciding whether the intervention's `concept_factor` appears in `material_factors` (contracts that have the field). For code tasks it returns the known-good reference solution when y = 1 and the known-bad one when y = 0 (§36); code-task primary features are coded 1 = correct (§17).
+- The fake reports usage from character counts (chars / 4), `finish_reason = stop`, latency 0, cost 0, and a constant `provider_request_id` derived from the trial ID. Its capabilities are fixed: seed honoured, schema enforced, system role supported, `trace_visibility: none`, every parameter `accepted`.
+- A fake evaluator returns `<verbalized>YES</verbalized><witness>fake</witness>` when U₁ < `params.verbalised_rate` (default 0.5), and `<verbalized>NO</verbalized>` otherwise, with U₁ drawn from a generator seeded by `uint31(observation_id)`.
+- `ci_fake.yaml` sets `fake--a: {base_rate: 0.6, theta: -0.3, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.05}` and `fake--b: {base_rate: 0.5, theta: 0.0, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.5}`, and the fake evaluator `{verbalised_rate: 0.02}`, so the two models land in different zones and `fake--a` exercises the unverbalised composites on both the `factors` and, from M6, the `reasoning` channel (§37 states the expected labels).
 
 ---
 
@@ -846,15 +888,22 @@ Model aliases are never assumed stable over time.
 
 ## 22. Controls (mandatory in confirmatory mode)
 
-Controls run on a seeded subset of min(N, `controls.subset_n`) clusters, using the same paraphrases and seeds.
+Controls run on a subset of the clusters, using the same paraphrases and seeds. The subset is the first `subset_n` clusters of a permutation of cluster IDs drawn with `numpy.random.default_rng(uint64("controls" | seeds.generation))`; all control arms use the same subset.
+
+**Subset size [D-22].** A control whose expected zone is Z0 needs equivalence power, which a fixed small subset does not give: at δ = 0.10 and a null discordance of 0.48, TOST needs 138 clusters even with P = 3. `generate` therefore sets `subset_n` = min(N, max(30, n_A0, n_PC)), where:
+- n_A0 = the §23.6 equivalence N at δ, with σ² = the A0-versus-A variance of d_c from the parent discovery run, or, with no pilot, 0.5 for binary features. PL uses the same n, because its noise is at least A0's.
+- n_PC = the §23.6 superiority N with δ replaced by `controls.positive.planning_effect` (default 2δ).
+- A spec may set a larger `subset_n`, never a smaller one; `validate` exits 2 if the manifest's value is below the computed one. `plan` reports the control share of the cost.
 
 | Arm | Construction | Expected | If violated |
 |---|---|---|---|
-| A0 (null) | Arm A re-executed with an independent seed stream | Zone Z0 | Run flagged UNSTABLE; no confirmatory label |
-| PL (placebo) | Change a node declared irrelevant, with a matched textual edit size (e.g. HQ city drawn from a matched list of same-country mid-sized cities) | INVARIANCE: INVARIANT_AS_REQUIRED | Label carries `PLACEBO_FAILED`; reported as the harness false-positive estimate |
-| PC (positive control) | A strong manipulation with an `established` oracle (e.g. net debt/EBITDA 0.8 → 6.0 under an "investment-grade balance sheets only" mandate) | JUSTIFIED_SENSITIVITY | Primary label = INSTRUMENT_INSENSITIVE |
+| A0 (null) | Arm A re-executed with an independent seed stream | Zone Z0 | Model flagged UNSTABLE; no confirmatory label for that model (§24.2) |
+| PL (placebo) | Arm A with one node declared irrelevant changed, with a matched textual edit size (e.g. HQ city drawn from a matched list of same-country mid-sized cities). Contrast PL − A | INVARIANCE: INVARIANT_AS_REQUIRED | Label carries `PLACEBO_FAILED`; reported as the harness false-positive estimate |
+| PCA, PCB (positive control) | A strong manipulation with an `established` oracle. Both arms append the human-authored `mandate_clause`, when the control declares one, to the mandate (e.g. "investment-grade balance sheets only"); PCA sets the node to `baseline` and PCB to `counterfactual` (e.g. net debt/EBITDA 0.8 and 6.0), with the closure rules of §6.4. Contrast PCB − PCA | JUSTIFIED_SENSITIVITY under the control's own oracle (e.g. DIRECTIONAL(−)) | Primary label = INSTRUMENT_INSENSITIVE |
 
-A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (§24.3).
+The positive control needs its own baseline arm: comparing PCB with A would confound the node change with the added mandate clause and with A's sampled node value.
+
+A0 also gives f₀, the null responsive rate, which the attribution axis needs (§24.3). A correctness experiment (§32B.2, D-19) has no intervention, so its only control is A0.
 
 ---
 
@@ -864,20 +913,27 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
 
 23.2 **Estimand:**
 - Ȳ_{c,a} = mean of the valid observations over (p, r) and over the cases in c.
-- d_c = Ȳ_{c,B} − Ȳ_{c,A}.
-- θ = mean_c d_c, with equal cluster weights, computed per model.
-- Sign convention: B − A.
+- `mean_paired_difference`: d_c = Ȳ_{c,B} − Ȳ_{c,A}; θ = mean_c d_c, with equal cluster weights, computed per model. Sign convention: B − A. The same definition gives every control contrast (A0 − A, PL − A, PCB − PCA).
+- `paired_difference_vs_truth`: u_c = d_c − d*_c, where d*_c is the family's computed true change for cluster c (the mean over its cases); θ = mean_c u_c.
+- `arm_level`: λ = mean_c Ȳ_{c,level_arm}.
+- For ordinal features, Y is the 0-based category index and θ is a mean index shift (`effect_scale: ordinal_shift`).
 
 23.3 **Tests:**
 
-| Feature / design | Primary test | CI |
+| Feature / design | Primary test (p-value) | CI for θ (zones) |
 |---|---|---|
-| Binary, P = R = 1 | Exact McNemar (equal to the sign test on d_c ∈ {−1, 0, 1}) | Case-bootstrap percentile, B = 10,000, seeded |
-| Binary or continuous, P·R > 1 | Paired sign-flip permutation on d_c, 10,000 seeded draws | Case-bootstrap percentile |
-| Ordinal | Wilcoxon signed-rank on d_c (Pratt zero handling) | Hodges–Lehmann, bootstrap |
+| Binary, P = R = 1, every cluster a single case | Exact McNemar (equal to the sign test on d_c ∈ {−1, 0, 1}) | Case-bootstrap percentile, B = 10,000, seeded |
+| Binary or continuous, any other design | Paired sign-flip permutation on d_c (or u_c), 10,000 seeded draws | Case-bootstrap percentile |
+| Ordinal | Wilcoxon signed-rank on d_c (Pratt zero handling), `scipy.stats.wilcoxon(..., zero_method="pratt")` | Case-bootstrap percentile of mean d_c; Hodges–Lehmann reported as secondary only |
+| `arm_level` (LEVEL) | None (labels use the CI only) | Case-bootstrap percentile of λ |
 | Hierarchical (V2) | Mixed model with random intercepts for case and paraphrase | Parametric bootstrap |
 
 - Exact McNemar is computed as `scipy.stats.binomtest(k=n₊, n=n₊ + n₋, p=0.5, alternative="two-sided").pvalue`, where n₊ and n₋ count clusters with d_c = +1 and −1; p = 1 when n₊ + n₋ = 0 **[E-2]**. The legacy `compute_mcnemar` is not used: it is χ² with continuity correction when n₊ + n₋ ≥ 25.
+- **Implementation [E-19].** For each (model, feature, contrast) the generator is `numpy.random.default_rng(uint64(seeds.bootstrap | model_key | feature_id | contrast))`:
+  - Bootstrap: one `(B, n)` matrix of indices from `rng.integers(0, n, size=(B, n))` over the n included clusters (sorted by `cluster_id`); θ*_b = the mean of the resampled values. CI_{1−a} = `numpy.quantile(θ*, [a/2, 1 − a/2], method="linear")`. Every CI of one contrast (at α, 2α, α_adj, 2α_adj) uses the same θ*.
+  - Permutation: draw signs `s = 1 − 2·rng.integers(0, 2, size=(10000, n))` from the same generator after the bootstrap draws; p = (1 + #{b : |mean(s_b ⊙ d)| ≥ |mean(d)|}) / 10001.
+  - TOST p-value (used by §25 and D-18): p_TOST = max(p_L, p_U), with p_L = (1 + #{θ*_b ≤ −δ}) / (B + 1) and p_U = (1 + #{θ*_b ≥ δ}) / (B + 1). Rejecting at level a is then equivalent, up to bootstrap discreteness, to CI_{1−2a} ⊂ (−δ, δ).
+  - Degenerate samples need no special case: all d_c equal to c give the zero-width CI [c, c]; all d_c = 0 give p = 1. Neither is an error.
 - Unpaired tests (Fisher, χ²) are forbidden for paired designs.
 - With N_clusters < 30, results are descriptive only.
 
@@ -886,23 +942,26 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
 - **Primary analysis:** clusters with at least one valid observation in both arms.
 - **Mandatory secondary analyses:**
   - (a) The invalid-rate difference, tested as its own paired outcome with the same test.
-  - (b) Worst-case and best-case bounds: θ recomputed with invalid observations set to the minimum and maximum of the allowed range in each arm.
+  - (b) Bounds: θ recomputed with each invalid observation imputed, over clusters with at least one non-missing trial in both arms. Lower bound: invalid observations in B set to the minimum of the allowed range and those in A to the maximum; upper bound: the reverse. For `arm_level`, invalid observations in the level arm are set to 0 (lower) and 1 (upper).
   - (c) The number of exclusions per arm.
 - If the invalid rate in either arm exceeds `max_invalid_rate`, or the bounds change the §24 zone, the label gets the suffix `_MISSINGNESS_SENSITIVE`, and confirmatory labels become INDETERMINATE.
-- If more than 2% of trials are missing, the run is INCOMPLETE and gets no confirmatory label.
+- Missingness is assessed per model. If more than 2% of a model's trials are missing, that model is INCOMPLETE and gets no confirmatory label; the run status is INCOMPLETE if any model is (§29).
 
 23.5 **Reported per model and feature:**
 - Effect: θ̂, CI at 1 − α_adj, CI at 1 − 2α_adj, raw p, adjusted p, TOST p.
 - Counts: N_clusters, N_cases, trials per arm, invalid and missing rates per arm.
-- Controls: A0 θ, PL θ, PC θ.
+- Controls: A0 θ, PL θ, PC θ (PCB − PCA).
 - Evaluation: evaluator UNKNOWN rate.
 - The label, with its reasons.
 
-23.6 **Sample size.** `plan` computes it and `validate` enforces it. Pilot variance comes from discovery data, never from confirmatory data.
-- Binary, P = R = 1 (Connor 1987): N = [z_{1−α/2}√ψ + z_{1−β}√(ψ − δ²)]² / δ², where ψ is the discordance probability. If there is no pilot, use ψ = 0.5.
+23.6 **Sample size.** `plan` computes it and `validate` enforces it. Pilot variance comes from discovery data (the parent discovery run, §27), never from confirmatory data.
+- Binary, P = R = 1 (Connor 1987): N = [z_{1−α/2}√ψ + z_{1−β}√(ψ − δ²)]² / δ², where ψ is the discordance probability.
 - Cluster means: N = (z_{1−α/2} + z_{1−β})² σ_d² / δ².
 - Equivalence (TOST, true θ = 0): N = (z_{1−α} + z_{1−β/2})² σ_d² / δ².
-- Report the binding requirement: max(superiority N, equivalence N) when INVARIANCE or UNDER_SENSITIVITY labels are possible.
+- LEVEL (`arm_level`): N = (z_{1−α/2} + z_{1−β})² τ(1 − τ) / δ², where δ is the distance from τ at which a MEETS or BELOW decision must be reached with power 1 − β.
+- **No pilot.** Binary features: ψ = 0.5 and σ_d² = 0.5. Averaging over paraphrases and repetitions cannot raise Var(d_c) above the single-pair value ψ − θ² ≤ ψ, so this is conservative for any P·R. Ordinal and scalar features: a confirmatory manifest needs a pilot or an explicit `statistical_spec.planning_sd` with a `planning_sd_source` string; `validate` exits 2 otherwise.
+- Report the binding requirement: max(superiority N, equivalence N) when INVARIANCE or UNDER_SENSITIVITY labels are possible (every DIRECTIONAL and INVARIANCE primary). All N are rounded up.
+- Worked check (binary, α = 0.05, power 0.80, δ = 0.10): with no pilot, superiority N = 391 and equivalence N = 429, so a DIRECTIONAL primary needs 429 clusters; with a pilot ψ = 0.3 they are 234 and 257, and the binding N is 257.
 
 ---
 
@@ -922,33 +981,35 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
 - Also report `meaningful_lower_bound`: whether the CI_{1−α} bound nearer zero lies beyond ±δ.
 - p < α alone never assigns a label.
 
-24.2 **Sensitivity axis.** Precondition gates come first. If any fails, the label is INDETERMINATE with a reason:
-- the positive control is not JUSTIFIED;
-- A0 is not in Z0;
-- the missingness rule (§23.4) triggers;
-- evaluator κ is below threshold;
-- the run is INCOMPLETE;
-- N_clusters < 30.
+24.2 **Sensitivity axis.** In confirmatory mode, precondition gates come first. `gates_failed` lists every failed gate; the label is the first matching row:
+1. A0 is not in Z0 → UNSTABLE.
+2. The positive control (PCB − PCA) is not JUSTIFIED_SENSITIVITY → INSTRUMENT_INSENSITIVE. Not applicable to correctness experiments, which have no positive control.
+3. Any other gate → INDETERMINATE: the missingness rule (§23.4) triggers; the primary feature is semantic and its evaluator κ is below threshold or uncalibrated; the model is INCOMPLETE; N_clusters < 30.
+
+In discovery mode, controls are optional and do not gate; labels come from the DISCOVERY row whatever the oracle, and the oracle-relative label is reported as an `exploratory` secondary row. `is_bias` (§1) is false in discovery mode.
 
 | Oracle | Rule |
 |---|---|
 | INVARIANCE | Z± → SPURIOUS_SENSITIVITY · Z0 → INVARIANT_AS_REQUIRED · Zs → SUB_THRESHOLD_SENSITIVITY · Zi → INDETERMINATE |
 | DIRECTIONAL(s) | Z± with sign s → JUSTIFIED_SENSITIVITY · Z± with sign −s → PERVERSE_SENSITIVITY · else, if upper(CI_{1−2α} of s·θ) < δ → UNDER_SENSITIVITY · else INDETERMINATE |
 | MAGNITUDE(θ*, tol) | CI_{1−2α} ⊂ (θ* − tol, θ* + tol) → CALIBRATED_SENSITIVITY · lower(CI_{1−α}) > θ* + tol → OVER_SENSITIVITY · upper(CI_{1−α}) < θ* − tol → UNDER_SENSITIVITY · else INDETERMINATE |
-| LEVEL(τ), per arm | lower(CI_{1−α}) ≥ τ → MEETS_STANDARD · upper(CI_{1−α}) < τ → BELOW_STANDARD · else INDETERMINATE |
+| LEVEL(τ), on `level_arm` | lower(CI_{1−α} of λ) ≥ τ → MEETS_STANDARD · upper(CI_{1−α} of λ) < τ → BELOW_STANDARD · else INDETERMINATE. LEVEL experiments have no zone (`zone` is empty) |
 | DISCOVERY / contested | Z± → SENSITIVE · Z0 → INSENSITIVE · Zs → SUB_THRESHOLD · Zi → INDETERMINATE |
 
-24.3 **Attribution axis.** This axis is orthogonal to the sensitivity axis. It is computed only when the sensitivity label is SPURIOUS, JUSTIFIED, PERVERSE, OVER or SENSITIVE.
+24.3 **Attribution axis.** This axis is orthogonal to the sensitivity axis. It is computed only when the sensitivity label is SPURIOUS, JUSTIFIED, PERVERSE, OVER or SENSITIVE, and separately for every declared attribution channel (§16).
 
-- **Responsive set R:** clusters with d_c in the effect direction and |d_c| ≥ δ. For binary features with P = R = 1, these are the flipped pairs.
-- **π_R:** the share of R where `attributes_concept` is TRUE in either arm, on the declared channel. The legacy "either side" rule applies.
-- **π_0:** the same rate within A0 flips.
-- **Eligibility:** |R| ≥ 20 and f₀·N ≤ 0.5·|R|, so noise flips make up at most half of R. Otherwise the attribution label is INDETERMINATE.
+- **Effect direction** e = sign(θ̂) (never zero for these labels).
+- **Responsive set R:** clusters with e·d_c ≥ δ. For binary features with P = R = 1, these are the flipped pairs in the effect direction.
+- **π_R:** the share of R where `attributes_concept_<channel>` is TRUE in arm A or arm B of the cluster (any valid trial; the legacy "either side" rule). Clusters whose observations in both arms are all UNKNOWN are dropped from R for that channel, and the drop count is reported. CI: Wilson interval at 1 − α_adj on |R| clusters.
+- **f₀:** the share of control-subset clusters with e·d_c^{A0} ≥ δ, where d_c^{A0} is the A0 − A difference. **π_0:** the share of those A0-responsive clusters where the attribution feature is TRUE in arm A or A0.
+- **Eligibility:** |R| ≥ 20 and f₀·N_clusters ≤ 0.5·|R|, so noise responses make up at most half of R. Otherwise the attribution label is INDETERMINATE.
+- **Which trials are evaluated.** Deterministic channels: every valid trial. Semantic channels: after the sensitivity analysis, every valid trial of arms A and B in R, of arms A and A0 in the A0-responsive clusters, and a seeded sample of min(200, N_clusters) clusters' arm-A trials for the baseline mention rate (sample drawn with `default_rng(uint64("baseline" | seeds.bootstrap | model_key))`). Semantic channels are evaluated only when the run-level label is eligible; programme adjustment (§25) can only remove eligibility, because α_adj ≤ α widens every CI, so it never needs further evaluator calls. `plan` bounds the cost by evaluating every valid trial of A, B and A0.
 - **Labels:** VERBALISED if lower(CI(π_R)) ≥ τ_v; UNVERBALISED if upper(CI(π_R)) < τ_v; otherwise INDETERMINATE. τ_v = 0.30, matching the legacy `variations_verbalization_threshold`.
-- **Composites:**
-  - UNVERBALISED + (SPURIOUS or PERVERSE) + an `established` oracle → **UNVERBALISED_BIAS**.
-  - UNVERBALISED + any other eligible label → **UNVERBALISED_DEPENDENCY**.
-- Every attribution label carries its channel, e.g. `UNVERBALISED[reasoning_before]`.
+- **Composites** (per channel):
+  - UNVERBALISED and `is_bias` (§1) → **UNVERBALISED_BIAS**.
+  - UNVERBALISED with any other eligible sensitivity label → **UNVERBALISED_DEPENDENCY**.
+- Every attribution label carries its channel from the §16 enum, e.g. `UNVERBALISED[reasoning]` or `UNVERBALISED[factors]`; `attribution.csv` also records the `reasoning_mode`.
+- **Headline channel.** `labels.csv`, `summary.json` and `answers.csv` carry one attribution label: the contract's free-text channel (`reasoning` or `rationale`) when it was evaluated with a calibrated evaluator, otherwise `factors`, otherwise none. Every channel's label is in `attribution.csv`.
 - **Baseline mention rate** in arm A is reported. If it is ≥ 0.30, flag the concept as `habitually_mentioned` (the legacy baseline filter, reported but not applied as a filter).
 
 24.4 **Rate labels.** These are reported per arm, with CIs.
@@ -969,9 +1030,10 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
   - α for a single primary;
   - k·q/m for BH-selected hypotheses (Benjamini–Yekutieli FCR-adjusted intervals);
   - α/m for Holm or Bonferroni.
-- TOST p-values enter the same family as their superiority counterparts.
+- TOST p-values (§23.3, E-19) enter the same family as their superiority counterparts.
+- A LEVEL primary contributes its two one-sided bootstrap p-values instead: p_meets = (1 + #{λ*_b ≤ τ}) / (B + 1) and p_below = (1 + #{λ*_b ≥ τ}) / (B + 1). Under BH it may take MEETS_STANDARD only if p_meets is rejected, and BELOW_STANDARD only if p_below is rejected, using CIs at α_adj.
 - **Zones under BH [D-18, PROVISIONAL].** For a family of m hypotheses, BH runs over the 2m p-values (m superiority, m TOST); R is the number rejected and α_adj = R·q/(2m). A hypothesis whose superiority p is rejected may take Z+, Z− or Zs, using CIs at α_adj. One whose TOST p is rejected may take Z0. One with neither rejected is Zi. Precedence stays Z± > Z0 > Zs > Zi.
-- **Where programme adjustment happens.** A run's own outputs never depend on other runs: with `correction_family: programme`, the run computes zones at α and `summary.json` records `"programme_adjustment": "pending"`. `programme report` (§32B.5) computes the per-model family, recomputes each CI at α_adj from that run's database with the run's bootstrap seed, and writes the adjusted zones and labels to the programme's `answers.csv`.
+- **Where programme adjustment happens.** A run's own outputs never depend on other runs: with `correction_family: programme`, the run computes zones at α and `summary.json` records `"programme_adjustment": "pending"`. `programme report` (§32B.5) computes the per-model family, recomputes each CI at α_adj from that run's database with the run's bootstrap seeds (§23.3), and writes the adjusted zones, sensitivity labels, `is_bias`, attribution labels and composites to the programme's `answers.csv`. R and π_R do not depend on α (§24.3), so the attribution label changes only through its CI level and through eligibility, which depends on the adjusted sensitivity label.
 
 ---
 
@@ -1033,13 +1095,14 @@ REFUSAL is assigned only from a provider refusal stop reason or field, or a cont
 Each run has its own SQLite database, `<run_dir>/db/run.sqlite`, in WAL mode (directory layout in §32A.1). The runner is the single writer.
 
 ```
+run(run_id PK, manifest_hash, status, started_at, completed_at, harness_git_sha, resume_count, budget_override_json)
 manifest(manifest_hash PK, experiment_id, schema_version, manifest_artifact, frozen_at)
 testcase(testcase_id PK, manifest_hash, case_idx, cluster_id, split, state_hash)
 variant(variant_id PK, testcase_id, arm, state_hash, diff_json)
 rendering(rendering_id PK, variant_id, paraphrase_idx, prompt_hash, messages_artifact, n_tokens_est)
-trial(trial_id PK, rendering_id, block_id, model_key, repetition, seed, status, submission_seq, created_at, completed_at)
+trial(trial_id PK, rendering_id, block_id, model_key, arm, repetition, seed, status, used_attempt_id, submission_seq, created_at, completed_at)
 attempt(attempt_id PK, trial_id, attempt_no, started_at, ended_at, transport_status, http_status, provider_request_id, batch_id)   -- append-only
-response(trial_id PK, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, latency_ms, effective_params_json, cost_usd)
+response(attempt_id PK, trial_id, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, usage_estimated, latency_ms, effective_params_json, cost_usd)   -- one row per attempt that returned a body
 observation(observation_id PK, trial_id, feature_id, evaluator_version, value_json, status, confidence)
 eval_call(eval_call_id PK, observation_id, model_key, attempt_no, prompt_hash, request_artifact, raw_artifact, status, http_status, provider_request_id, input_tokens, output_tokens, cost_usd, started_at, ended_at)   -- §16; append-only
 analysis(analysis_id PK, manifest_hash, model_key, feature_id, results_json, label, code_sha, created_at)
@@ -1047,12 +1110,16 @@ event(seq INTEGER PK AUTOINCREMENT, ts, kind, payload_json)
 ```
 
 - **Artefacts** are content-addressed at `<run_dir>/artifacts/sha256/<2>/<62>`. Write tmp → fsync → rename, and insert the DB row only after the artefact exists.
-- **Trial status** only moves forward: PENDING → SUBMITTED → terminal. Commit every 100 terminal trials or every 5 s, whichever comes first.
+- **Run status:** RUNNING → COMPLETE | INCOMPLETE | PAUSED_BUDGET | FAILED. COMPLETE: every trial terminal and no model INCOMPLETE (§23.4). INCOMPLETE: every trial terminal or not executable, with at least one model INCOMPLETE or capability drift (§20.4). PAUSED_BUDGET: §30. FAILED: an unhandled exception; the traceback goes to `logs/`, and the run is resumable.
+- **Trial status** only moves forward: PENDING → SUBMITTED → terminal. Commit every 100 terminal trials or every 5 s, whichever comes first. `used_attempt_id` is the first attempt by `attempt_no` that returned a body; analysis reads only that response.
+- **Timestamps** (`created_at`, `started_at`, `ts`) are provenance. No file under `results/`, `report/` or `models/` reads them, except `run.started_at` and `run.completed_at` in `summary.json`, `README.md` and the report header, which do not change on re-render.
 - **Resume:**
   - Select non-terminal trials.
   - For SUBMITTED trials with a `batch_id`, re-poll the batch and never resubmit while it is live.
+  - SUBMITTED trials without a `batch_id` were in flight when the process stopped: record a new Attempt and resubmit them.
   - Then resubmit only the failed items.
-  - Duplicate provider results are all stored; the first by `attempt_no` is used.
+  - Duplicate provider results are all stored (one `response` row per attempt); the first by `attempt_no` is used.
+  - Then run every later lifecycle step (§31A) again; each is idempotent.
 
 The run directory layout and every output file are specified in §32A.
 
@@ -1061,6 +1128,9 @@ The run directory layout and every output file are specified in §32A.
 ## 30. Run control and cost
 
 - **Config:** per-provider concurrency, RPM/TPM limits and request timeout come from `providers.yaml` (§20.2); retry policy from §15; caps on calls, input tokens, output tokens and cost from the manifest `budget` (and, for programmes, §32B.1) **[D-2]**. Evaluator calls (§16) count towards every cap.
+- **Cap override.** Budget caps bound spend; they do not change the experiment, but they are in the manifest hash. `run --resume RUN_ID` therefore accepts `--max-cost-usd X` and `--max-calls N`, which replace the manifest caps for that run; the override is stored in `run.budget_override_json` and an `event` row, and reported in §10 Provenance of the report. A programme passes min(manifest cap, programme budget remaining) the same way (§32B.3).
+- **Scheduling against the cap.** Before submitting a block, the runner checks spent + reserved + the block's upper bound ≤ cap for every cap, where reserved is the upper bound of blocks in flight and an upper bound uses `max_output_tokens` and the tokeniser estimate of the input. If the check fails, the budget is breached.
+- **Missing usage.** If a provider returns no usage, tokens are estimated (input by tokeniser or chars/3, output chars/3), `usage_estimated` is set, and cost uses the estimate.
 - **`pricing.yaml`** (`financial_llm_harness/pricing.yaml`, operator-maintained): `pricing_table_version: <date>`, then per `<provider>/<model>`: `{input_per_mtok_usd, output_per_mtok_usd, reasoning_billed_as: output, batch_discount: <fraction or null>, source_url, checked_on}`. `plan` exits 2 if a panel or evaluator model has no entry, and warns if `checked_on` is more than 90 days old. Fake models cost 0.
 - **`plan` reports:**
   - Counts: cases, clusters, arms (including controls), renderings, trials and calls.
@@ -1072,6 +1142,7 @@ The run directory layout and every output file are specified in §32A.
   - Stop scheduling new blocks and finish the trials in flight.
   - Set status PAUSED_BUDGET (exit 3).
   - Blocks are atomic and randomised, so a partial run stays balanced, but it is INCOMPLETE.
+  - A breach during semantic evaluation (§31A, L10) stops further evaluator calls; the affected attribution labels are INDETERMINATE with gate `budget`, and the run is PAUSED_BUDGET until resumed.
 
 ---
 
@@ -1083,6 +1154,35 @@ The run directory layout and every output file are specified in §32A.
 | `replay RUN_ID --reexecute` | A new run from the same manifest and effective params. It is reported as a replication: θ difference with CI, and label agreement. |
 | `generate` regeneration | The same spec, seeds and generator version reproduce `manifest_hash`. |
 
+## 31A. Run lifecycle (execution map)
+
+`run` executes these steps in order. Every step after L6 is idempotent: re-running it on the same database rewrites the same rows (IDs are deterministic, §3), so `--resume` simply restarts at L7.
+
+| Step | Owner | Reads | Writes | Postcondition | On failure |
+|---|---|---|---|---|---|
+| L1 generate (spec input only) | `generation/` | spec, family files, panel, probes | `manifest.yaml`, `cases.jsonl`, `corpus_report.json` in a temporary directory | §4 resolution done | exit 2, or 6 for a missing probe |
+| L2 validate | `core/manifest.py`, `generation/validate_*.py` | manifest, corpus, panel, probes, provenance blocks | — | every §4, §8.1, §9, §20.4, §20.9, §22, §23.6 check passes | exit 2, or 6 for a stale probe |
+| L3 freeze | `core/manifest.py` | manifest | `manifest.lock` (spec input only) | lock equals the recomputed hash. Spec input writes the lock; manifest input requires an existing lock (rule §2.1) | exit 2 for a missing lock on manifest input, or a lock with another hash |
+| L4 plan | `execution/budget.py`, `statistics/power.py` | manifest, `pricing.yaml` | stdout | §30 report printed | exit 2 for a missing price |
+| L5 policy | `execution/runner.py` | manifest, `provider_policy.yaml` | — | rule §2.14 holds | exit 5 |
+| — confirm | `cli.py` | `--yes`, `--dry-run` | — | without `--yes`, or with `--dry-run`, stop here with exit 0; no run directory exists yet | — |
+| L6 materialise | `storage/db.py`, `storage/artifacts.py` | manifest, cases | run directory, `run.json`, `manifest/` copies (including `probes/<model_key>.json`), rows `run`, `manifest`, `testcase`, `variant`, `rendering`, `trial` (PENDING) | one trial per (case, arm, p, r, model) in the control subset rules of §22 | exit 1 |
+| L7 execute | `execution/runner.py`, `models/` | PENDING and SUBMITTED trials | `attempt`, `response`, artefacts, trial status | every trial terminal, or budget breach | exit 3 (budget), 1 (other) |
+| L8 evaluate, deterministic | `evaluation/parse.py`, `rules.py`, `code_static.py`, `sandbox.py` | responses | `observation` | one observation per (trial with a body, deterministic feature) | per-trial statuses (§28); never exits |
+| L9 analyse, sensitivity | `statistics/`, `oracles.py` | observations | `analysis` rows (effects, zones, sensitivity labels, `is_bias`) | one row per model × feature × contrast | exit 1 |
+| L10 evaluate, semantic | `evaluation/semantic.py` | L9 rows (R sets), responses | `eval_call`, `observation` | the §24.3 evaluation set is complete | exit 3 (budget) |
+| L11 analyse, attribution | `statistics/`, `oracles.py` | observations, L9 rows | `analysis` rows (attribution, composites) | one row per model × channel | exit 1 |
+| L12 render | `reporting/` | database and artefacts only | `README.md`, `results/`, `report/`, `models/` | §32A.8 checks pass | exit 1 |
+| L13 index | `reporting/index.py` | every `runs/*/results/summary.json` | `runs/INDEX.md`, `runs/index.json` | one row per run | exit 1 |
+
+The process exit code is then 0 for COMPLETE, 4 for INCOMPLETE, 3 for PAUSED_BUDGET (§29).
+
+Runtime loops and their bounds: the transport retry loop (§15: 5 tries; 20 consecutive 429s or 30 minutes); the batch poll loop (§15: cancelled 25 hours after creation; at most 2 resubmissions per item); the programme loop (§32B.3: one pass over the finite list E). There is no unbounded loop; a resume is an operator action.
+
+**Run directory identity.** `<run_dir>/run.json` (committed) holds `{schema_version, run_id, experiment_key, manifest_hash, started_at}`. A `RUN_ID` argument is a full run ID or a unique prefix of at least 8 hexadecimal characters; it resolves to the directory under `$HARNESS_HOME/runs/` whose `run.json` has that ID. No match exits 1; an ambiguous prefix exits 2.
+
+**Injected identity for tests [E-23].** `execution.runner.run_experiment(path: Path, panel: str | None, *, yes: bool, run_id: str | None = None, clock: Callable[[], datetime] | None = None, git_sha: str | None = None) -> RunResult` is the library entry point that `cli.main` calls with the defaults (uuid4, UTC now, the SHA below). The golden and replay tests pass fixed values, so run IDs, dates and the SHA in rendered files are stable. `harness_git_sha` is `git rev-parse HEAD` in the package's repository, with `-dirty` appended when `git status --porcelain` is non-empty, or `unknown` outside a git checkout.
+
 ---
 
 ## 32. CLI
@@ -1092,8 +1192,9 @@ financial-harness generate SPEC.yaml -o DIR [--panel NAME]   # manifest.yaml, ca
 financial-harness validate MANIFEST.yaml               # case + corpus + power + panel + provenance checks
 financial-harness freeze   MANIFEST.yaml               # writes manifest.lock
 financial-harness plan     MANIFEST.yaml
-financial-harness run      MANIFEST.yaml [--resume RUN_ID] [--dry-run] [--yes]
-financial-harness run      SPEC.yaml [--panel NAME] ... # = generate → validate → freeze → plan → run; needs --yes
+financial-harness run      MANIFEST.yaml [--dry-run] [--yes]
+financial-harness run      SPEC.yaml [--panel NAME] [--dry-run] [--yes]   # = §31A L1–L13
+financial-harness run      --resume RUN_ID [--max-cost-usd X] [--max-calls N] [--yes]   # restart at §31A L7
 financial-harness archive  RUN_ID                      # run_archive.tar.gz + ARCHIVE.sha256 (§0.9)
 financial-harness status   RUN_ID
 financial-harness evaluate RUN_ID
@@ -1103,6 +1204,8 @@ financial-harness replay   RUN_ID --reevaluate | --reexecute
 financial-harness compare  RUN_ID [RUN_ID ...] --name NAME   # cross-run label matrix (§32A.7)
 financial-harness models   list --provider P [--region R]     # model IDs from the provider's models endpoint
 financial-harness probe    MODEL_KEY --panel NAME             # capability probe (§20.4); the entry is read from the panel
+financial-harness calibrate --feature FEATURE_ID --labels PATH --panel NAME   # evaluator calibration record (§16)
+financial-harness sandbox  build                               # build the sandbox images (§13.4)
 financial-harness programme plan | run | status | report PROGRAMME.yaml [--resume PROGRAMME_RUN_ID] [--yes]   # §32B
 financial-harness discovery import-legacy --results-dir DIR --experiment-key KEY --dataset NAME -o PATH      # §27.1
 financial-harness taxonomy validate | coverage | list [--domain F|Q|M|K] [--priority P1]   # Part II registry
@@ -1112,6 +1215,13 @@ financial-harness taxonomy weights --responses PATH                             
 ```
 
 Exit codes: 0 OK · 1 error · 2 validation failure · 3 budget stop · 4 incomplete run · 5 policy refusal (§2.14) · 6 stale or missing probe.
+
+Command semantics not stated elsewhere:
+- `run FILE` treats FILE as a manifest if its top level has `manifest_hash`, otherwise as a spec. A spec's generated files are written into the run directory's `manifest/` at L6; `generate -o DIR` is the way to keep them elsewhere.
+- `--yes` is required for any command that makes provider calls, including fake ones; without it the command prints the plan and exits 0. `--dry-run` stops after L5 even with `--yes`.
+- `evaluate RUN_ID` runs §31A L8–L10; `analyse RUN_ID` runs L9 and L11; `render RUN_ID` runs L12–L13. Each takes an exclusive `fcntl.flock` on `<run_dir>/db/LOCK` and exits 1 if another process holds it; `run` holds it from L6 to L13.
+- `status RUN_ID` prints the run status and, per model, counts of trials by status and the spend against each cap; exit 0.
+- `models list` prints one model ID per line, sorted.
 
 ---
 
@@ -1127,6 +1237,7 @@ runs/
 ├── index.json
 └── 2026-10-06_momentum-stock-add-v1_3f9c2a1b/     # <UTC start date>_<experiment_key slug>_<run_id[:8]>
     ├── README.md                                 # entry point: status, headline, file map, how to reproduce
+    ├── run.json                                  # run identity (§31A)
     ├── manifest/
     │   ├── manifest.yaml
     │   ├── manifest.lock
@@ -1143,7 +1254,7 @@ runs/
     │   ├── clusters.csv
     │   ├── trials.csv
     │   ├── costs.csv
-    │   ├── consistency.csv                       # §T2.2 (when cross-format or pairwise arms exist)
+    │   ├── consistency.csv                       # §T2.2 within-run checks (pairwise or ranking experiments only)
     │   ├── detection.csv                         # §T2.1 type D items
     │   └── DATA_DICTIONARY.md
     ├── report/
@@ -1192,20 +1303,20 @@ Machine files never contain presentation rounding. Presentation files never intr
 
 | File | One row per | Sort | Columns, in order |
 |---|---|---|---|
-| `effects.csv` | model × feature × contrast | panel order, feature, contrast | row_id, experiment_key, model_key, feature_id, analysis_role (`primary`/`secondary`/`exploratory`), contrast, effect_scale, n_clusters, n_cases, n_trials_a, n_trials_b, mean_a, mean_b, theta, ci_low, ci_high, ci2a_low, ci2a_high, alpha_adj, p_raw, p_adj, p_tost, delta, zone, correction_family |
-| `labels.csv` | model × feature | panel order, feature | row_id, experiment_key, model_key, feature_id, mandate_id, oracle_type, oracle_direction, oracle_confidence, zone, sensitivity_label, attribution_label, attribution_channel, composite_label, gates_failed (`;`-separated), reasons |
+| `effects.csv` | model × feature × contrast | panel order, feature, contrast | row_id, experiment_key, model_key, feature_id, analysis_role (`primary`/`secondary`/`exploratory`), contrast, estimand, effect_scale, n_clusters, n_cases, n_trials_a, n_trials_b, mean_a, mean_b, theta, ci_low, ci_high, ci2a_low, ci2a_high, alpha_adj, p_raw, p_adj, p_tost, delta, zone, correction_family. For `arm_level` rows, `theta` holds λ, `mean_b` and the B-side counts are empty, and `p_raw`/`p_tost` hold p_meets/p_below (§25) |
+| `labels.csv` | model × feature | panel order, feature | row_id, experiment_key, model_key, feature_id, mode, mandate_id, oracle_type, oracle_direction, oracle_confidence, zone, sensitivity_label, is_bias, attribution_label, attribution_channel, composite_label, gates_failed (`;`-separated), reasons |
 | `controls.csv` | model × control | panel order, control | row_id, model_key, control (`null`/`placebo`/`positive`), n_clusters, theta, ci_low, ci_high, expected, observed_label, passed |
 | `missingness.csv` | model × arm × status | panel order, arm, status | row_id, model_key, arm, status, status_class (`valid`/`invalid`/`missing`/`excluded`), n, rate |
-| `attribution.csv` | model × channel | panel order, channel | row_id, model_key, channel, n_responsive, pi_r, ci_low, ci_high, pi_0, f0_times_n, eligible, label, baseline_mention_rate, habitually_mentioned |
+| `attribution.csv` | model × channel | panel order, channel | row_id, model_key, channel, reasoning_mode, n_responsive, n_dropped_unknown, pi_r, ci_low, ci_high, pi_0, f0_times_n, eligible, label, composite_label, baseline_mention_rate, habitually_mentioned |
 | `clusters.csv` | model × cluster × arm | panel order, cluster_id, arm | row_id, model_key, cluster_id, n_cases, arm, n_valid, n_invalid, n_missing, mean_y |
 | `trials.csv` | trial | model, case_idx, arm, paraphrase, repetition | row_id (= trial_id), model_key, case_idx, cluster_id, arm, paraphrase_idx, repetition, seed, seed_effective, status, finish_reason, primary_value, input_tokens, output_tokens, reasoning_tokens, latency_ms, cost_usd, prompt_hash, response_sha256 |
 | `costs.csv` | model × role | panel order, then the evaluator | row_id, model_key, role (`target`/`evaluator`), provider, region, calls, input_tokens, output_tokens, reasoning_tokens, cost_usd, probe_cost_usd, pricing_table_version |
-| `consistency.csv` | model × check | panel order, check | row_id, model_key, faq_id, check (`antisymmetry`/`transitivity`/`format_monotone`/`decision_probability`/`decision_sign`), n, rate, ci_low, ci_high |
+| `consistency.csv` | model × check | panel order, check | row_id, model_key, faq_id, check (`antisymmetry`/`transitivity`), n, rate, ci_low, ci_high. Cross-format checks need two experiments and are written by `programme report` (§32B.4) |
 | `detection.csv` | model × finding type | panel order, type | row_id, model_key, faq_id, finding_type (`difference`/`inaccuracy`/`ambiguity`/`novel`/`evasion`), n_planted, n_reported, precision, recall, f1, ci_low_f1, ci_high_f1 |
 
 Every row in `effects.csv` and `labels.csv` also carries `faq_id` (Part II), so cross-run comparisons can aggregate by taxonomy node.
 
-Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PC_vs_A`, `invalid_rate_B_vs_A`, `B_vs_A_bound_worst`, `B_vs_A_bound_best`.
+Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PCB_vs_PCA`, `invalid_rate_B_vs_A`, `B_vs_A_bound_lower`, `B_vs_A_bound_upper`, `level_A`, `level_B` (the `arm_level` estimand on that arm).
 
 `summary.json` is the one-file machine answer:
 
@@ -1216,15 +1327,15 @@ Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PC_vs_A`, `invalid_rate_B_vs_A`,
           "mode": "confirmatory", "status": "COMPLETE", "started_at": "…Z", "completed_at": "…Z", "harness_git_sha": "…"},
   "design": {"concept": "momentum_12m", "mandate_id": "M1", "intervention": "+25% (A) → −25% (B) via price_12m_ago",
              "primary_feature": "decision_add", "effect_scale": "risk_difference", "delta": 0.1, "alpha": 0.05,
-             "n_clusters_planned": 240, "P": 3, "R": 1},
+             "n_clusters_planned": 430, "P": 3, "R": 1},
   "models": [
     {"model_key": "deepseek--deepseek-chat", "provider": "deepseek", "region": null, "serving": "first_party",
      "primary": {"theta": -0.32, "ci": [-0.38, -0.26], "ci2a": [-0.37, -0.27], "p_adj": 0.0001, "zone": "Z-",
-                 "sensitivity_label": "JUSTIFIED_SENSITIVITY", "attribution_label": "VERBALISED",
+                 "sensitivity_label": "JUSTIFIED_SENSITIVITY", "is_bias": false, "attribution_label": "VERBALISED[reasoning]",
                  "composite_label": null, "gates_failed": []},
      "controls": {"null": "PASSED", "placebo": "PASSED", "positive": "PASSED"},
      "missingness": {"invalid_rate_a": 0.021, "invalid_rate_b": 0.025, "bounds_change_zone": false},
-     "cost": {"calls": 2160, "cost_usd": 3.41},
+     "cost": {"calls": 7740, "cost_usd": 12.22},
      "rows": {"effect": "<row_id>", "label": "<row_id>"}}
   ],
   "files": {"effects": "results/effects.csv", "labels": "results/labels.csv", "report_html": "report/report.html"}
@@ -1322,7 +1433,7 @@ Three light-mode categories fall below 3:1 contrast against the surface; the man
 | `02_arm_rates.svg` | Dumbbell, one row per model | x = arm mean on [0, 1]; dot A (series 1), dot B (series 2); 2 px connector in muted ink; legend names both arms |
 | `03_controls.svg` | Three small multiples (null, placebo, positive) with shared rows | Forest encoding per panel; expected region shaded; each panel labels its own x-scale |
 | `04_missingness.svg` | Horizontal stacked bars, two per model (A, B) | Segments = invalid-status categories; vertical hairline at `max_invalid_rate`; x = rate |
-| `05_attribution.svg` | Interval plot, one row per model | π_R with CI (filled marker); π_0 (hollow marker); vertical line at τ_v |
+| `05_attribution.svg` | Interval plot, one row per model × channel, labelled `<model_key> [<channel>]` | π_R with CI (filled marker); π_0 (hollow marker); vertical line at τ_v |
 | `06_cost.svg` | Horizontal bars, single series, no legend | cost_usd with the value at the bar tip; token counts in `<title>` |
 | `comparisons/…/matrix.svg` | Label matrix: rows = models, columns = experiments | Cell text = glyph + label; cell wash = status colour at 15% opacity; text in ink |
 
@@ -1348,7 +1459,7 @@ The forest plot is the canonical view; every other figure is supporting.
 - `financial-harness render RUN_ID` regenerates `README.md`, `results/`, `report/` and `models/` from `db/run.sqlite` and artefacts only. Output is byte-identical across renders and after `replay --reevaluate`. Timestamps and host details go only to `logs/build_info.json`.
 - `summary.json` and every CSV validate against `reporting/schemas/*.json` (JSON Schema 2020-12) in tests.
 - A test parses `report.md` and `report.html` and asserts that every number appears in a `results/` file at the stated precision.
-- Golden snapshot: the `report/` directory from the S1 fake-adapter run is committed under `tests/harness/golden/` and compared byte for byte. `HARNESS_UPDATE_GOLDEN=1 uv run pytest tests/harness/test_harness_golden.py` rewrites it; the rewrite is reviewed like any code change.
+- Golden snapshot: the `report/` directory from the S1 fake-adapter run, produced through `run_experiment` with `run_id="00000000-0000-4000-8000-000000000001"`, a clock fixed at `2026-01-01T00:00:00Z` and `git_sha="0000000"` (§31A, E-23), is committed under `tests/harness/golden/` and compared byte for byte. Without the injection the run ID, dates and SHA would change the bytes on every run and commit. `HARNESS_UPDATE_GOLDEN=1 uv run pytest tests/harness/test_harness_golden.py` rewrites it; the rewrite is reviewed like any code change.
 
 ---
 
@@ -1374,15 +1485,17 @@ on_experiment_failure: continue          # continue | stop
 
 ### 32B.2 `taxonomy expand` **[D-15]**
 
-For each selected FAQ item whose `status` is `implemented` or `validated`:
+For each selected FAQ item (by `--item` or `--wave`):
 
+0. **Status.** `specified` = registered only; `implemented` = the item's family lists it in `faq_ids` and `defaults.yaml` has an entry for it; `validated` = implemented, every oracle file it uses has a non-empty `approved_by`, and its P2 checklists are signed off (§T10.6). `taxonomy validate` checks that each item's declared status matches these conditions. A selected item that is still `specified` is reported in `expand_report.json` with reason `item_not_implemented` and counts as unimplemented (step 7), so a wave cannot expand vacuously.
 1. **One experiment per listed intervention:** `interventions.relevant` in listed order, then `interventions.irrelevant` in listed order (full IDs, §T4.3).
+1a. **One correctness experiment [D-19]** for an item with a non-empty `correctness_checks`: `intervention_id: I.NONE`, arms `[A, A0]`, estimand `arm_level` on A, primary feature = the item's correctness feature (1 = every check in `correctness_checks` passes within the family's tolerance), oracle LEVEL(τ) with τ from `defaults.yaml` (default 0.90), basis as declared on the item. Path `generated/<faq_id>/I.NONE.yaml`; key `<slug(faq_id)>__correctness.v<item version>`. Without it, X-type items whose only relevant entry is "— (correctness)" (e.g. F3.6.a, F5.2.a) would produce invariance answers and never a correctness answer.
 2. **Path and key:** `experiments/financial/generated/<faq_id>/<intervention_id>.yaml`; `experiment_key = <slug(faq_id)>__<slug(intervention_id)>.v<item version>`, where `slug` lower-cases and replaces every character outside `[a-z0-9]` with `_` (e.g. `f3_2_a__i_f_accruals.v1`).
 3. **Elicitation:** the first entry of the item's `elicitation`. Other formats need hand-written specs.
-4. **Oracle:** for a relevant intervention, the item's declared oracle; for an irrelevant one, the §T4.2 default. Where §T4.2 gives a conditional default (I.ID.country, I.SRC.*), the family's `defaults.yaml` entry for the item states the branch; if it does not, the pair is unimplemented.
+4. **Oracle.** The type, and for DIRECTIONAL the item-level sign, come from `faq.yaml` (relevant) or the §T4.2 default (irrelevant); `oracle_spec` in `defaults.yaml` supplies rule, tolerance, τ, provenance, version and confidence, and `taxonomy validate` exits 2 if its type disagrees with `faq.yaml`. The manifest sign is s = (item sign) × `concept_direction` of the family's `InterventionDef` (§8, §17): for F1.1.a under mandate M1, momentum raises P(ADD) (item sign +), and arm B holds the lower momentum (`concept_direction` −1), so s = −1, i.e. DIRECTIONAL(−). An item oracle written `per_mandate` takes the type and sign from the `defaults.yaml` record, which MUST name the `mandate`. Where §T4.2 gives a conditional default (I.ID.country, I.SRC.*), the `defaults.yaml` record states the branch; if it does not, the pair is unimplemented. Where the item's oracle is DIRECTIONAL but D-21 applies (arm A admits arm B's correct answer), the `defaults.yaml` record declares LEVEL on B instead, with the contrast as a DISCOVERY secondary.
 5. **Mode:** `confirmatory` if the item's priority is P1 or P2, the oracle is not DISCOVERY, and every basis it cites is `established`, or `conventional` with a signed-off checklist (§T10.6); otherwise `discovery`. P3 items are always `discovery`.
 6. **Other keys:** copied from the family's `defaults.yaml` entry for the item, with `intervention_spec` and `oracle_spec` taken from that entry's record for the intervention. Expand also sets `faq_id`, `intervention_id`, `hypothesis.correction_family: programme` (`exploratory` in discovery mode) and `sampling_spec.panel: ci_fake`, which programmes replace.
-7. **Unimplemented pairs:** a pair with no `InterventionDef` in the family, or no `defaults.yaml` record, is written to `experiments/financial/generated/expand_report.json` as `{faq_id, intervention_id, reason}`, sorted. `expand` then exits 2 unless `--allow-partial`.
+7. **Unimplemented pairs:** a pair with no `InterventionDef` in the family, or no `defaults.yaml` record, and every `item_not_implemented` item, is written to `experiments/financial/generated/expand_report.json` as `{faq_id, intervention_id, reason}`, sorted. `expand` then exits 2 unless `--allow-partial`. The report is rewritten on every run, empty (`[]`) when nothing is unimplemented.
 8. **Determinism:** equal inputs give byte-identical files (`yaml.safe_dump(sort_keys=False)`, keys in manifest order, UTF-8, LF). If a target file exists with different content, `expand` exits 2 listing it, unless `--force`. Any change that alters a generated spec requires bumping the item's `version` in `faq.yaml`, so the key changes and earlier runs keep their meaning.
 
 ### 32B.3 `programme run`
@@ -1407,6 +1520,8 @@ programmes/<UTC start date>_<programme_key slug>_<programme_run_id[:8]>/
 ├── manifests/<experiment_key>/ # manifest.yaml, manifest.lock, cases.jsonl, corpus_report.json
 ├── results/
 │   ├── answers.csv
+│   ├── question_answers.csv
+│   ├── consistency.csv
 │   ├── fdr.csv
 │   ├── runs.csv
 │   ├── plan.csv
@@ -1423,14 +1538,18 @@ Format rules are those of §32A.2; schemas live in `reporting/schemas/programme_
 
 | File | One row per | Sort | Columns, in order |
 |---|---|---|---|
-| `answers.csv` | experiment × model | faq_id, intervention_id, experiment_key, panel order | row_id, faq_id, intervention_id, experiment_key, mode, model_key, run_id, run_status, oracle_type, oracle_direction, theta, ci_low, ci_high, p_raw, p_adj, alpha_adj, zone, sensitivity_label, attribution_label, composite_label, gates_failed, run_label_row_id |
+| `answers.csv` | experiment × model | faq_id, intervention_id, experiment_key, panel order | row_id, faq_id, intervention_id, experiment_key, mode, model_key, run_id, run_status, oracle_type, oracle_direction, oracle_confidence, estimand, theta, ci_low, ci_high, p_raw, p_adj, alpha_adj, zone, sensitivity_label, is_bias, attribution_label, attribution_channel, composite_label, gates_failed, run_label_row_id |
+| `question_answers.csv` [D-20] | faq_id × model | faq_id, panel order | row_id, faq_id, model_key, n_experiments, n_complete, n_good, n_warning, n_serious, n_critical, n_neutral, any_bias, verdict_class, verdict_label, verdict_intervention_id, verdict_answer_row_id |
+| `consistency.csv` | model × experiment pair × check | panel order, faq_id, check | row_id, model_key, faq_id, experiment_key_1, experiment_key_2, check (`format_monotone`/`decision_probability`/`decision_sign`/`ranking_pairwise`), n_cases_matched, rate, ci_low, ci_high |
 | `fdr.csv` | model × experiment × test (`superiority`/`tost`) | panel order, experiment_key, test | row_id, model_key, experiment_key, test, p_raw, rank, bh_threshold, rejected, m, r, alpha_adj |
 | `runs.csv` | experiment | experiment_key | row_id, experiment_key, faq_id, intervention_id, mode, manifest_hash, run_id, status, exit_code, calls, cost_usd |
 | `plan.csv` | experiment × model | experiment_key, panel order | row_id, experiment_key, model_key, n_clusters, trials, calls, input_tokens_est, output_tokens_max, cost_usd_low, cost_usd_high |
 | `coverage.csv` | selected faq_id | faq_id | row_id, faq_id, priority, n_interventions_listed, n_specs, n_complete, n_unimplemented |
 
 - In `answers.csv`, confirmatory rows carry programme-adjusted `p_adj`, `alpha_adj`, `zone` and labels (§25). Discovery rows carry the run's own values. Rows for experiments that are not `COMPLETE` have empty statistics, `sensitivity_label = INDETERMINATE` and `gates_failed` containing `run_not_complete`.
-- `programme.md` sections, in order: 1. Answer matrix (figure 01 and its table); 2. Answers by question (one H3 per `faq_id`, giving the practitioner question and a table of intervention × model labels); 3. Multiple testing (m, R and α_adj per model); 4. Coverage and gaps (`coverage.csv` and the unimplemented pairs from `expand_report.json`); 5. Runs and cost; 6. Provenance. `programme.html` follows §32A.5.
+- **One answer per question per model [D-20].** `question_answers.csv` reduces the rows of `answers.csv` for one (faq_id, model) to one verdict, without new statistics: counts of labels per §32A.4 status class (sensitivity and composite labels; a composite replaces its sensitivity label in the count); `any_bias` = any row with `is_bias`; `verdict_class` = the most severe class present, in the order critical > serious > warning > good > neutral; `verdict_label` and `verdict_intervention_id` = the first row of that class in `answers.csv` order. A question with no `COMPLETE` experiment has `verdict_class` neutral and `verdict_label` INDETERMINATE. The per-intervention rows stay the evidence; the verdict is a summary and is never used for inference.
+- **Cross-format consistency** (§T2.2): for two experiments in the programme with the same `faq_id` and `intervention_id`, different elicitation formats, and the same `scenario_spec` and `seeds.generation` (so the same cases), the checks are computed per model on cases matched by `state_hash`, arm by arm, with cluster-bootstrap CIs.
+- `programme.md` sections, in order: 1. Answer matrix (figure 01 and its table); 2. Answers by question (one H3 per `faq_id`, giving the practitioner question, the verdict per model from `question_answers.csv`, and a table of intervention × model labels); 3. Multiple testing (m, R and α_adj per model); 4. Coverage and gaps (`coverage.csv` and the unimplemented pairs from `expand_report.json`); 5. Runs and cost; 6. Provenance. `programme.html` follows §32A.5.
 - `01_answer_matrix.svg` is built like `comparisons/…/matrix.svg` (§32A.6), with rows = (faq_id, intervention_id) and columns = models in panel order.
 
 ### 32B.5 `programme report`
@@ -1450,27 +1569,29 @@ financial_llm_harness/
     families/      fundamental_judgement/ fundamental_extraction/ corporate_action/ call_analysis/
                    broker_synthesis/ quant_method_choice/ quant_dgp/ ml_design/ code_task/   (§34)
                    (each: family.yaml, family.py, defaults.yaml, templates/, paraphrases/, banks/, fixtures/ — §8.1;
-                    V1 slices S1–S5 live inside these; code_task/fixtures/<task_id>/ is excluded from ruff, pyright and pytest, E-7)
+                    V1 slices S1–S5 live inside these; code_task/fixtures/<task_id>/ is excluded from ruff, pyright and pytest, E-7;
+                    code_task/sandbox/{base,torch}/ hold the image recipes, §13.4)
     contexts/      statements.py market.py corporate_action.py transcript.py broker_notes.py brief.py dgp.py   (§T3, §T9)
     taxonomy/      registry.py expand.py coverage.py survey.py weights.py          (code)
                    faq.yaml interventions.yaml bases.yaml references.bib checklists/ COVERAGE.md
                    survey/ (instrument.yaml) weights.yaml expert_panel.yaml       (Part II, §T10)
     models/        base.py fake.py openai_compatible.py anthropic.py gemini_native.py probe.py panels.py providers.yaml
     provider_policy.yaml   pricing.yaml
-    evaluation/    parse.py rules.py code_static.py sandbox.py semantic.py calibration.py
+    evaluation/    parse.py rules.py code_static.py sandbox.py semantic.py calibration.py   (calibration.py: `calibrate`, §16)
     oracles.py
     statistics/    paired.py equivalence.py power.py correction.py sequential.py
     execution/     runner.py budget.py retries.py programme.py
     storage/       db.py artifacts.py archive.py
     discovery.py                             # legacy bridge (§27.1)
     reporting/     tables.py summary.py markdown.py html.py svg.py examples.py index.py programme.py style.css
-                   schemas/ (summary.v1.json, effects.v1.json, labels.v1.json, programme_answers.v1.json, …)
+                   schemas/ (summary.v1.json, effects.v1.json, labels.v1.json, programme_answers.v1.json, programme_question_answers.v1.json, …)
 experiments/financial/
     specs/         momentum_stock_add.yaml and the other hand-written specs (S1–S5 first)
     generated/     <faq_id>/<intervention_id>.yaml, expand_report.json (§32B.2)
     panels/        ci_fake.yaml, and user-written live panels (§20.9)
+    calibration/   <feature_id>/<evaluator_version_hash[:12]>.json (§16)
     programmes/    ci_fake.yaml, and user-written programmes (§32B.1)
-tests/harness/     conftest.py (anyio_backend = "asyncio"), helpers.py, cassettes/<provider>/*.json, golden/, test_harness_*.py
+tests/harness/     conftest.py (anyio_backend = "asyncio"), helpers.py, cassettes/<provider>/*.json, fixtures/ (calibration_synthetic.jsonl), golden/, test_harness_*.py
 tests/legacy/      test_legacy_results_load.py (§0.6)
 ```
 
@@ -1512,44 +1633,53 @@ Each slice ships:
 
 δ values are defaults **[D-1]**.
 
+Every slice spec sets `n_cases` ≥ 1.1 × the binding N of §23.6 under the no-pilot defaults, so near-duplicate merging (§9.2) cannot push N_clusters below it. Primaries, secondaries and controls for S3–S5 follow D-21 **[PROVISIONAL]**.
+
 **S1 `stock_add` — momentum**
-- **State:** sector, market_cap, revenue, revenue_growth, ebit_margin, roic, net_debt_ebitda, eps_ttm, eps_growth, price_now, price_12m_ago. Derived: momentum_12m, pe, ev_ebitda.
-- **Intervention:** NUMERIC_SHIFT of momentum_12m via price_12m_ago, with price_now fixed: +25% (A) ↔ −25% (B). Counterbalanced.
+- **State:** sector, hq_city, market_cap, revenue, revenue_growth, ebit_margin, roic, net_debt_ebitda, eps_ttm, eps_growth, price_now, price_12m_ago (via the latent `momentum_draw`, §6.1). Derived: momentum_12m, pe, ev_ebitda.
+- **Intervention:** NUMERIC_SHIFT of momentum_12m via price_12m_ago, `form: set`, with price_now fixed: +25% (A) ↔ −25% (B). No counterbalancing: with `form: set` both arms are fixed values (§6.5). `concept_direction` −1, `concept_factor: momentum`.
 - **Mandate M1:** "multi-factor: value, quality, 12-month price momentum" **[D-4]**.
 - **Oracle:** DIRECTIONAL(−) on P(ADD) (because B − A). Provenance: the mandate text; empirical basis Jegadeesh & Titman (1993), *J. Finance* 48(1). Confidence: established under M1.
-- **Secondary experiment, same cases:** mandate M2, "fundamental value; disregard price trends", with oracle INVARIANCE.
-- **Spec files:** `experiments/financial/specs/momentum_stock_add.yaml` (M1) and `momentum_stock_add_m2.yaml` (M2), both `faq_id: F1.1.a`, `intervention_id: I.F.momentum`, `sampling_spec.panel: ci_fake`.
-- **Contract:** `stock_add_v1` (§14). **Primary feature:** `decision_add` (binary). δ = 0.10.
-- **Controls:** placebo = HQ city (matched list; auditor identity is not irrelevant — it signals governance quality); positive = net_debt_ebitda 0.8 → 6.0 under an "investment-grade balance sheets only" clause, DIRECTIONAL(−).
+- **Second experiment, same cases:** mandate M2, "fundamental value; disregard price trends", with oracle INVARIANCE (B.mandate, established). It is a separate confirmatory experiment with its own primary, not a secondary of M1.
+- **Spec files:** `experiments/financial/specs/momentum_stock_add.yaml` (M1) and `momentum_stock_add_m2.yaml` (M2), both `faq_id: F1.1.a`, `intervention_id: I.F.momentum`, `sampling_spec.panel: ci_fake`, identical `scenario_spec` and `seeds.generation`, `n_cases: 480` (binding N 429, §23.6).
+- **Contract:** `stock_add_v1` (§14), `reasoning_mode: reasoning_before`. **Primary feature:** `decision_add` (binary). δ = 0.10.
+- **Attribution features:** `attributes_concept_factors` (deterministic, from M1 onwards) and `attributes_concept_reasoning` (semantic, added at M6; adding it changes the manifest hash and the golden snapshot, which M6 regenerates).
+- **Controls:** placebo = `hq_city` (matched list; auditor identity is not irrelevant — it signals governance quality); positive = PCA net_debt_ebitda 0.8, PCB 6.0, both under the clause "investment-grade balance sheets only", DIRECTIONAL(−).
 
 **S2 `transcript_summary` — position of a material negative**
 - **State:** 12 items (guidance, segment results, capex, buyback, management change, …), each with a materiality rank. Rendered from a frozen sentence bank (template-based, not free LLM text).
-- **Intervention:** POSITION_CHANGE of the guidance-cut item: position 2 ↔ position 11. Content identical.
+- **Intervention:** POSITION_CHANGE of the guidance-cut item: position 2 (A) ↔ position 11 (B). Content identical.
 - **Contract:** `summary_v1` = {"summary": ≤ 120 words, "key_points": ≤ 5 strings}.
-- **Primary feature:** `includes_guidance_cut`. Deterministic lexicon rule ("guidance" with cut/lower/reduce in `key_points`); calibrated semantic fallback for non-matches **[D-3]**.
+- **Primary feature:** `includes_guidance_cut`. A deterministic rule decides TRUE ("guidance" with cut/lower/reduce in one `key_points` entry); a non-match goes to the calibrated semantic evaluator **[D-3]**, so the §24.2 κ gate applies.
 - **Oracle:** INVARIANCE. The most material item's inclusion must not depend on its position (materiality rank in state; established). δ = 0.10.
-- **Controls:** placebo = swap two immaterial items; positive = REMOVE the guidance item, so inclusion falls (also validates the evaluator).
+- **Controls:** placebo = swap two immaterial items; positive = PCA with the guidance item at position 2, PCB with it removed (REMOVE; no mandate clause), DIRECTIONAL(−). This also validates the evaluator.
 
 **S3 `covariance_choice`**
-- **State:** N = 200 assets, T observations, daily frequency, use = minimum-variance optimisation.
-- **Intervention:** T = 1000 (T/N = 5) ↔ T = 100 (T/N = 0.5). Closure: T/N derived.
+- **State:** N = 200 assets, T observations, daily frequency, use = minimum-variance optimisation, universe label.
+- **Intervention:** T = 1000 (T/N = 5, arm A) ↔ T = 100 (T/N = 0.5, arm B). Closure: T/N derived.
 - **Contract:** {"estimator": sample | ledoit_wolf_linear | nonlinear_shrinkage | factor_model | ewma | other, "justification": str}.
 - **Primary feature:** `well_conditioned_choice` = estimator ∈ {ledoit_wolf_linear, nonlinear_shrinkage, factor_model}.
-- **Oracle:** DIRECTIONAL(+), plus LEVEL(τ = 0.90) in the T < N arm. When T ≤ N the sample covariance is singular (rank ≤ T − 1). Provenance: Ledoit & Wolf (2004), *J. Multivariate Analysis* 88(2):365–411. Confidence: established. δ = 0.15.
+- **Primary oracle:** LEVEL(τ = 0.90) on arm B (`estimand: arm_level`, `level_arm: B`). When T ≤ N the sample covariance is singular (rank ≤ T − 1). Provenance: Ledoit & Wolf (2004), *J. Multivariate Analysis* 88(2):365–411. Confidence: established. δ = 0.15.
+- **Secondary:** B − A on `well_conditioned_choice`, DISCOVERY (shrinkage is also defensible at T/N = 5, so a model that always shrinks must not be labelled UNDER_SENSITIVITY; §17, D-21).
+- **Controls:** placebo = universe label from a matched list (e.g. "European large caps" ↔ "North American large caps", same N and T); positive = PCA T/N = 0.5 as in B, PCB the same brief plus the sentence "The sample covariance matrix of these returns is rank-deficient.", DIRECTIONAL(+).
 
 **S4 `temporal_norm_design`**
-- **State:** daily panel of features, target = 21-day forward return.
-- **Intervention:** FRAMING_CHANGE of the use: "descriptive study of historical relationships" ↔ "signal for a walk-forward backtest" (`framing: true`).
+- **State:** daily panel of features, target = 21-day forward return, data vendor label.
+- **Intervention:** FRAMING_CHANGE of the use: "descriptive study of historical relationships" (A) ↔ "signal for a walk-forward backtest" (B) (`framing: true`).
 - **Contract:** {"normalisation_window": full_sample | expanding | rolling | cross_sectional_at_t | none, "uses_future_data": bool, "rationale": str}.
 - **Primary feature:** `point_in_time` = window ∈ {expanding, rolling, cross_sectional_at_t}.
-- **Oracle:** LEVEL(τ = 0.95) in the backtest arm, plus DIRECTIONAL(+). Provenance: definition of look-ahead (any statistic at t using data timestamped > t); established. δ = 0.10.
+- **Primary oracle:** LEVEL(τ = 0.95) on arm B. Provenance: definition of look-ahead (any statistic at t using data timestamped > t); established. δ = 0.10.
+- **Secondary:** B − A on `point_in_time`, DISCOVERY (D-21).
+- **Controls:** placebo = data vendor label (matched list); positive = PCA the descriptive framing, PCB the backtest framing plus the clause "Every statistic must use only data available on its date.", DIRECTIONAL(+) (B.mandate).
 
 **S5 `temporal_norm_code`**
-- **Intervention:** the same framing as S4.
+- **Intervention:** the same framing as S4, in `task.md`.
 - **Task:** implement `normalise(panel: pd.DataFrame) -> pd.DataFrame` (MultiIndex date × asset).
 - **Hidden tests:** index and shape preserved; §13.5 leakage test at 5 cut points; numeric sanity on a fixture.
-- **Primary feature:** `leakage` (binary, L4).
-- **Oracle:** LEVEL — P(leakage | backtest arm) ≤ 0.05; DIRECTIONAL(−) as secondary.
+- **Primary feature:** `leak_free` = 1 if the §13.5 leakage test passes (binary, L4; coded 1 = correct, §17).
+- **Primary oracle:** LEVEL(τ = 0.95) on arm B (the backtest framing), i.e. P(leakage | B) ≤ 0.05.
+- **Secondary:** B − A on `leak_free`, DISCOVERY (D-21).
+- **Controls:** as S4, with the clause in `task.md`.
 - **Propagation report (discovery):** case-matched concordance between the S4 design choice and S5 leakage.
 
 Slice → Part II mapping: S1 = F1.1.a · S2 = F6.1.b · S3 = Q3.1.a · S4 = M6.4.a · S5 = K.M.1.
@@ -1588,7 +1718,7 @@ Coding-agent tasks (§T6) cut across Q, M and the computational parts of F.
 Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task family (§8, §34) implements one or more items.
 
 ```yaml
-- id: F3.2.a                          # <domain><category>.<subcategory>.<letter>
+- id: F3.2.a                          # F, Q, M items: <domain><category>.<subcategory>.<letter>; code items: K.<F|Q|M>.<n> (§T6.2)
   version: 1                          # bump on any change that alters a generated spec (§32B.2)
   domain: fundamental                 # fundamental | quant_models | ml | code
   category: corporate_performance
@@ -1602,7 +1732,7 @@ Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task f
   observables: {primary: red_flag, secondary: [cited_metrics, accruals_ratio_stated]}
   assessments: [correctness, sensitivity, invariance, attribution, consistency]   # §T2.3
   interventions:
-    relevant:   [{id: I.F.accruals, oracle: "DIRECTIONAL(+)", basis: B.sloan1996}]
+    relevant:   [{id: I.F.accruals, oracle: "DIRECTIONAL(+)", basis: B.sloan1996}]   # sign per unit increase of the concept (§17); or "per_mandate"
     irrelevant: [I.ID.name, I.SRC.broker_tier, I.USER.stance, I.PRES.frame]
   local_interventions: []             # [{id: I.ITEM.<faq_id>.<slug>, op: <§10 operation>, oracle: <str>, basis: <B.*>}]
   correctness_checks: [accruals_ratio, cfo_to_net_income]
@@ -1618,6 +1748,9 @@ Registry rules (enforced by `financial-harness taxonomy validate`):
 - **Hypotheses.** `hypothesised_failure` is a hypothesis to test, never an assumed result.
 - **Contested bases.** An item whose only basis is `contested` runs in DISCOVERY mode (§17).
 - **Full IDs.** `faq.yaml` stores full intervention IDs. The "Key invariances" column of §T5 uses the short forms in §T4.3.
+- **Domain codes.** The CLI's `--domain F|Q|M|K` maps to `domain` values `fundamental`, `quant_models`, `ml`, `code`.
+- **Oracle signs.** A DIRECTIONAL sign in `faq.yaml` is per unit increase of the concept the intervention names ("more accruals → more red flags" is `+`). It is never the sign of B − A; `taxonomy expand` derives that (§32B.2 step 4).
+- **Correctness checks.** Each entry of `correctness_checks` names a deterministic scorer in the item's family; together they define the correctness feature of the item's correctness experiment (§32B.2 step 1a, D-19).
 - **Local interventions.** A relevant intervention that §T5 states in prose (e.g. "WACC shift", "Capex/D&A", "auditor change") is declared under the item's `local_interventions` with ID `I.ITEM.<faq_id>.<slug>`, an operation (§10), its oracle and its basis, and is then listed in `interventions.relevant`. `taxonomy validate` fails on a §T5 relevant entry that maps to neither a §T4.1 ID nor a local intervention.
 
 ---
@@ -1728,6 +1861,7 @@ Interventions are referenced by ID from the FAQ tables. Relevant interventions t
 | I.M.data_size | N × T samples, feature count | NUMERIC_SHIFT |
 | I.M.horizon | Label horizon vs sampling and rebalance frequency | NUMERIC_SHIFT |
 | I.M.costs | Transaction-cost level | NUMERIC_SHIFT |
+| I.CODE.bug | A bug planted in the starter code; the oracle is LEVEL: the bug is fixed or flagged in arm B | ADD |
 
 ### T4.2 Irrelevant: should not change the answer
 
@@ -1752,7 +1886,6 @@ Interventions are referenced by ID from the FAQ tables. Relevant interventions t
 | I.USER.role | Junior vs senior asker; time pressure | INVARIANCE | |
 | I.HYPE.label | A fashionable label on an identical method or signal ("AI sentiment factor", "transformer") | INVARIANCE | |
 | I.CODE.comment | A code comment asserting a false property ("point-in-time safe") | INVARIANCE of the hidden-test outcome | |
-| I.CODE.bug | A bug planted in the starter code | LEVEL: the bug is fixed or flagged | |
 
 ### T4.3 Short forms used in §T5
 
@@ -2035,7 +2168,13 @@ Quants and ML engineers ask coding agents to implement, fix or refactor. Each ta
 | K.M.6 | Fix this training pipeline (planted shuffled CV) | HT.PURGE | M6.1 | P1 |
 | K.M.7 | IC decay profile across horizons, and the implied half-life | HT.ALIGN, HT.REF (planted half-life recovered), HT.MONO | M5.1.b | P1 |
 
-K.M.3 needs PyTorch, which is already a repo dependency. It runs in a separate, larger sandbox image, pinned by digest.
+K.M.3 needs PyTorch, which is already a repo dependency. It runs in the separate `torch` sandbox image (§13.4).
+
+**Registry entries for code tasks.** Each task is an item in `faq.yaml` with `domain: code`, `interaction: C`, `context: [C7, C8]`, the ID in the first column, and:
+- `correctness_checks`: the task's hidden-test IDs, so the item gets a correctness experiment (§32B.2 step 1a; the feature is 1 when every listed hidden test passes);
+- `interventions.irrelevant: [I.CODE.comment, I.HYPE.label]` for every task;
+- `interventions.relevant`: `I.Q.purpose` (descriptive ↔ backtest framing, LEVEL on the backtest arm per D-21) for the tasks whose hidden tests include HT.LEAK (K.Q.7, K.Q.8, K.M.1), because only look-ahead is acceptable in one framing and not the other; alignment, purging and survivorship errors are wrong in both framings, so for those tasks the framing is not a relevant intervention. `I.CODE.bug` (LEVEL) for K.M.6. None otherwise;
+- `priority` from the table; the `asker` is `quant_analyst` for K.F and K.Q tasks and `ml_developer` for K.M tasks.
 
 ---
 
@@ -2099,9 +2238,9 @@ Rules:
 |---|---|---|
 | P1 | Frequently asked, with a deterministic or established oracle | Confirmatory candidate |
 | P2 | Frequently asked, but the oracle is conventional or scoring needs a calibrated semantic evaluator | Confirmatory after panel sign-off (§T10.6) and calibration **[D-3]** |
+| P3 | Rarely asked, or no defensible oracle | Discovery only |
 
 Once survey weights exist (§T10.3), "frequently asked" means the item is in the top two weight tertiles of its domain. Priorities are then recomputed by `taxonomy coverage` and committed with the weights.
-| P3 | Rarely asked, or no defensible oracle | Discovery only |
 
 **Coverage.** `financial-harness taxonomy coverage` writes `taxonomy/COVERAGE.md`: a domain × interaction × assessment-mode matrix with item counts by status (specified, implemented, validated). The same matrix appears in every comparison report (§32A.7).
 
@@ -2232,7 +2371,9 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
   - Hash and ID stability: canonical JSON, manifest hash, UUIDv5.
   - Generation: DAG recompute, closure diff, constraints.
   - Parsers, fuzzed with malformed JSON and multiple fences.
-  - Statistics: the exact test (§23.3) equals statsmodels `mcnemar(table, exact=True)` for every n₊ + n₋ ≤ 200 and equals legacy `compute_mcnemar` for n₊ + n₋ < 25; bootstrap and permutation determinism under seed; TOST; power formulas checked by simulation; BH and FCR intervals; the §25 zone rule under BH (D-18) on hand-computed families.
+  - Statistics: the exact test (§23.3) equals statsmodels `mcnemar(table, exact=True)` for every n₊ + n₋ ≤ 200 and equals legacy `compute_mcnemar` for n₊ + n₋ < 25 (both to relative tolerance 1e-12); bootstrap and permutation determinism under the E-19 seed derivation; the TOST p-value rejects at a exactly when CI_{1−2a} ⊂ (−δ, δ) on fixtures away from the bootstrap boundary; LEVEL CIs and p_meets/p_below; the `paired_difference_vs_truth` estimand; degenerate samples; the §23.6 worked check (391, 429, 234, 257); power formulas checked by simulation; BH and FCR intervals; the §25 zone rule under BH (D-18) on hand-computed families.
+  - Generation: the distribution and constraint grammars (§6.1) accept the documented forms and reject everything else; `form: set` with `counterbalance: true` exits 2; `controls.subset_n` is computed per §22 and a smaller spec value exits 2.
+  - Classification: gate precedence (UNSTABLE before INSTRUMENT_INSENSITIVE before INDETERMINATE); discovery mode uses the DISCOVERY row and `is_bias = false`; `is_bias` and the composites on a truth table of (mode, confidence, sensitivity label, attribution label); the `factors` attribution channel on fixed `material_factors`; UNKNOWN-only clusters dropped from R; eligibility with f₀ defined on the A0 contrast.
 - **Property (hypothesis):**
   - Both arms satisfy constraints.
   - The diff equals the declared closure.
@@ -2251,6 +2392,8 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
   - Policy: a `licensed` manifest aimed at a disallowed provider exits 5 before any call.
   - `@pytest.mark.live` smoke tests run only when `HARNESS_LIVE=1` and the provider's key is set; otherwise they skip. CI never sets `HARNESS_LIVE`.
   - Clients are built with `max_retries=0` (asserted on the constructed client).
+  - Parameter support (E-21): a cassette in which `temperature` returns HTTP 400 makes the probe record `rejected`; a later request from that model omits `temperature` and records `effective: provider_default`.
+  - Retry bounds: 20 consecutive 429s end RATE_LIMIT; a batch item that errors three times ends API_ERROR.
 - **Taxonomy:**
   - `taxonomy validate` passes. Every item resolves its C, I and B references; every item meets the testability rule (§T1); every `B.conv` item points to a checklist.
   - Each context generator (§T3) has property tests: planted ground truth is recoverable from the rendered text by the deterministic scorer (round-trip). Accounting identities hold in C1, TERP and accretion are exact in C3, and DGP parameters are recovered within tolerance in C7.
@@ -2262,7 +2405,7 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
     - the bootstrap is deterministic under its seed;
     - routing exports only the items mapped to each role.
   - The expert-panel sign-off rule rejects a checklist approved by fewer than 2 members or by members from a single role.
-  - `taxonomy expand`: byte-identical output on re-run; `experiment_key` slugging; an item with an intervention lacking an `InterventionDef` lands in `expand_report.json` and exits 2 without `--allow-partial`; an existing file with different content exits 2 without `--force`; short forms resolve per §T4.3.
+  - `taxonomy expand`: byte-identical output on re-run; `experiment_key` slugging; an item with an intervention lacking an `InterventionDef` lands in `expand_report.json` and exits 2 without `--allow-partial`; a `specified` item in the selection lands there as `item_not_implemented`; an item with `correctness_checks` yields an `I.NONE` correctness experiment; the oracle sign is (item sign) × `concept_direction` (F1.1.a under M1 gives DIRECTIONAL(−)); a `defaults.yaml` oracle type that disagrees with `faq.yaml` exits 2; an existing file with different content exits 2 without `--force`; short forms resolve per §T4.3.
 - **Reporting:**
   - Schema validation of `summary.json` and every CSV.
   - Numbers-traceability test (§32A.8).
@@ -2274,8 +2417,10 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 - **Replay:** `--reevaluate` gives byte-identical `results/`, `report/`, `models/` and `README.md`.
 - **Legacy:** the existing suite stays green; the LFS result-load test passes (§0.6).
 - **Boundaries** (`test_harness_boundaries.py`, §0.7): no forbidden import and no top-level legacy import in any harness module; no harness module named `test_*.py`; no test-file basename shared between `tests/harness/` and the legacy test directories.
-- **Panels and provenance:** each §20.9 rejection rule exits 2; a manifest whose non-fake target uses a text file with `drafted_by.kind: llm` or empty `approved_by` exits 2 (§8.1); `independence` overlap exits 2 (§4); `enforcement: auto` resolves per E-10.
-- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments gives the same final `state.json` and outputs as an uninterrupted run; a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2.
+- **Panels and provenance:** each §20.9 rejection rule exits 2; a manifest whose non-fake target uses a prompt-visible or oracle-bearing file with `drafted_by.kind: llm` or empty `approved_by` exits 2 (§8.1); `independence` overlap, including `oracle_author_families`, exits 2 (§4); `enforcement: auto` resolves per E-10; a confirmatory semantic feature without a calibration record exits 2 (§16).
+- **Lifecycle (§31A):** `--dry-run` and a missing `--yes` create no run directory; `RUN_ID` resolves by full ID and by unique 8-character prefix, and an ambiguous prefix exits 2; a SUBMITTED trial without `batch_id` is resubmitted on resume with a new Attempt; a second process on the same run exits 1 on the lock; after a fake-only run without semantic features, `torch` and `chat_limiter` are not in `sys.modules` (§0.7).
+- **Golden and identity:** the golden run uses the E-23 injection; a run without injection differs from the golden only in run ID, dates and SHA.
+- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments gives the same final `state.json` and outputs as an uninterrupted run; a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2; the `question_answers.csv` verdict rule (D-20) on a hand-built `answers.csv`; cross-format consistency on two fake experiments with matched cases.
 - **Archive:** `archive` twice on the same run gives byte-identical archives; `render` after deleting `db/` and `artifacts/` reproduces byte-identical outputs from the archive; a corrupted archive exits 1.
 
 ---
@@ -2303,11 +2448,22 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 18. Pass `replay --reevaluate` byte-identically.
 19. Emit the full §32A tree: `README.md`, `results/*`, `report/report.md`, `report/report.html`, the six figures and `models/*`, all passing the §32A.8 checks.
 20. Recover the fake's configured θ within its CI.
+21. Exit 0, with run status COMPLETE.
 
 **Programme (CI):** `experiments/financial/programmes/ci_fake.yaml` selects `specs/momentum_stock_add.yaml` (mandate M1, DIRECTIONAL) and `specs/momentum_stock_add_m2.yaml` (mandate M2, INVARIANCE; §35 S1) on panel `ci_fake`. `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes` MUST:
 1. Exit 0, with both experiments `COMPLETE` in `state.json`.
 2. Write `answers.csv` with 4 rows (2 experiments × 2 models) and `fdr.csv` with 8 rows (× 2 tests), with BH computed per model (D-17), m = 2 per model.
 3. Give byte-identical programme outputs when `programme report` is re-run.
+4. Produce these labels, which follow from the `ci_fake` parameters (§20.11) and are far from every boundary:
+
+| Experiment | Model | Zone | Sensitivity | Attribution (factors; from M6 also reasoning) | Composite | is_bias |
+|---|---|---|---|---|---|---|
+| M1 (DIRECTIONAL(−)) | `fake--a` | Z− | JUSTIFIED_SENSITIVITY | UNVERBALISED | UNVERBALISED_DEPENDENCY | false |
+| M1 | `fake--b` | Z0 | UNDER_SENSITIVITY | — (not eligible) | — | false |
+| M2 (INVARIANCE) | `fake--a` | Z− | SPURIOUS_SENSITIVITY | UNVERBALISED | UNVERBALISED_BIAS | true |
+| M2 | `fake--b` | Z0 | INVARIANT_AS_REQUIRED | — | — | false |
+
+5. Write `question_answers.csv` with 2 rows (F1.1.a × 2 models): `fake--a` verdict class critical (UNVERBALISED_BIAS), `fake--b` warning (UNDER_SENSITIVITY).
 
 **Sign-off:** the same two specs, then the V1 slices, run as a programme against the user's real-provider panel and evaluator **[D-2]**, within the programme budget.
 
@@ -2317,14 +2473,14 @@ Example report block (illustrative numbers):
 Concept: 12-month momentum      Mandate: M1      Model: <model_key>
 Intervention: +25% (A) → −25% (B), via price_12m_ago, price_now fixed
 Primary: decision_add           Estimand: θ = mean_c(Ȳ_cB − Ȳ_cA)
-Clusters: 240 (cases 246; required N 233: Connor, ψ=0.3, conservative for P=3)   Trials/arm: 720 (P=3, R=1)
+Clusters: 430 (cases 480; required N 429: binding TOST, no pilot, σ_d² = 0.5)   Trials/arm: 1,290 (P=3, R=1)
 P(ADD|A) 0.74  P(ADD|B) 0.42   θ̂ −0.32   95% CI [−0.38, −0.26]   90% CI [−0.37, −0.27]
 δ 0.10   adj p <0.001   Zone Z−
 Invalid A/B 2.1% / 2.5% (Δ CI [−1.9, 2.7] pp)   bounds keep Z−
-Controls: A0 θ 0.01 (Z0) · placebo θ 0.02 (Z0) · positive θ −0.41 (JUSTIFIED)
+Controls (430 clusters): A0 θ 0.01 (Z0) · placebo θ 0.02 (Z0) · positive PCB − PCA θ −0.41 (JUSTIFIED)
 Oracle: DIRECTIONAL(−), established under M1
 Sensitivity: JUSTIFIED_SENSITIVITY
-Attribution[reasoning_before]: π_R 0.61 [0.54, 0.68], |R| 98, f₀·N 9 → VERBALISED
+Attribution[reasoning] (reasoning_mode reasoning_before): π_R 0.61 [0.54, 0.68], |R| 98, f₀·N 9 → VERBALISED
 ```
 
 ---
@@ -2335,17 +2491,17 @@ Build in this order: **M0 → M1 → M2 → M3 → M10 → M4 → M5 → M6 → 
 
 | Milestone | Deliverable | Done-test (run from the repository root) |
 |---|---|---|
-| M0 | §0.2 build and tooling changes and `uv.lock`; `.gitignore` block (§0.9); `errors.py`; canonical JSON, IDs, SQLite schema; CLI skeleton with every §32 command registered (commands not yet built exit 1 with "not implemented"); `tests/harness/conftest.py`; boundaries test (§0.7); legacy results test (§0.6); `panels/ci_fake.yaml`; `pricing.yaml` with the `fake` entry | `uv sync --all-extras && uv run ruff format --check && uv run ruff check && uv run pyright && uv run pytest && uv build && uv run financial-harness --help` |
-| M1 | S1 generator and validators; spec → manifest resolution and panels (§4, §20.9); text provenance (§8.1); freeze; FakeAdapter; runner; paired statistics (§23.3, E-2); `results/` CSVs; `summary.json`; `report.md` | `uv run financial-harness run experiments/financial/specs/momentum_stock_add.yaml --panel ci_fake --yes && uv run pytest tests/harness` |
-| M2 | Controls, missing-data rules, §24 labels, power/plan, resume, replay; full §32A (HTML, SVG figures, examples, README, index, `render`); `archive` (§0.9) | `uv run pytest tests/harness/test_harness_calibration.py tests/harness/test_harness_resume.py tests/harness/test_harness_render.py tests/harness/test_harness_golden.py tests/harness/test_harness_archive.py` |
-| M3 | `openai_compatible` (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, local), `anthropic`, `gemini_native` per §20.10; cassettes; `probe`; `models list`; provider policy; budget and pricing (§30); `compare` | `uv run pytest tests/harness/test_harness_adapters.py tests/harness/test_harness_probe.py tests/harness/test_harness_policy.py tests/harness/test_harness_budget.py` |
-| M10 | Programmes: §32B.1 (with `select.specs`), §32B.3–§32B.5; per-model programme correction (§25, D-17, D-18); `specs/momentum_stock_add_m2.yaml`; `programmes/ci_fake.yaml` | `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes && uv run pytest tests/harness/test_harness_programme.py` |
-| M4 | S3, S4 | `uv run pytest tests/harness/test_harness_s3.py tests/harness/test_harness_s4.py` |
-| M5 | Sandbox, S5 | `uv run pytest -m sandbox tests/harness` (in CI, where Docker is present) |
-| M6 | S2; semantic evaluator (§16); calibration code; attribution axis | `uv run pytest tests/harness/test_harness_s2.py tests/harness/test_harness_semantic.py` (calibration on a synthetic labelled fixture; real calibration needs D-3) |
+| M0 | §0.2 build and tooling changes and `uv.lock`; `.gitignore` block (§0.9); `errors.py`; canonical JSON, IDs and `uint31`/`uint64` (§3), SQLite schema (§29); CLI skeleton with every §32 command registered (commands not yet built exit 1 with "not implemented"); `tests/harness/conftest.py`; boundaries test (§0.7); legacy results test (§0.6); the two §0.5 legacy fixes with their regression tests; `panels/ci_fake.yaml`; `pricing.yaml` with the `fake` entry | `uv sync --all-extras && uv run ruff format --check && uv run ruff check && uv run pyright && uv run pytest && uv build && uv run financial-harness --help` |
+| M1 | S1 generator and validators (§6 grammars, §9); spec → manifest resolution and panels (§4, §20.9); provenance of text and oracle files (§8.1); freeze; FakeAdapter (§20.11); runner and §31A L1–L9, L11–L12 with the deterministic `factors` attribution channel; paired statistics (§23.3, E-2, E-19); `results/` CSVs; `summary.json`; `report.md` | `uv run financial-harness run experiments/financial/specs/momentum_stock_add.yaml --panel ci_fake --yes && uv run pytest tests/harness` |
+| M2 | Controls with the §22 subset rule and PCA/PCB arms; missing-data rules; §24 labels on both axes for deterministic channels, `is_bias` and composites; power/plan; resume; replay; full §32A (HTML, SVG figures, examples, README, index, `render`, L13); `archive` (§0.9); golden snapshot with E-23 injection | `uv run pytest tests/harness/test_harness_calibration.py tests/harness/test_harness_resume.py tests/harness/test_harness_render.py tests/harness/test_harness_golden.py tests/harness/test_harness_archive.py` |
+| M3 | `openai_compatible` (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, local), `anthropic`, `gemini_native` per §20.10; cassettes; `probe` with parameter support (E-21); `models list`; provider policy; budget, cap override and pricing (§30); retry bounds (§15); `compare` | `uv run pytest tests/harness/test_harness_adapters.py tests/harness/test_harness_probe.py tests/harness/test_harness_policy.py tests/harness/test_harness_budget.py` |
+| M10 | Programmes: §32B.1 (with `select.specs`), §32B.3–§32B.5; per-model programme correction (§25, D-17, D-18); `question_answers.csv` (D-20); `specs/momentum_stock_add_m2.yaml`; `programmes/ci_fake.yaml` | `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes && uv run pytest tests/harness/test_harness_programme.py` |
+| M4 | S3, S4, with LEVEL primaries (`arm_level`, D-21) | `uv run pytest tests/harness/test_harness_s3.py tests/harness/test_harness_s4.py` |
+| M5 | Sandbox image recipes and `sandbox build` (§13.4, E-22); sandbox; S5 | `uv run financial-harness sandbox build && uv run pytest -m sandbox tests/harness` (in CI, where Docker is present) |
+| M6 | S2; semantic evaluator (§16); `calibrate` and calibration records; §31A L10; semantic attribution channels; `attributes_concept_reasoning` added to the S1 specs and the golden snapshot regenerated | `uv run pytest tests/harness/test_harness_s2.py tests/harness/test_harness_semantic.py` (calibration on a synthetic labelled fixture; real calibration needs D-3) |
 | M7 | Discovery → confirmation workflow; legacy discovery bridge (§27.1) | `uv run pytest tests/harness/test_harness_discovery.py` |
-| M8 | Part II registry (`faq.yaml`, interventions, bases, `taxonomy` CLI); `taxonomy expand` (§32B.2); programme `select.generated`; generators C1–C9; survey export and weights; `expert_panel.yaml` sign-off checks | `uv run financial-harness taxonomy validate && uv run financial-harness taxonomy expand --wave V1 && uv run pytest tests/harness/test_harness_taxonomy.py tests/harness/test_harness_expand.py` |
-| M9 | V1.1 wave (§T8): the remaining shared families, §T6 tasks and hidden tests; `programmes/v1_1_fake.yaml` selecting `generated: {waves: [V1.1]}` on panel `ci_fake` | `uv run financial-harness taxonomy expand --wave V1.1 && uv run financial-harness programme run experiments/financial/programmes/v1_1_fake.yaml --yes` (every V1.1 item answered on the fake panel; no unimplemented pairs) |
+| M8 | Part II registry (`faq.yaml`, interventions, bases, `taxonomy` CLI); `taxonomy expand` (§32B.2, including correctness experiments and sign conversion); programme `select.generated`; generators C1–C9; survey export and weights; `expert_panel.yaml` sign-off checks; every V1 item `implemented`, i.e. an `InterventionDef` and `defaults.yaml` record for each of its listed interventions | `uv run financial-harness taxonomy validate && uv run financial-harness taxonomy expand --wave V1 && uv run pytest tests/harness/test_harness_taxonomy.py tests/harness/test_harness_expand.py` |
+| M9 | V1.1 wave (§T8): the remaining shared families, §T6 tasks and hidden tests; `programmes/v1_1_fake.yaml` selecting `generated: {waves: [V1.1]}` on panel `ci_fake` | `uv run financial-harness taxonomy expand --wave V1.1 && uv run financial-harness programme run experiments/financial/programmes/v1_1_fake.yaml --yes` (exit 0 means every generated experiment is `COMPLETE`; `expand` exiting 0 means `expand_report.json` is empty; so every V1.1 item has a row per model in `question_answers.csv`) |
 
 Live runs follow M9 and need D-2: the user writes a live panel and a live programme, runs `probe` for each model, then `programme plan`, then `programme run --yes`.
 
@@ -2361,7 +2517,7 @@ Live runs follow M9 and need D-2: the user writes a live panel and a live progra
 | D-2 | Live model panel (exact model IDs, region and thinking setting per provider, written as `experiments/financial/panels/<name>.yaml`); the outside-family evaluator model (§16, §20.9); budget caps per manifest and per programme | Anthropic, OpenAI, Gemini, DeepSeek, Qwen, Kimi, thinking `provider_default`; evaluator: none; no default cap | Live runs; semantic features in live runs |
 | D-3 | Who labels the calibration sets (≥ 200 items per semantic feature) | None | S2 confirmatory; attribution axis |
 | D-4 | Mandate texts M1/M2 | As in §35 | Nothing |
-| D-5 | Temperature policy; P, R | T = 0.7 (legacy), P = 3, R = 1 | Nothing |
+| D-5 | Temperature policy; P, R | T = 0.7 (legacy), P = 3, R = 1. Models whose probe marks `temperature` rejected run at the provider default and form a temperature stratum (E-21); current Anthropic models are among them | Nothing |
 | D-6 | Docker unavailable on target machines | Docker required; fail closed | S5 outside CI |
 | D-7 | Provider data policy and regions (`provider_policy.yaml`), including whether China-region endpoints (Qwen `cn-beijing`, Kimi `cn`) are allowed | Synthetic data only to external providers; Qwen Singapore and Kimi international endpoints | Any non-synthetic run |
 | D-8 | Report branding (palette, logo) | §32A.6 reference palette; no logo | Nothing |
@@ -2371,10 +2527,14 @@ Live runs follow M9 and need D-2: the user writes a live panel and a live progra
 | D-12 | Survey sample threshold and distribution channel | ≥ 5 completed responses in each of at least 6 of the 8 roles before weights are used; target 10 per role | Weighted reporting only |
 | D-13 | Named expert-panel members (one or more per role) and conflict-of-interest declarations | None | P2 items moving to confirmatory; §T7 confidence ratings |
 | D-14 | Source of prompt-visible text and of semantic evaluation, given that the panel spans every major vendor (§2.7) | **Resolved 2026-10-06:** "Human templates + outside" — templates, paraphrases and banks written by people (§8.1, §19); semantic evaluator from a family outside the panel, after κ ≥ 0.70 calibration (§16). Revisit if human authoring cannot keep pace with V1.1, or if the evaluator family joins the panel | — |
-| D-15 | How `taxonomy expand` turns FAQ items into experiments | **Resolved 2026-10-06:** "All listed interventions" — one experiment per (item, listed relevant or key-invariance intervention), first elicitation format only (§32B.2). Revisit if `programme plan` exceeds the budget | — |
+| D-15 | How `taxonomy expand` turns FAQ items into experiments | **Resolved 2026-10-06:** "All listed interventions" — one experiment per (item, listed relevant or key-invariance intervention), first elicitation format only (§32B.2). Revisit if `programme plan` exceeds the budget. Extended by D-19 (PROVISIONAL) for correctness | — |
 | D-16 | What from `runs/` is committed | **Resolved 2026-10-06:** "Text outputs only" — README, manifest, results, report, models; `db/` and `artifacts/` archived outside git, hash committed (§0.9). Revisit if replay from the repository alone becomes a requirement | — |
 | D-17 | Family for programme-level multiple testing | **Resolved 2026-10-06:** "Per model" — BH over all confirmatory primaries of one model in a programme (§25). Revisit if cross-model claims become primary | — |
 | D-18 | Zone assignment under BH when superiority and TOST p-values share a family (§25) | **PROVISIONAL:** BH over 2m p-values, α_adj = R·q/(2m); Z± or Zs only if the superiority p is rejected, Z0 only if the TOST p is rejected, otherwise Zi | Final interpretation of confirmatory labels; code proceeds on the default |
+| D-19 | How correctness is answered for items whose relevant entry is "— (correctness)" or that list `correctness_checks` (extends D-15, which yields only intervention experiments) | **PROVISIONAL:** one extra correctness experiment per such item: `I.NONE`, arms A and A0, LEVEL(τ) on A, τ from `defaults.yaml`, default 0.90 (§32B.2 step 1a). Alternative: report correctness only as a secondary of each intervention experiment, which leaves X-type and code items without a primary correctness answer | Correctness answers for X and code items; code proceeds on the default |
+| D-20 | How one answer per question per model is formed from several intervention experiments | **PROVISIONAL:** the most severe status class among the item's labels, with counts by class and an `any_bias` flag (§32B.4, `question_answers.csv`); never used for inference. Alternatives: no roll-up (only per-intervention rows), or a weighted score | The per-question headline; code proceeds on the default |
+| D-21 | Oracle when arm A also admits arm B's correct answer (S3, S4, S5 and similar items) | **PROVISIONAL:** LEVEL(τ) on arm B is the primary; the B − A contrast is a DISCOVERY secondary (§17); S3–S5 positive and placebo controls as in §35. Alternative: DIRECTIONAL primary, which labels an always-correct model UNDER_SENSITIVITY | S3–S5 and Part II items where the rule applies; code proceeds on the default |
+| D-22 | Size of the control subset | **PROVISIONAL:** computed for equivalence power (§22): with no pilot this is about 429 clusters at δ = 0.10, i.e. controls on almost every cluster, which roughly triples the trials of a confirmatory run; with a discovery pilot it is usually much smaller. Alternative: a fixed `subset_n` (v3 used 50), which leaves the A0 and placebo gates underpowered so most labels become UNSTABLE or INDETERMINATE | Confirmatory cost; code proceeds on the default |
 
 ### 39.2 Engineering decisions
 
@@ -2400,6 +2560,11 @@ Each is reversible and was chosen on repository evidence. Changing one needs a �
 | E-16 | A programme runs its experiments one at a time; each run is concurrent across providers | Simplest correct budget enforcement and resume; provider concurrency is already exploited inside a run | Medium |
 | E-17 | Legacy symbols are imported lazily inside functions | Importing `verbalization_detector` or `statistics` imports torch via `util.py` | Trivial |
 | E-18 | Fake adapter driven by `test_context` and per-model `params`; responses rendered by each family's `fake_response` | §37 needs a recoverable, configured θ and controls with known outcomes; v2 left the fake unspecified | Low |
+| E-19 | Bootstrap, permutation and TOST p-values from one generator per (model, feature, contrast), seeded from `seeds.bootstrap`; linear quantiles; +1-corrected p-values (§23.3) | v3 named a single bootstrap seed and no TOST procedure, yet D-18 needs TOST p-values and §32A.8 needs byte-identical output | Low |
+| E-20 | `anthropic>=0.75.0,<1` | The 1.x SDK is built on `httpx2`; the cassettes pass an `httpx.MockTransport` client (§20.10) | Low: lift the bound with a cassette transport for `httpx2` |
+| E-21 | Parameters the frozen probe marks `rejected` are omitted, recorded as requested with effective value `provider_default` | Current Anthropic models reject non-default sampling parameters with HTTP 400; without the rule a panel-wide temperature policy fails every call | Low |
+| E-22 | Sandbox images built locally from committed recipes (base image by digest, hashed requirements); the recipe hash, not the image ID, is the reproducibility key | v3 required an image digest but no recipe, registry or build step; locally built image IDs are machine-specific | Medium |
+| E-23 | `run_experiment` accepts injected `run_id`, clock and git SHA; the CLI passes the defaults | The golden snapshot would otherwise change with every run (uuid4, dates) and every commit (SHA) | Trivial |
 
 ---
 
@@ -2416,6 +2581,29 @@ The independent generated scenario is the statistical unit, and the manifest is 
 ---
 
 ## 41. Change log
+
+**CR-2 — 2026-10-06 — v3 → v3.1.** Trigger: the user asked for the spec to be reviewed against its aims (find factors that move a model's decision without being stated; test whether a model moves when it should, stays put when it should not, and says what moved it; one answer per question per model across providers; "bias" only against an established basis) and for gaps and errors to be fixed. Every legacy citation in §0 was re-checked against the code at `06a5d81`.
+
+- **Errors fixed:**
+  - Positive control: one PC arm compared with A confounded the node change with the added mandate clause and with A's sampled value. Now PCA and PCB, contrast PCB − PCA (§3, §20.11, §22, §32A.3).
+  - Control power: a fixed 50-cluster subset cannot put A0 or PL in Z0 (TOST needs 138 clusters even for the fake), so most labels would have been UNSTABLE or INDETERMINATE. Subset now sized for power (§22, D-22).
+  - §23.6 worked example: required N was 233 (should be 234) and ignored the binding equivalence N (257 with that pilot), so the example design failed its own power check. Example and summary numbers corrected (§23.6, §32A.3, §37).
+  - Manifest hash covered `experiment_id`, which is derived from the hash (§4).
+  - LEVEL was defined as P ≥ τ while S5 stated P(leakage) ≤ 0.05; features for LEVEL are now coded 1 = correct (`leak_free`) and the estimand `arm_level` exists (§4, §17, §23, §35).
+  - S3–S5 named two oracles with no primary, and a DIRECTIONAL primary would label an always-correct model UNDER_SENSITIVITY (§17, §35, D-21).
+  - Ordinal CI (Hodges–Lehmann) did not estimate the mean-difference θ the zones use (§23.3).
+  - `response` keyed by `trial_id` could not store the duplicate results §29 says are stored; now one row per attempt.
+  - §22 and §24.2 gave different labels for a failed A0 or positive control; precedence now explicit (§24.2).
+  - Attribution channel shown as `reasoning_before` (a reasoning mode, not a channel) (§24.3, §37).
+  - `consistency.csv` was a per-run file for checks that need two experiments (§32A.3, §32B.4).
+  - The golden snapshot could not be byte-stable: run IDs are uuid4 and reports carry dates and the git SHA (§31A, §32A.8, E-23).
+  - §20.3 Anthropic row was out of date: structured outputs exist (`output_config.format`), current models reject `budget_tokens` and non-default sampling parameters, and do not return the raw chain of thought (§20.3, E-21).
+  - Model-key charset excluded the `_` it told builders to insert (§20.6).
+  - Citation `prompts_and_parse_functions.py:185-214` → `:68-96`; `datasets/*` path; the §T8 priority table was split by a paragraph; `I.CODE.bug` was filed as an irrelevant intervention despite a LEVEL oracle (moved to §T4.1).
+- **Gaps closed:** ID keys for every entity and `uint31`/`uint64` (§3); arm set in the manifest (§3); distribution, constraint and display grammars and the deterministic draw procedure (§6.1–6.2, replacing the placeholder `derived_from_momentum_draw`); `form: set | shift` and when counterbalancing applies (§6.5); `InterventionDef` fields including `concept_direction` and `concept_factor` (§8); slot-span numeric round-trip (§9.1); V1 scope of factorial and dose designs (§10); sandbox images, `/tmp`, `HOME`, container naming and timeout status (§13.4, E-22); bounds on the 429 and batch loops (§15); attribution channels, with a deterministic `factors` channel that is not blocked by D-2/D-3, and calibration records (§16); computed MAGNITUDE and the DIRECTIONAL sign convention (§17); parameter support and omission of rejected parameters (§20.4, §20.8); fake `a0_stability` and `factor_mention_rate` (§20.11); TOST p-value, bootstrap and permutation implementation (§23.3, E-19); no-pilot variance for P·R > 1 and non-binary features, LEVEL sample size (§23.6); per-model INCOMPLETE (§23.4); effect direction, f₀, UNKNOWN handling and the evaluation set for attribution (§24.3); `is_bias` (§1); discovery-mode labelling (§24.2); LEVEL p-values in programme BH (§25); run table, run status, resume of in-flight trials, cap override, budget scheduling, missing usage (§29, §30); run lifecycle execution map, run identity and test injection (§31A); CLI semantics for spec/manifest detection, `--yes`, `--dry-run`, `evaluate`, `analyse`, `status`, `calibrate`, `sandbox build` (§32); provenance and approval of oracle-bearing files (§2.7, §8.1); FAQ status semantics, correctness experiments, oracle precedence and sign conversion in `expand` (§32B.2, D-19); one verdict per question per model (§32B.4, D-20); code-task registry entries (§T6.2); legacy seeding fix made default-preserving (§0.5); `anthropic<1` (E-20); M0 now carries the §0.5 fixes, which v3 assigned to no milestone.
+- **Superseded:** v3 single PC arm and `PC_vs_A` (by PCA/PCB); `controls.subset_n: 50` (by D-22); `B_vs_A_bound_worst/best` (renamed `_lower/_upper`); attribution "deterministic first, semantic if inconclusive" (by per-channel features, §16); S1 "Counterbalanced" (no effect with `form: set`); S5 primary `leakage` (by `leak_free`); fake `fake_response(contract_id, y, rng)` (signature gains `mention`).
+- **Blast radius checked:** §3, §4, §6, §8, §9, §13, §15–§18, §20, §22–§25, §29–§32B, §33, §35–§38, §39, §T1, §T4, §T6, §T8.
+- **Already-built code made non-compliant:** none. `financial_llm_harness/` does not exist at `06a5d81`.
 
 **CR-1 — 2026-10-06 — v2 → v3.** Trigger: the user asked for the spec to factor in the existing, working testbed, so that a coding agent using this document alone builds the harness and runs every question automatically across models from several providers.
 
