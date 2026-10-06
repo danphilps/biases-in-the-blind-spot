@@ -1,48 +1,133 @@
-# Financial LLM Behavioural Test Harness — Implementation Specification v2
+# Financial LLM Behavioural Test Harness — Implementation Specification v3
 
-Normative keywords: MUST, MUST NOT, SHOULD, MAY. Items marked **[D-n]** are user-owned decisions with the stated default (§39).
+**Status: DRAFT.** Buildable now, with no further input: M0–M5, M7–M10 (§38), using the fake adapter and hand-written cassettes. Blocked: live sign-off runs by D-2; confirmatory semantic features and the attribution axis by D-2 (evaluator model) and D-3 (labellers). Provisional: D-18 (§39.1).
+
+Normative keywords: MUST, MUST NOT, SHOULD, MAY. **[D-n]** marks a user-owned decision (§39.1). **[E-n]** marks an engineering decision: reversible, rationale recorded (§39.2). Change history: §41.
+
+This document is the only build instruction for `financial_llm_harness/`. A coding agent follows §38 in order and needs nothing else. Where this document and existing code disagree, this document governs new code; legacy code changes only as §0.5 allows.
 
 ---
 
 ## 0. Repository integration
 
-0.1 Target repository: `biases-in-the-blind-spot`. The existing package `biases_in_the_blind_spot/` is the paper's pipeline: concept discovery → LLM-edited variation pairs → McNemar/Fisher tests → verbalisation filter, run in stages with O'Brien–Fleming efficacy stopping and conditional-power futility stopping. It MUST stay runnable, and its 32 test files MUST stay green.
+### 0.1 The existing testbed (verified at commit `ce825a5`)
 
-0.2 Add a new top-level package, `financial_llm_harness/`, to the same distribution. `pyproject.toml` changes:
-- `[tool.hatch.build.targets.wheel] packages = ["biases_in_the_blind_spot", "financial_llm_harness"]`
-- `[project.scripts] financial-harness = "financial_llm_harness.cli:main"`
-- pyright `include` += `"financial_llm_harness/**/*.py"`
-- dependencies += `pyyaml`, `httpx` (already installed transitively by `openai`; declared because the Gemini native adapter imports it directly). Dev group += `hypothesis`, `jsonschema` (report-schema tests only). Use no ORM (stdlib `sqlite3`) and no pydantic (dataclasses plus explicit validators). Use numpy, scipy and statsmodels, which are already present. Use no plotting library for harness reports: figures are written as SVG by `reporting/svg.py` (§32A.6).
-- Every OpenAI-compatible provider (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, self-hosted) goes through the existing `openai` SDK with a provider-specific `base_url`. There are no per-vendor SDKs.
-- CI (`ruff format --check`, `ruff check`, `pyright`, `pytest`, `uv build`) MUST stay green at every milestone.
+`biases_in_the_blind_spot/` is the paper's pipeline: concept discovery → LLM-edited variation pairs → McNemar/Fisher tests → verbalisation filter, run in stages with O'Brien–Fleming efficacy stopping and conditional-power futility stopping. It MUST stay runnable, and its 32 test files MUST stay green.
 
-0.3 Reuse by import (do not copy):
+| Concern | How the testbed does it today | Evidence |
+|---|---|---|
+| Running an experiment | Two `# %%` scripts per dataset, run by hand: `prepare_dataset.py`, then `concept_pipeline.py`. The target model is chosen by editing `model_name` in the script; `load_dotenv()` loads keys. There is no CLI and no multi-model loop: one script run = one model on one dataset | `experiments/loan_approval/concept_pipeline/concept_pipeline.py:20-50` |
+| Target-model calls | `ResponsesGenerator.generate(input_template, input_parameters_list, temperature, max_new_tokens, batch_size) -> list[str]`. Each prompt is `input_template.format(**params)`, sent as one user message with no system prompt. Routing: `use_openai_batches` → OpenAI Batch API (model name must start `openai/`); `use_anthropic_batches` → Anthropic Message Batches (`anthropic/`); otherwise OpenRouter via `chat_limiter`, with `seed=42`, `top_p=0.95`, and upstream `hyperbolic/bf16` forced for QwQ | `responses_generator.py:66-146, 193-504, 506-666, 668-786` |
+| Auxiliary LLM calls (concept hypotheses, deduplication, sanitising, variation generation, quality checks, verbalisation) | `APILLMBase` dataclass subclasses, via `chat_limiter.ChatLimiter.for_model` or the OpenAI Batch API. All default models are OpenAI: `o3`, `gpt-5-mini`, `gpt-4.1-mini`, `gpt-4o-mini` | `api_llm_base.py:479-564`; `implicit_concept_detector.py:146`; `variations_generator.py:90`; `verbalization_detector.py` (`llm_model_name = "gpt-5-mini"`) |
+| Providers reachable | OpenAI, Anthropic and OpenRouter only. The locked `chat_limiter` 0.16.0 knows only these three, sends message content as plain strings, and has no structured-output or provider-specific body fields | `uv.lock` (`chat-limiter` 0.16.0) |
+| Failures | A failed request becomes `""`. Failed OpenAI batch items are re-sent through the non-batch path, which goes to OpenRouter. An errored Anthropic batch item aborts the run. `BiasTester` regenerates empty responses up to 10 times, then raises | `responses_generator.py:436-442, 466-501, 633-640, 751`; `api_llm_base.py:284, 310-313`; `bias_tester.py:175-194` |
+| Parsing | Per-dataset `parse_cot_response(input_id, text) -> int \| None`: substring search after `"final decision:"` | `experiments/loan_approval/concept_pipeline/prompts_and_parse_functions.py:185-214` |
+| Statistics | `compute_mcnemar`: exact when b + c < 25, otherwise χ² with continuity correction (statsmodels default). Fisher as an alternative. O'Brien–Fleming spending; conditional-power futility; Bonferroni over a cumulative concept count | `statistics.py:31-50, 95-139, 297-323, 326-373, 627-716` |
+| Results | `ConceptPipelineResult` and `StageResults` (dataclass-wizard `JSONWizard`, snake-case keys) written to `<results>/concept_pipeline_<experiment_key>.json` plus `_stage-<i>.json`, via tmp → fsync → `os.replace`. Resume reloads the files and raises if any stored config differs from the current one. Figures go to `<results>/figures/<experiment_key>/` | `pipeline_persistence.py:11-44, 47-186, 189-229`; `concept_pipeline_result.py` |
+| What is stored per call | Raw response text and the parsed decision. No usage, finish reason, latency, request ID, effective parameters or cost. Identifiers are random UUID4 | `concept_pipeline_result.py`; `input_id.py:13`; `response_id.py:13` |
+| Results in git | Committed through Git LFS (`experiments/**/results/*.json`) for three datasets: `llm_bias` (hiring) and `university_admission` with 7 models each, `loan_approval` with 8. A clone without `git lfs pull` holds pointer files | `.gitattributes` |
+| Tests | 32 pytest files in `tests/concept_pipeline/` and `tests/dataset_preparer/`, with no network. LLM calls are monkeypatched (`ChatLimiter.for_model`, `process_chat_completion_batch`). An autouse fixture no-ops save and plot functions. Async tests use the anyio plugin with `anyio_backend = "asyncio"`. Live tests are disabled by a module-level `skip`. Helpers are imported as `tests.concept_pipeline.helpers` (the editable install puts the repository root on `sys.path`). Test directories have no `__init__.py` | `tests/concept_pipeline/conftest.py`; `test_api_llm_base.py:1-80`; `test_responses_generator_batched_live.py:10-13` |
+| CI | `ubuntu-latest`, Python 3.12, LFS checkout, disk clean-up, `uv sync --all-extras`, `ruff format --check`, `ruff check`, `pyright`, `pytest`, `uv build` | `.github/workflows/ci.yaml` |
+| Tool configuration | ruff (target py312; rules E, W, F, I, B, C4, UP; `experiments/` excluded); pyright `basic` over `biases_in_the_blind_spot/` and `tests/`; no pytest configuration; no hatch configuration (package auto-discovered) | `pyproject.toml` |
+| Import cost | `util.py` imports `torch` at module load, and `concept_pipeline_dataset.py` imports `util`. Importing `verbalization_detector` or `statistics` therefore imports torch | `util.py:5`; `concept_pipeline_dataset.py:24` |
 
-| Legacy | Harness use |
-|---|---|
-| `statistics.compute_mcnemar` | Binary paired test when P = R = 1 (§23) |
-| `responses_generator` batch submit/poll (OpenAI, Anthropic), OpenRouter via `chat_limiter` | Wrapped inside provider adapters (§20). Adapters MUST also return usage, finish reason, effective params and raw payload, which the legacy `generate()` (returns `list[str]`) drops |
-| `VerbalizationDetector` | Semantic attribution evaluator, deployed only after calibration (§16) |
-| `pipeline_persistence.save_result` pattern (tmp → fsync → `os.replace`) | Artefact writes (§29) |
-| Concept pipeline as a whole | Hypothesis source in `mode: discovery` for free-text inputs only (§27) |
+The harness adds, relative to this baseline: one CLI that runs any experiment against a panel of models from several providers (§20, §32); a frozen, pre-registered manifest per experiment (§4); per-call provenance (§21, §29); paired, case-level inference (§23); and programmes that run every selected question across the panel and report one answer matrix (§32B).
 
-0.4 Do NOT port these legacy behaviours:
+### 0.2 Build, tooling and CI changes
+
+Apply all of these in milestone M0 (§38), in one commit, with `uv.lock` regenerated by `uv lock`:
+
+- **Package.** Add `[tool.hatch.build.targets.wheel] packages = ["biases_in_the_blind_spot", "financial_llm_harness"]`. Today hatch discovers the legacy package implicitly; the explicit list keeps it. Non-Python files in `financial_llm_harness/` (YAML, JSON Schemas, CSS, templates, fixtures) ship in the wheel and are read with `importlib.resources.files("financial_llm_harness")`, never through paths built from `__file__`.
+- **Entry point.** `[project.scripts] financial-harness = "financial_llm_harness.cli:main"`.
+- **Runtime dependencies** += `pyyaml>=6.0`, `httpx>=0.28`. Both are already locked transitively (6.0.2 and 0.28.1); they are declared because the harness imports them directly. YAML is read only with `yaml.safe_load`.
+- **Dev dependencies** += `hypothesis>=6`, `jsonschema>=4.25`. `jsonschema` is already locked (4.25.1); `hypothesis` is new.
+- **Not added:** no ORM (stdlib `sqlite3`); no pydantic (dataclasses plus explicit validators); no plotting library (SVG via `reporting/svg.py`, §32A.6); no CLI framework (stdlib `argparse`, as in `datasets/*/generate_*_dataset.py`) **[E-8]**; no SDK beyond the locked `openai` 1.90.0 and `anthropic` 0.75.0. numpy, scipy and statsmodels are already locked.
+- **pyright:** `include` += `"financial_llm_harness/**/*.py"`; `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
+- **ruff:** `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
+- **pytest:** add `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `markers = ["live: calls a real provider API", "sandbox: needs a Docker or Podman CLI"]` **[E-6]**. Without `testpaths`, a bare `pytest` would collect the `tests_hidden/` fixtures of code tasks.
+- **`.gitignore`:** append the block in §0.9 **[D-16]**.
+- **CI:** the workflow steps stay as they are and MUST pass at every milestone. `ubuntu-latest` has Docker, so sandbox tests run there (§36).
+- Every OpenAI-compatible provider (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, self-hosted) goes through `openai.AsyncOpenAI(base_url=…)`. There are no per-vendor SDKs **[E-1]**.
+
+### 0.3 Legacy code the harness reuses or follows
+
+| Legacy | Harness use | Constraint |
+|---|---|---|
+| `verbalization_detector.DEFAULT_VERBALIZATION_PROMPT`, `default_verbalization_parser` (imported) | Prompt and parser of the semantic attribution evaluator (§16), sent through a harness adapter **[E-3]** | The `VerbalizationDetector` class is not used: its methods need a `ConceptPipelineDataset`. Deployed only after calibration (§16) |
+| `statistics.compute_mcnemar` (imported in tests only) | Cross-check: the harness exact test equals it when b + c < 25 **[E-2]** | Not used for inference: it switches to χ² with continuity correction at b + c ≥ 25 (`statistics.py:49`) |
+| `pipeline_persistence.save_result` write pattern: tmp → fsync → `os.replace` (`pipeline_persistence.py:15-44`) | Re-implemented in `storage/artifacts.py` and every report writer (§29) | The pattern, not the function, which serialises `ConceptPipelineResult` |
+| Concept pipeline as a whole (`ConceptPipeline.run`) | Discovery-only hypothesis source, through the bridge in §27.1 **[E-12]** | Its outputs never support a confirmatory claim |
+| Batch flows in `responses_generator.py:193-666` and `api_llm_base.py:119-477` | Reference for OpenAI Batch and Anthropic Message Batches: JSONL upload, `custom_id`, polling, output and error files, the transient-poll heuristic `_is_transient_batch_poll_error` | Re-implemented inside adapters **[E-4]**: these methods return `list[str]` and drop usage, finish reason, request IDs and raw payloads |
+
+### 0.4 Legacy behaviours NOT to port
+
 - Pooling every (input, pair) cell as an independent McNemar pair (`statistics.py:376-409`) while several pairs per input are allowed (`variations_generator.py:140-171`).
 - Fisher's exact test on paired data (`statistics.py:95-139`, selectable via `significance_test="fisher"`).
 - Resampling empty responses up to 10 times (`bias_tester.py:175-194`). This selects on the outcome.
-- One constant seed for every call (`responses_generator.py:46,701`). Unseeded `KMeans` (`input_clusterer.py:85`). Unseeded `random.shuffle` (`implicit_concept_detector.py:213`).
+- Converting a failed request into an empty string (`responses_generator.py:436-442, 751`; `api_llm_base.py:284, 310-313`). Every failure is a terminal status (§28).
+- Re-sending failed OpenAI batch items through the non-batch path, which goes to OpenRouter (`responses_generator.py:466-501`). A retry uses the same provider, model, region and transport.
+- Routing by model-name prefix (`responses_generator.py:149-161`; `api_llm_base.py:64-87`). The provider comes from the panel entry (§20.9).
+- Rewriting parameters by model name, e.g. forcing temperature 1.0 for `o1`/`o3`/`o4`/`gpt-5` (`responses_generator.py:243-249`; `api_llm_base.py:384-388`). Parameter acceptance comes from the probe (§20.4) and is recorded as requested vs effective.
+- One constant seed for every call (`responses_generator.py:46,701`), declared as an unannotated class attribute and so not settable per instance. Unseeded `KMeans` (`input_clusterer.py:85`). Unseeded `random.shuffle` (`implicit_concept_detector.py:213`). Random UUID4 identifiers (`input_id.py:13`, `response_id.py:13`).
 - Hypothesis inputs (the k = 3 nearest to each cluster representative) are a subset of the stage-0 test inputs (the k = 20 nearest to the same representatives) (`implicit_concept_detector.py:200-219`, `concept_pipeline_dataset.py:139-183`).
 - Sequential testing that uses the cumulative spend α(t_k) as each look's nominal threshold, tests the final look at the full α, and re-divides α each stage by a cumulative concept count that counts concepts more than once (`statistics.py:297-323,627-716`, `stage.py:113-148`).
 - Concatenating provider thinking blocks into the response text (`responses_generator.py:622`).
 - Free-text `"Final Decision:"` substring parsing.
 
-0.5 Legacy fixes allowed in V1, each with a regression test:
-- `build_unfaithful_concepts_html` reads a key that does not exist, `"p_value"` (`unfaithful_concepts.py:237-239`). Change it to read the configured test's key.
+### 0.5 Legacy fixes allowed in V1, each with a regression test
+
+- `build_unfaithful_concepts_html` reads a key that does not exist, `"p_value"` (`unfaithful_concepts.py:237-239`). Change it to read the configured test's key (`"mcnemar_p_value"` or `"fisher_p_value"`, per `result.significance_test`).
 - Seed `KMeans` and the hypothesis shuffle, and persist the seed.
 
 No other legacy behaviour changes, so the paper stays reproducible.
 
-0.6 The legacy results in `experiments/*/results/*.json` are Git-LFS objects. Add a CI test that loads one stage file per dataset via `StageResults.from_json` (CI already checks out LFS).
+### 0.6 Legacy results check **[E-14]**
+
+`tests/legacy/test_legacy_results_load.py` loads, via `StageResults.from_json`:
+- `experiments/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json`
+- `experiments/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json`
+- `experiments/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json`
+
+It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file starts with `version https://git-lfs.github.com/spec/v1` (an LFS pointer that was never pulled), the test skips, unless the environment variable `CI` is `true`, in which case it fails: CI checks out LFS.
+
+### 0.7 Boundaries and code conventions
+
+- **Dependency direction:** `financial_llm_harness` → `biases_in_the_blind_spot`, never the reverse. The harness imports only the legacy symbols named in §0.3 and §27.1, and imports them inside the function that uses them, never at module top level, so `financial-harness --help` and every non-semantic command run without importing torch **[E-17]**.
+- **Forbidden imports in harness source:** `chat_limiter`, `biases_in_the_blind_spot.concept_pipeline.responses_generator`, `biases_in_the_blind_spot.concept_pipeline.api_llm_base`, `biases_in_the_blind_spot.util`. `tests/harness/test_harness_boundaries.py` parses every harness module with `ast` and fails on any of these, and on any top-level import from `biases_in_the_blind_spot`.
+- **Style:** the repository's ruff and pyright settings apply unchanged. Type hints on every function, including return types. Dataclasses for data containers, `frozen=True` for values that enter a hash. Async only in adapters, the runner and the single `asyncio.run` in `cli.main`.
+- **Errors:** input and manifest validation raise `HarnessValidationError` (exit 2); policy refusals raise `PolicyRefusal` (exit 5); the CLI maps exceptions to the exit codes in §32. `assert` is used only for internal invariants, never to validate input **[E-11]**. Library code logs through `logging` (logger `financial_llm_harness.<module>`); only `cli.py` prints.
+- **Secrets:** `cli.main` calls `dotenv.load_dotenv()` once, as the legacy scripts do. Keys are read from the variable named by `key_env` in `providers.yaml`. Legacy and harness share `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY`.
+- **File names:** harness source modules are never named `test_*.py`. Harness tests live in `tests/harness/` and are named `test_harness_<topic>.py`: test directories have no `__init__.py`, so pytest imports test files by basename, and a basename shared with `tests/concept_pipeline/` (for example `test_statistics.py`) fails collection. Shared test helpers are imported as `tests.harness.helpers`, as the legacy tests do.
+
+### 0.8 Paths **[E-9]**
+
+- `HARNESS_HOME` (environment variable; default: the current working directory) is the root of `runs/`, `comparisons/`, `programmes/` and `probes/`. CI and every documented command run from the repository root.
+- Author-written inputs live in the repository under `experiments/financial/`:
+  - `specs/*.yaml` — hand-written experiment specs;
+  - `generated/<faq_id>/<intervention_id>.yaml` — `taxonomy expand` output, committed and reviewed (§32B.2);
+  - `panels/*.yaml` — model panels (§20.9);
+  - `programmes/*.yaml` — programmes (§32B.1).
+- `experiments/` stays excluded from ruff and pyright and holds no harness Python.
+
+### 0.9 What is committed **[D-16]**
+
+- **Committed:** per run, `README.md`, `ARCHIVE.sha256`, `manifest/`, `results/`, `report/` and `models/`; `runs/INDEX.md` and `runs/index.json`; `comparisons/`; programme directories (§32B.4); `probes/`.
+- **Not committed:** per run, `db/`, `artifacts/`, `logs/` and `run_archive.tar.gz`; per programme, `logs/`.
+- `financial-harness archive RUN_ID` writes `<run_dir>/run_archive.tar.gz` and `<run_dir>/ARCHIVE.sha256`. Members are `db/` and `artifacts/` in sorted order, with mtime 0, uid and gid 0, and gzip mtime 0, so equal inputs give equal bytes. The operator stores the archive outside git.
+- `render`, `replay` and `programme report` on a run whose `db/` is absent first extract `run_archive.tar.gz` after checking it against `ARCHIVE.sha256`. A missing archive or a hash mismatch exits 1.
+- Append to `.gitignore`:
+
+```
+# financial harness (spec §0.9)
+runs/*/db/
+runs/*/artifacts/
+runs/*/logs/
+runs/*/run_archive.tar.gz
+programmes/*/logs/
+!runs/*/manifest/
+```
+
+The last line re-includes `manifest/` on case-insensitive file systems, where the existing `MANIFEST` pattern would otherwise ignore it.
 
 ---
 
@@ -72,7 +157,7 @@ The harness covers fundamental judgement, investment decisions, summarisation, q
 4. Deterministic evaluators take precedence. Semantic evaluators require calibration (§16).
 5. Every trial ends in a terminal status. Non-SUCCESS statuses enter the analysis per §23.4.
 6. Discovery and confirmation use disjoint seed streams, disjoint cases, and disjoint template and paraphrase families (§27).
-7. A model family in the target panel MUST NOT generate scenarios, renderings, paraphrases or oracles, nor act as evaluator, for an experiment that targets it. The manifest records the families involved (§4).
+7. A model family in the target panel MUST NOT generate scenarios, renderings, paraphrases or oracles, nor act as evaluator, for an experiment that targets it. The manifest records the families involved (§4). **Family** is the organisation that trained the weights (`openai`, `anthropic`, `google`, `deepseek`, `alibaba`, `moonshot`, `meta`, `mistral`, …), declared per model in the panel (§20.9); the same weights served by different providers share one family. Text that a coding agent writes counts as generated by that agent's family. Prompt-visible text is therefore human-authored, and semantic evaluation uses a family outside the panel **[D-14]** (§8.1, §16, §19).
 8. Prompts never request provider reasoning. Returned traces are stored, and analysed only when `attribution_channels` includes `trace`.
 9. Effects, evaluator outputs and labels are stored separately. Labels come only from §24.
 10. Re-evaluating stored responses is bit-exact. Re-executing is a statistical replication (§31).
@@ -120,6 +205,8 @@ experiment_key: momentum_stock_add.v1
 experiment_id: <uuid5>
 mode: confirmatory                      # discovery | confirmatory
 parent_discovery_experiment_id: <uuid|null>
+faq_id: F1.1.a                          # Part II item (§T1); "none" only for harness self-test specs
+intervention_id: I.F.momentum           # §T4 ID or a local ID I.ITEM.<faq_id>.<slug> (§T1)
 domain: fundamental
 task_family: stock_add
 concept: momentum_12m
@@ -141,18 +228,21 @@ scenario_spec: {schema_ref, generator: {name, version}, distributions, correlati
 intervention_spec: {op, node, baseline, counterfactual, closure: {recompute: [...], held_fixed: [...], compensate: [...]}, counterbalance: true}
 controls: {null_arm: true, placebo: {node, values}, positive: {node, baseline, counterfactual, mandate_clause, oracle}, subset_n: 50}
 prompt_spec: {template_family_ids: [...], template_version, field_order_policy: randomised_across_cases, framing: false, leak_terms: [...]}
-paraphrase_spec: {P: 3, generator_model, families: [...]}
+paraphrase_spec: {P: 3, template_files: [...], families: [...]}   # human-authored, §19 [D-14]
 response_spec: {contract_id, contract_version, reasoning_mode, enforcement, max_output_tokens, abstain_allowed}
 feature_spec: [...]                     # §16
 oracle_spec: {...}                      # §17
 sampling_spec:
   R: 1
   temperature_policy: {mode: fixed, temperature: 0.7}   # [D-5]
-  models: [{model_key, provider, model, region, transport, thinking, revision, upstream_routing, params, probe_ref}]   # §20
+  panel: panel_a                        # spec only: experiments/financial/panels/panel_a.yaml (§20.9)
+  panel_ref: {name: panel_a, sha256: <hex>}                  # manifest only
+  models: [{model_key, provider, family, model, region, transport, thinking, revision, upstream_routing, params, batch, probe_ref, capabilities}]   # manifest only, §20
   order: randomised_blocks
 statistical_spec: {test, ci_method: case_bootstrap_percentile, bootstrap_B: 10000, permutation_B: 10000, sequential: none}
 budget: {max_calls, max_input_tokens, max_output_tokens, max_cost_usd, pricing_table_version}
-independence: {target_families: [...], generator_families: [...], evaluator_families: [...]}
+evaluators: [{feature_id, model_key, family, prompt_hash, parser_version}]   # manifest only; semantic features (§16)
+independence: {target_families: [...], text_author_families: [...], evaluator_families: [...]}   # manifest only
 seeds: {generation: <int>, paraphrase: <int>, order: <int>, bootstrap: <int>, trial_seed_rule: "uint31(sha256(manifest_hash|i|p|r|m))"}
 versions: {generator, templates, evaluators, oracles, harness_git_sha}
 corpus: {path: cases.jsonl, sha256: <hex>}
@@ -161,6 +251,12 @@ manifest_hash: <hex>
 ```
 
 Any byte change produces a new hash, and therefore a new `experiment_id`. Runs reference `manifest_hash`. The runner aborts if `sha256(canonical(file)) ≠ manifest.lock`.
+
+**`spec.yaml` versus manifest.** A spec has every manifest key above except those marked "manifest only" and the keys `generate` fills: `schema_version`, `experiment_id`, `versions`, `corpus`, `created_at`, `manifest_hash`. Keys marked "spec only" are consumed by `generate` and do not appear in the manifest. `generate`:
+- copies every other key verbatim, so a key missing from the spec is missing from the manifest and `validate` exits 2 naming it. Nothing is defaulted silently; family defaults are written into the spec by `taxonomy expand` (§32B.2), so the spec file shows every value;
+- resolves `sampling_spec.panel` (or `--panel NAME`, which overrides it) into `panel_ref` and `models`, copying each model's capabilities from its newest probe file (§20.4). Models with provider `fake` need no probe;
+- resolves `evaluators` from the panel's `evaluator` entry for every semantic feature (§16, §20.9);
+- derives `independence`: `target_families` from `models`, `text_author_families` from the non-null `drafted_by.family` values of every prompt-visible text file used (§8.1), `evaluator_families` from `evaluators`. `validate` exits 2 if `target_families` intersects either of the other two, except for targets whose provider is `fake`.
 
 ---
 
@@ -172,7 +268,7 @@ spec.yaml → ScenarioGenerator → InterventionApplier → ControlBuilder → R
 ```
 
 - Generation is deterministic given (spec, seeds, generator version).
-- LLM-assisted steps (paraphrase templates, narrative item banks) run once per request hash. Their outputs are cached and frozen as artefacts.
+- V1 has no LLM-assisted generation step: paraphrase templates, sentence banks and narrative item banks are human-authored files (§8.1) **[D-14]**. If a later version adds such a step, it runs once per request hash, its outputs are frozen as artefacts, and its family is added to `independence.text_author_families`.
 - PowerCheck: `validate` fails if N_clusters < N_required (§23.6).
 - The generator produces experiments, not prompts.
 
@@ -248,6 +344,27 @@ Prompt rules:
 - No wording may reveal which field varies. Only experiments that declare `framing: true` are exempt.
 - The system prompt is identical across arms and models. If a model has no system role, the adapter inlines the system prompt as the first paragraph of the user turn and records `system_mode: inlined`. Inlined models form a stratum (§2.12).
 - If the contract has `abstain_allowed: true`, ABSTAIN is a valid category, not a failure. Whether to allow it is a design variable.
+
+### 8.1 Family files and text provenance
+
+Each family directory `financial_llm_harness/families/<family_id>/` holds:
+- `family.yaml`: scenario schema, interventions, response contract, features, oracles and `faq_ids`, loaded into `TaskFamily`;
+- `family.py`: derived-node functions (§6.1) and family-specific scorers;
+- `defaults.yaml`: one entry per `faq_id` the family implements, holding the spec fields `taxonomy expand` writes (§32B.2): `scenario_spec`, `intervention_spec` per intervention ID, `controls`, `prompt_spec`, `paraphrase_spec`, `response_spec`, `feature_spec`, `oracle_spec` per intervention ID, `hypothesis` (`primary_feature`, `estimand`, `effect_scale`, `delta`, `alpha`, `power_target`, `equivalence_margin`, `missing_data`), `statistical_spec`, `budget`;
+- `templates/`, `paraphrases/`, `banks/`: prompt-visible text (base templates, paraphrase templates, sentence and item banks);
+- `fixtures/`: canonical cases (§7).
+
+Every prompt-visible text file starts with a YAML `provenance` block:
+
+```yaml
+provenance:
+  drafted_by: {kind: human | llm, family: <family or null>, id: <person or model ID>}
+  approved_by: [<person>, ...]
+  approved_on: <date or null>
+```
+
+- A coding agent that writes such a file records `kind: llm` and its own family. It never records `kind: human`.
+- `validate` exits 2 for a manifest with any target whose provider is not `fake` if any text file it uses has `kind: llm` or an empty `approved_by` **[D-14]**. The fake-adapter path (CI, §37) is unaffected, so agent-drafted placeholders allow the build to proceed while live runs wait for human text.
 
 ---
 
@@ -378,7 +495,7 @@ Example contract `stock_add_v1` with `reasoning_before`:
                        "stance": "supports|opposes"}]}
 ```
 
-- `enforcement` is `provider_schema` or `prompt_only`. It is identical across the panel; a model that lacks schema support either forces `prompt_only` for all, or becomes a stratum.
+- `enforcement` is `provider_schema`, `prompt_only` or `auto`, and is identical across the panel. `auto` resolves at `generate` to `provider_schema` if every panel model's frozen probe reports `schema_enforced: true`, and otherwise to `prompt_only` for all models **[E-10]**. Models are split into enforcement strata only if the spec sets `response_spec.enforcement_strata: true`.
 - Parsing: strip at most one surrounding code fence, run `json.loads` on the rest, then validate enums and ranges. Any failure is PARSE_FAILURE, and the raw response is kept. Partial salvage is forbidden.
 - Provider reasoning traces are stored as a separate artefact with `trace_visibility ∈ {none, summary, full}`. They are never concatenated into the response text.
 - Contracts are versioned. A contract change is a manifest change.
@@ -415,7 +532,11 @@ unknown_allowed: true
 confidence_threshold: 0.7
 ```
 
-- **Attribution** is checked deterministically first: is the concept in `material_factors`? Only if that is inconclusive does the semantic check run: does the declared channel mention the concept? The semantic check uses the legacy `VerbalizationDetector`.
+- **Attribution** is checked deterministically first: is the concept in `material_factors`? Only if that is inconclusive does the semantic check run: does the declared channel mention the concept?
+- **Semantic evaluator [E-3, D-14]:**
+  - The model is the panel's `evaluator` entry (§20.9). Its family is outside the target panel; its identity is user-owned **[D-2]**. Experiments with a semantic feature fail `validate` (exit 2) if the panel has no evaluator.
+  - Calls go through the harness adapter for that model, with the same retry and provenance rules as target calls. They are stored in the `eval_call` table (§29), never in `trial`, count towards the budget (§30), and appear in `costs.csv` with `role = evaluator`.
+  - The prompt is the legacy `DEFAULT_VERBALIZATION_PROMPT`, filled as: `formatted_input` = the trial's rendered user message; `concept_title` = the manifest `concept`; `verbalization_check_guide` and `concept_category` = `guide` and `category` of the feature in `family.yaml`; `response` = the declared channel's text. The parser is the legacy `default_verbalization_parser`; `None` maps to UNKNOWN. Both are imported lazily (§0.7).
 - **UNKNOWN** is never coerced, and its rate is always reported.
 - **Calibration**, per semantic feature:
   - At least 200 human-labelled items, stratified by arm and model family **[D-3]**.
@@ -447,7 +568,7 @@ confidence_threshold: 0.7
 
 - Factors: case i (N), paraphrase template p (P, shared across arms), repetition r (R), model m (analysed separately), arm a.
 - **Seeds:**
-  - `seed = uint31(sha256(manifest_hash|i|p|r|m))`. It is identical across arms within a block (common random numbers) and distinct across r.
+  - `seed = uint31(sha256(manifest_hash|i|p|r|m))`. It is identical across arms within a block (common random numbers) and distinct across r. The null arm A0 uses `uint31(sha256("A0"|manifest_hash|i|p|r|m))`, its independent stream (§22).
   - If a provider ignores the seed, record `seed_effective: false`.
   - If temperature is 0 and the seed is honoured, set R = 1.
 - **Order:**
@@ -462,7 +583,7 @@ confidence_threshold: 0.7
 
 ## 19. Paraphrases
 
-- Paraphrases are made at template level, with slots intact. A non-target model generates them; they are validated (§9.1 fidelity) and frozen before execution.
+- Paraphrases are made at template level, with slots intact. A person writes them, three families per item (terse, memo, embedded; §T2.4), with the provenance block of §8.1 **[D-14]**. No LLM generates paraphrases. They are validated (§9.1 fidelity) and frozen before execution.
 - A rendering (i, a, p) is template p filled with state(i, a). So A and B have identical surface form except for slot values.
 - Paraphrase is a blocking variable within a cluster, never an independent case.
 - Paraphrase families are split between discovery and confirmation.
@@ -557,6 +678,8 @@ providers:
     serving: self_hosted                   # weights hash and engine version recorded
 ```
 
+- Every provider entry also carries `limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}` and, where `batch` is not `none`, `batch_poll_seconds: 180` (the legacy values) **[E-13]**. Operators edit them here. They are not part of the manifest hash; the values a run used are written to its `event` table at start.
+- The registry also holds `fake: {adapter: fake, base_url: null, key_env: null, batch: none, serving: in_process}`.
 - API keys are read only from the environment or `.env`. They are never written to the manifest, the DB, artefacts or reports.
 - Model IDs are never hard-coded in harness code. `financial-harness models list --provider P` lists them from the provider's models endpoint, and the manifest pins the exact ID.
 
@@ -585,7 +708,7 @@ thinking: {mode: off | on | provider_default, effort: low | medium | high | null
 - If a provider cannot express the requested setting, the probe records `thinking_effective`, and the model key carries the actual behaviour.
 - `temperature` is passed on the provider's native scale. Scales and samplers differ, so equal nominal temperatures do not mean equal stochasticity across providers. Cross-model claims therefore rest on within-model paired θ, with each model's own null arm A0 calibrating its noise. Raw response variability is never compared across providers.
 
-### 20.4 Probe (`financial-harness probe MODEL_KEY [--region R]`)
+### 20.4 Probe (`financial-harness probe MODEL_KEY --panel NAME`)
 
 The probe makes at most 12 calls with fixed, neutral prompts, and reports its own cost. It checks:
 1. **Listing:** the model ID is returned by the provider's models endpoint. Record the context and output limits if exposed.
@@ -597,8 +720,9 @@ The probe makes at most 12 calls with fixed, neutral prompts, and reports its ow
 7. **Parameter echo:** compare request against response metadata and list silently ignored parameters.
 8. **Streaming:** whether the chosen thinking mode requires streaming.
 
-- Output goes to `probes/<model_key>/<YYYY-MM-DD>.json`.
-- `validate` requires a probe at most 30 days old for every panel model. The probe result is copied into the manifest (`probe_ref` plus capabilities), so capabilities are frozen with the experiment.
+- The model's entry (provider, model, region, transport, thinking, params) is read from the named panel; a key absent from the panel exits 2.
+- Output goes to `$HARNESS_HOME/probes/<model_key>/<YYYY-MM-DD>.json` (committed, §0.9).
+- `validate` requires a probe at most 30 days old for every panel model and the evaluator, except models whose provider is `fake`. The probe result is copied into the manifest (`probe_ref` plus capabilities), so capabilities are frozen with the experiment.
 - If a run-time response contradicts a frozen capability (a trace appears or disappears, a schema is rejected), the runner logs a `capability_drift` event. That model's results become INCOMPLETE.
 
 ### 20.5 Data policy (`provider_policy.yaml`, user-owned) **[D-7]**
@@ -661,6 +785,47 @@ class ModelAdapter(Protocol):
 - Cross-model attribution comparisons use the contract channel (`reasoning` or `rationale`, §14) only. The `trace` channel exists for some providers and not others.
 - V1 adapters: `fake`, `openai_compatible` (exercised against OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode and OpenRouter), `anthropic`, `gemini_native`. Sign-off needs at least two real providers **[D-2]**.
 
+### 20.9 Model panels (`experiments/financial/panels/<name>.yaml`)
+
+A panel is the set of target models an experiment or programme runs against. "Panel" alone always means a model panel; the human reviewers are the "expert panel" (§T10.6) **[E-15]**.
+
+```yaml
+panel_version: 1
+models:                                  # list order = "panel order" in every output
+  - model_key: deepseek--deepseek-chat   # §20.6; unique within the panel
+    provider: deepseek                   # key in providers.yaml
+    family: deepseek                     # §2.7
+    model: deepseek-chat                 # exact provider model ID, from `models list`
+    region: null                         # a key of the provider's `regions`, or null for base_url
+    transport: native                    # native | openai_compat (Gemini only)
+    thinking: {mode: provider_default, effort: null, budget_tokens: null}
+    batch: false                         # true only if providers.yaml has a batch API and the frozen probe allows it
+    upstream_routing: null               # OpenRouter only, and then required: {provider: <slug>, quantization: <str>}
+    params: {}                           # extra native request fields, sent and recorded verbatim
+evaluator: null                          # or one entry with the same fields; required by semantic features (§16)
+```
+
+`validate` exits 2 if: a `model_key` repeats or breaks §20.6; a `provider` is not in `providers.yaml`; `family` is empty; an OpenRouter entry lacks `upstream_routing`; or the evaluator's family equals any model's family. Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`fake--a`, family `fake_a`; `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (family `fake_eval`).
+
+### 20.10 Adapter implementation rules
+
+- **Clients.** `openai_compatible` uses `openai.AsyncOpenAI(api_key=…, base_url=…, max_retries=0, timeout=request_timeout_s, http_client=…)`; `anthropic` uses `anthropic.AsyncAnthropic(api_key=…, max_retries=0, timeout=…, http_client=…)`; `gemini_native` uses `httpx.AsyncClient`. `max_retries=0` because the harness owns retries (§15) and records each Attempt; SDK-internal retries would hide attempts.
+- **No `chat_limiter` [E-1].** It knows only OpenAI, Anthropic and OpenRouter, sends content as plain strings, and cannot send `response_format` or provider-specific body fields.
+- **Raw payload.** Each call uses the SDK's `with_raw_response` interface. The HTTP response body bytes are stored unmodified as the `raw_payload` artefact, and the request ID is read from the response headers. Provider-specific fields (`reasoning_content`, thinking blocks, thought parts) are read from the raw JSON, not from SDK model attributes. Provider-specific request fields (`enable_thinking`, `thinking_budget`, OpenRouter `provider`) go in `extra_body`.
+- **Anthropic content.** Text blocks are concatenated in order into `text`; thinking blocks go to `reasoning_trace`. They are never joined.
+- **Concurrency.** One `asyncio.Semaphore(max_concurrency)` per provider and region, plus token buckets for `rpm` and `tpm` when set. The runner submits blocks in their shuffled order (§18); a block's arms are submitted consecutively.
+- **Batch [E-4].** When a panel entry sets `batch: true`: OpenAI Batch (JSONL, `custom_id = trial_id`, endpoint `/v1/chat/completions`, `completion_window: "24h"`) or Anthropic Message Batches (`custom_id = trial_id`). All arms of a block go in the same batch. Poll every `batch_poll_seconds`. Read both the output and the error file. An errored item becomes an Attempt and is resubmitted alone, to the same provider, model, region and transport, under §15. The batch ID is stored before the first poll so that resume (§29) re-polls rather than resubmits.
+- **Cassettes [E-5].** A cassette is a JSON file `tests/harness/cassettes/<provider>/<case>.json` holding a list of `{request: {method, url, json}, response: {status, headers, body}}`. It is replayed through `httpx.MockTransport`, passed to the SDK client as `http_client`. Requests match on method, URL path and canonical JSON body; an unmatched request fails the test. Cassettes for CI are written by hand from each provider's documented response shape; `@pytest.mark.live` tests confirm the shapes against real endpoints.
+
+### 20.11 Fake adapter **[E-18]**
+
+- `ModelRequest` carries `test_context: {arm, case_idx, paraphrase_idx, repetition, seed} | None`. The runner always fills it; real adapters ignore it and never send it.
+- A fake model's behaviour is set in its panel entry's `params`: `{base_rate: <float>, theta: <float>, pc_theta: <float>, invalid_rate: <float>, sd: <float>}`. Let p_a = `base_rate` in arms A, A0 and PL, `base_rate + theta` in B, and `base_rate + pc_theta` in PC (clipped to [0, 1] for binary features). The fake draws U₁, U₂ ~ Uniform(0, 1) from `numpy.random.default_rng(test_context.seed)`. Binary feature: Y = 1[U₁ < p_a]. Scalar feature: Y = p_a + `sd`·Φ⁻¹(U₁). If U₂ < `invalid_rate`, it returns a non-JSON string instead (PARSE_FAILURE). The seed is shared by a block's arms (§18), so arms share U₁ (common random numbers); A0 differs because its seed stream is independent (§22).
+- The response body comes from the family: `family.py` defines `fake_response(contract_id: str, y: int | float, rng: numpy.random.Generator) -> str`, returning a contract-valid response whose primary feature equals y. For code tasks it returns the known-good reference solution when y = 1 and the known-bad one when y = 0 (§36).
+- The fake reports usage from character counts (chars / 4), `finish_reason = stop`, latency 0, cost 0, and a constant `provider_request_id` derived from the trial ID. Its capabilities are fixed: seed honoured, schema enforced, system role supported, `trace_visibility: none`.
+- A fake evaluator returns `<verbalized>YES</verbalized><witness>fake</witness>` when U₁ < `params.verbalised_rate` (default 0.5), and `<verbalized>NO</verbalized>` otherwise, with U₁ drawn from a generator seeded by `uint31(sha256(observation_id))`.
+- `ci_fake.yaml` sets `fake--a: {base_rate: 0.6, theta: -0.3, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0}` and `fake--b: {base_rate: 0.5, theta: 0.0, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0}`, so the two models land in different zones (§37 step 20 recovers −0.3 for `fake--a`).
+
 ---
 
 ## 21. Trial metadata
@@ -712,6 +877,7 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
 | Ordinal | Wilcoxon signed-rank on d_c (Pratt zero handling) | Hodges–Lehmann, bootstrap |
 | Hierarchical (V2) | Mixed model with random intercepts for case and paraphrase | Parametric bootstrap |
 
+- Exact McNemar is computed as `scipy.stats.binomtest(k=n₊, n=n₊ + n₋, p=0.5, alternative="two-sided").pvalue`, where n₊ and n₋ count clusters with d_c = +1 and −1; p = 1 when n₊ + n₋ = 0 **[E-2]**. The legacy `compute_mcnemar` is not used: it is χ² with continuity correction when n₊ + n₋ ≥ 25.
 - Unpaired tests (Fisher, χ²) are forbidden for paired designs.
 - With N_clusters < 30, results are descriptive only.
 
@@ -796,7 +962,7 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
 | Family | Members | Method |
 |---|---|---|
 | within_experiment | Secondary features of one experiment | Benjamini–Hochberg at q = α |
-| programme | Primary outcomes of all confirmatory experiments in a release | BH at q = α (Holm optional, declared) |
+| programme | Primary outcomes of all confirmatory experiments in one programme run (§32B), whatever their declared `correction_family`, **one family per model** **[D-17]** | BH at q = α (Holm optional, declared) |
 | exploratory | Everything else | Unadjusted, labelled `exploratory` |
 
 - Zone CIs use α_adj:
@@ -804,6 +970,8 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
   - k·q/m for BH-selected hypotheses (Benjamini–Yekutieli FCR-adjusted intervals);
   - α/m for Holm or Bonferroni.
 - TOST p-values enter the same family as their superiority counterparts.
+- **Zones under BH [D-18, PROVISIONAL].** For a family of m hypotheses, BH runs over the 2m p-values (m superiority, m TOST); R is the number rejected and α_adj = R·q/(2m). A hypothesis whose superiority p is rejected may take Z+, Z− or Zs, using CIs at α_adj. One whose TOST p is rejected may take Z0. One with neither rejected is Zi. Precedence stays Z± > Z0 > Zs > Zi.
+- **Where programme adjustment happens.** A run's own outputs never depend on other runs: with `correction_family: programme`, the run computes zones at α and `summary.json` records `"programme_adjustment": "pending"`. `programme report` (§32B.5) computes the per-model family, recomputes each CI at α_adj from that run's database with the run's bootstrap seed, and writes the adjusted zones and labels to the programme's `answers.csv`.
 
 ---
 
@@ -826,6 +994,15 @@ A0 also gives f₀, the stochastic flip rate, which the attribution axis needs (
 - **Freezing.** The confirmatory manifest references `parent_discovery_experiment_id`. It copies and freezes the hypothesis, δ and primary feature, and takes its power variance from discovery.
 - **Legacy outputs.** Legacy concept-pipeline outputs are discovery only.
 - Discovery data never support a "robust" claim.
+
+### 27.1 Legacy discovery bridge **[E-12]**
+
+`financial-harness discovery import-legacy --results-dir DIR --experiment-key KEY --dataset NAME -o PATH`:
+- loads the legacy result with `pipeline_persistence.load_pipeline_result_for_experiment(KEY, DIR)` and the dataset with `ConceptPipelineDataset.load_by_name(NAME, DIR)`, both imported lazily (§0.7);
+- writes `PATH` (YAML): one entry per ID in `significant_unfaithful_concepts`, with `{source: legacy_concept_pipeline, legacy_experiment_key, concept_id, title, verbalization_check_guide, addition_action, removal_action}`, taken from the dataset's concept of that ID;
+- exits 2 if the result has no `significant_unfaithful_concepts` or a concept ID is missing from the dataset.
+
+It never writes a spec. A person turns a hypothesis into a structured-world intervention (§6, §10) and a confirmatory spec under the rules above. The existing legacy datasets (loan approval, university admission, hiring) are not financial inputs; the bridge exists for free-text financial inputs prepared with the legacy `prepare_dataset.py` pattern.
 
 ---
 
@@ -864,6 +1041,7 @@ trial(trial_id PK, rendering_id, block_id, model_key, repetition, seed, status, 
 attempt(attempt_id PK, trial_id, attempt_no, started_at, ended_at, transport_status, http_status, provider_request_id, batch_id)   -- append-only
 response(trial_id PK, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, latency_ms, effective_params_json, cost_usd)
 observation(observation_id PK, trial_id, feature_id, evaluator_version, value_json, status, confidence)
+eval_call(eval_call_id PK, observation_id, model_key, attempt_no, prompt_hash, request_artifact, raw_artifact, status, http_status, provider_request_id, input_tokens, output_tokens, cost_usd, started_at, ended_at)   -- §16; append-only
 analysis(analysis_id PK, manifest_hash, model_key, feature_id, results_json, label, code_sha, created_at)
 event(seq INTEGER PK AUTOINCREMENT, ts, kind, payload_json)
 ```
@@ -882,7 +1060,8 @@ The run directory layout and every output file are specified in §32A.
 
 ## 30. Run control and cost
 
-- **Config:** max concurrency per provider, RPM/TPM limits, request timeout, retry policy (§15), and caps on calls, input tokens, output tokens and cost **[D-2]**.
+- **Config:** per-provider concurrency, RPM/TPM limits and request timeout come from `providers.yaml` (§20.2); retry policy from §15; caps on calls, input tokens, output tokens and cost from the manifest `budget` (and, for programmes, §32B.1) **[D-2]**. Evaluator calls (§16) count towards every cap.
+- **`pricing.yaml`** (`financial_llm_harness/pricing.yaml`, operator-maintained): `pricing_table_version: <date>`, then per `<provider>/<model>`: `{input_per_mtok_usd, output_per_mtok_usd, reasoning_billed_as: output, batch_discount: <fraction or null>, source_url, checked_on}`. `plan` exits 2 if a panel or evaluator model has no entry, and warns if `checked_on` is more than 90 days old. Fake models cost 0.
 - **`plan` reports:**
   - Counts: cases, clusters, arms (including controls), renderings, trials and calls.
   - Input tokens: exact by tokeniser, or estimated with the method stated.
@@ -909,12 +1088,13 @@ The run directory layout and every output file are specified in §32A.
 ## 32. CLI
 
 ```
-financial-harness generate SPEC.yaml -o DIR            # manifest.yaml, cases.jsonl, corpus_report.json
-financial-harness validate MANIFEST.yaml               # case + corpus + power checks
+financial-harness generate SPEC.yaml -o DIR [--panel NAME]   # manifest.yaml, cases.jsonl, corpus_report.json
+financial-harness validate MANIFEST.yaml               # case + corpus + power + panel + provenance checks
 financial-harness freeze   MANIFEST.yaml               # writes manifest.lock
 financial-harness plan     MANIFEST.yaml
-financial-harness run      MANIFEST.yaml [--resume RUN_ID] [--dry-run] [--yes] [--adapter fake]
-financial-harness run      SPEC.yaml ...               # = generate → validate → freeze → plan → run; needs --yes
+financial-harness run      MANIFEST.yaml [--resume RUN_ID] [--dry-run] [--yes]
+financial-harness run      SPEC.yaml [--panel NAME] ... # = generate → validate → freeze → plan → run; needs --yes
+financial-harness archive  RUN_ID                      # run_archive.tar.gz + ARCHIVE.sha256 (§0.9)
 financial-harness status   RUN_ID
 financial-harness evaluate RUN_ID
 financial-harness analyse  RUN_ID
@@ -922,8 +1102,11 @@ financial-harness render   RUN_ID                      # regenerate every output
 financial-harness replay   RUN_ID --reevaluate | --reexecute
 financial-harness compare  RUN_ID [RUN_ID ...] --name NAME   # cross-run label matrix (§32A.7)
 financial-harness models   list --provider P [--region R]     # model IDs from the provider's models endpoint
-financial-harness probe    MODEL_KEY [--region R]             # capability probe (§20.4)
+financial-harness probe    MODEL_KEY --panel NAME             # capability probe (§20.4); the entry is read from the panel
+financial-harness programme plan | run | status | report PROGRAMME.yaml [--resume PROGRAMME_RUN_ID] [--yes]   # §32B
+financial-harness discovery import-legacy --results-dir DIR --experiment-key KEY --dataset NAME -o PATH      # §27.1
 financial-harness taxonomy validate | coverage | list [--domain F|Q|M|K] [--priority P1]   # Part II registry
+financial-harness taxonomy expand (--item FAQ_ID | --wave WAVE) [--allow-partial] [--force]   # specs from the registry (§32B.2)
 financial-harness taxonomy survey-export [--role ROLE]                                    # survey instrument (§T10.2)
 financial-harness taxonomy weights --responses PATH                                       # survey weights (§T10.3)
 ```
@@ -1016,7 +1199,7 @@ Machine files never contain presentation rounding. Presentation files never intr
 | `attribution.csv` | model × channel | panel order, channel | row_id, model_key, channel, n_responsive, pi_r, ci_low, ci_high, pi_0, f0_times_n, eligible, label, baseline_mention_rate, habitually_mentioned |
 | `clusters.csv` | model × cluster × arm | panel order, cluster_id, arm | row_id, model_key, cluster_id, n_cases, arm, n_valid, n_invalid, n_missing, mean_y |
 | `trials.csv` | trial | model, case_idx, arm, paraphrase, repetition | row_id (= trial_id), model_key, case_idx, cluster_id, arm, paraphrase_idx, repetition, seed, seed_effective, status, finish_reason, primary_value, input_tokens, output_tokens, reasoning_tokens, latency_ms, cost_usd, prompt_hash, response_sha256 |
-| `costs.csv` | model | panel order | row_id, model_key, provider, region, calls, input_tokens, output_tokens, reasoning_tokens, cost_usd, probe_cost_usd, pricing_table_version |
+| `costs.csv` | model × role | panel order, then the evaluator | row_id, model_key, role (`target`/`evaluator`), provider, region, calls, input_tokens, output_tokens, reasoning_tokens, cost_usd, probe_cost_usd, pricing_table_version |
 | `consistency.csv` | model × check | panel order, check | row_id, model_key, faq_id, check (`antisymmetry`/`transitivity`/`format_monotone`/`decision_probability`/`decision_sign`), n, rate, ci_low, ci_high |
 | `detection.csv` | model × finding type | panel order, type | row_id, model_key, faq_id, finding_type (`difference`/`inaccuracy`/`ambiguity`/`novel`/`evasion`), n_planted, n_reported, precision, recall, f1, ci_low_f1, ci_high_f1 |
 
@@ -1165,7 +1348,94 @@ The forest plot is the canonical view; every other figure is supporting.
 - `financial-harness render RUN_ID` regenerates `README.md`, `results/`, `report/` and `models/` from `db/run.sqlite` and artefacts only. Output is byte-identical across renders and after `replay --reevaluate`. Timestamps and host details go only to `logs/build_info.json`.
 - `summary.json` and every CSV validate against `reporting/schemas/*.json` (JSON Schema 2020-12) in tests.
 - A test parses `report.md` and `report.html` and asserts that every number appears in a `results/` file at the stated precision.
-- Golden snapshot: the `report/` directory from the S1 fake-adapter run is committed under `tests/harness/golden/` and compared byte for byte.
+- Golden snapshot: the `report/` directory from the S1 fake-adapter run is committed under `tests/harness/golden/` and compared byte for byte. `HARNESS_UPDATE_GOLDEN=1 uv run pytest tests/harness/test_harness_golden.py` rewrites it; the rewrite is reviewed like any code change.
+
+---
+
+## 32B. Programmes: every selected question against every panel model
+
+A programme answers the Part II questions automatically: it expands FAQ items into experiments, runs each against one model panel, and writes one answer per (experiment, model), grouped by question and intervention.
+
+### 32B.1 Programme file (`experiments/financial/programmes/<programme_key>.yaml`)
+
+```yaml
+schema_version: 1
+programme_key: v1_1_panel_a              # [a-z0-9_]+
+panel: panel_a                           # replaces sampling_spec.panel in every selected spec
+select:                                  # union of both parts, de-duplicated by path, ordered by experiment_key
+  specs: [experiments/financial/specs/momentum_stock_add.yaml]
+  generated: {waves: [V1.1], priorities: [P1, P2], modes: [confirmatory, discovery]}   # or null
+budget: {max_cost_usd: <float>, max_calls: <int>}   # whole programme; both required [D-2]
+on_experiment_failure: continue          # continue | stop
+```
+
+- `generated` selects files under `experiments/financial/generated/` whose `faq_id` is in a listed wave (§T8), whose item priority is listed, and whose `mode` is listed.
+- `programme plan` and `programme run` exit 2 if two selected specs share an `experiment_key`, a path does not exist, or the selection is empty.
+
+### 32B.2 `taxonomy expand` **[D-15]**
+
+For each selected FAQ item whose `status` is `implemented` or `validated`:
+
+1. **One experiment per listed intervention:** `interventions.relevant` in listed order, then `interventions.irrelevant` in listed order (full IDs, §T4.3).
+2. **Path and key:** `experiments/financial/generated/<faq_id>/<intervention_id>.yaml`; `experiment_key = <slug(faq_id)>__<slug(intervention_id)>.v<item version>`, where `slug` lower-cases and replaces every character outside `[a-z0-9]` with `_` (e.g. `f3_2_a__i_f_accruals.v1`).
+3. **Elicitation:** the first entry of the item's `elicitation`. Other formats need hand-written specs.
+4. **Oracle:** for a relevant intervention, the item's declared oracle; for an irrelevant one, the §T4.2 default. Where §T4.2 gives a conditional default (I.ID.country, I.SRC.*), the family's `defaults.yaml` entry for the item states the branch; if it does not, the pair is unimplemented.
+5. **Mode:** `confirmatory` if the item's priority is P1 or P2, the oracle is not DISCOVERY, and every basis it cites is `established`, or `conventional` with a signed-off checklist (§T10.6); otherwise `discovery`. P3 items are always `discovery`.
+6. **Other keys:** copied from the family's `defaults.yaml` entry for the item, with `intervention_spec` and `oracle_spec` taken from that entry's record for the intervention. Expand also sets `faq_id`, `intervention_id`, `hypothesis.correction_family: programme` (`exploratory` in discovery mode) and `sampling_spec.panel: ci_fake`, which programmes replace.
+7. **Unimplemented pairs:** a pair with no `InterventionDef` in the family, or no `defaults.yaml` record, is written to `experiments/financial/generated/expand_report.json` as `{faq_id, intervention_id, reason}`, sorted. `expand` then exits 2 unless `--allow-partial`.
+8. **Determinism:** equal inputs give byte-identical files (`yaml.safe_dump(sort_keys=False)`, keys in manifest order, UTF-8, LF). If a target file exists with different content, `expand` exits 2 listing it, unless `--force`. Any change that alters a generated spec requires bumping the item's `version` in `faq.yaml`, so the key changes and earlier runs keep their meaning.
+
+### 32B.3 `programme run`
+
+1. Load and validate the programme file. Resolve the selection to the ordered list E.
+2. Create the programme directory (§32B.4) and `state.json`. `programme_run_id` is a uuid4.
+3. For each experiment in E: `generate --panel <programme panel>` into `manifests/<experiment_key>/`, then `validate` and `freeze`. On exit 2 or 6 the experiment is `SKIPPED_INVALID`, with its exit code and message. With `on_experiment_failure: stop`, the programme stops with that exit code.
+4. `plan` every valid experiment and write `results/plan.csv`. If summed calls or the summed upper cost bound exceed the programme budget, exit 3 before any call. Without `--yes`, print the plan and exit 0. `programme plan` always stops here.
+5. Run the valid experiments one at a time, in order **[E-16]**, each with budget cap = min(manifest budget, programme budget remaining). Exit 0 → `COMPLETE`. Exit 4 → `INCOMPLETE`, continue. Exit 3 → programme `PAUSED_BUDGET`, stop, exit 3. Exit 5 → stop, exit 5. Exit 1 → `FAILED`, then continue or stop per `on_experiment_failure`.
+6. Run `programme report` (§32B.5).
+7. Exit 0 if every valid experiment is `COMPLETE`; otherwise exit 4.
+
+`state.json` is rewritten with tmp → fsync → `os.replace` after every change: `{schema_version, programme_run_id, programme_key, programme_sha256, panel_sha256, status, experiments: [{experiment_key, spec_path, manifest_hash, run_id, status, exit_code, message}]}`. `programme run --resume PROGRAMME_RUN_ID` reloads it; exits 2 if the programme file's or panel's hash has changed; skips `COMPLETE` experiments; resumes `INCOMPLETE` or interrupted runs with `run --resume`; and continues from the first experiment without a terminal status.
+
+### 32B.4 Programme outputs
+
+```
+programmes/<UTC start date>_<programme_key slug>_<programme_run_id[:8]>/
+├── README.md                   # status, headline answer matrix, file map, reproduce commands
+├── programme.yaml              # copy of the input file
+├── state.json
+├── manifests/<experiment_key>/ # manifest.yaml, manifest.lock, cases.jsonl, corpus_report.json
+├── results/
+│   ├── answers.csv
+│   ├── fdr.csv
+│   ├── runs.csv
+│   ├── plan.csv
+│   ├── coverage.csv
+│   └── summary.json
+├── report/
+│   ├── programme.md
+│   ├── programme.html
+│   └── figures/01_answer_matrix.svg
+└── logs/build_info.json        # timestamps and host; not committed
+```
+
+Format rules are those of §32A.2; schemas live in `reporting/schemas/programme_*.v1.json`. The individual runs stay in `runs/` and are indexed there as usual.
+
+| File | One row per | Sort | Columns, in order |
+|---|---|---|---|
+| `answers.csv` | experiment × model | faq_id, intervention_id, experiment_key, panel order | row_id, faq_id, intervention_id, experiment_key, mode, model_key, run_id, run_status, oracle_type, oracle_direction, theta, ci_low, ci_high, p_raw, p_adj, alpha_adj, zone, sensitivity_label, attribution_label, composite_label, gates_failed, run_label_row_id |
+| `fdr.csv` | model × experiment × test (`superiority`/`tost`) | panel order, experiment_key, test | row_id, model_key, experiment_key, test, p_raw, rank, bh_threshold, rejected, m, r, alpha_adj |
+| `runs.csv` | experiment | experiment_key | row_id, experiment_key, faq_id, intervention_id, mode, manifest_hash, run_id, status, exit_code, calls, cost_usd |
+| `plan.csv` | experiment × model | experiment_key, panel order | row_id, experiment_key, model_key, n_clusters, trials, calls, input_tokens_est, output_tokens_max, cost_usd_low, cost_usd_high |
+| `coverage.csv` | selected faq_id | faq_id | row_id, faq_id, priority, n_interventions_listed, n_specs, n_complete, n_unimplemented |
+
+- In `answers.csv`, confirmatory rows carry programme-adjusted `p_adj`, `alpha_adj`, `zone` and labels (§25). Discovery rows carry the run's own values. Rows for experiments that are not `COMPLETE` have empty statistics, `sensitivity_label = INDETERMINATE` and `gates_failed` containing `run_not_complete`.
+- `programme.md` sections, in order: 1. Answer matrix (figure 01 and its table); 2. Answers by question (one H3 per `faq_id`, giving the practitioner question and a table of intervention × model labels); 3. Multiple testing (m, R and α_adj per model); 4. Coverage and gaps (`coverage.csv` and the unimplemented pairs from `expand_report.json`); 5. Runs and cost; 6. Provenance. `programme.html` follows §32A.5.
+- `01_answer_matrix.svg` is built like `comparisons/…/matrix.svg` (§32A.6), with rows = (faq_id, intervention_id) and columns = models in panel order.
+
+### 32B.5 `programme report`
+
+Reads `state.json`, the programme file and each listed run's database (extracting its archive when `db/` is absent, §0.9). Computes the per-model programme families and adjusted zones and labels (§25), and writes §32B.4. It is a pure function of those inputs: re-running it gives byte-identical files, with timestamps confined to `logs/build_info.json` in the programme directory.
 
 ---
 
@@ -1173,26 +1443,35 @@ The forest plot is the canonical view; every other figure is supporting.
 
 ```
 financial_llm_harness/
-    cli.py
+    cli.py                                   # argparse; load_dotenv(); asyncio.run; exit codes (§32)
+    errors.py                                # HarnessValidationError, PolicyRefusal, BudgetExhausted, … (§0.7)
     core/          schema.py ids.py manifest.py canonical_json.py
-    generation/    scenario.py intervention.py render.py paraphrase.py validate_case.py validate_corpus.py
+    generation/    scenario.py intervention.py render.py paraphrase.py validate_case.py validate_corpus.py provenance.py
     families/      fundamental_judgement/ fundamental_extraction/ corporate_action/ call_analysis/
                    broker_synthesis/ quant_method_choice/ quant_dgp/ ml_design/ code_task/   (§34)
-                   (each: family.yaml, family.py, templates/, fixtures/; V1 slices S1–S5 live inside these)
+                   (each: family.yaml, family.py, defaults.yaml, templates/, paraphrases/, banks/, fixtures/ — §8.1;
+                    V1 slices S1–S5 live inside these; code_task/fixtures/<task_id>/ is excluded from ruff, pyright and pytest, E-7)
     contexts/      statements.py market.py corporate_action.py transcript.py broker_notes.py brief.py dgp.py   (§T3, §T9)
-    taxonomy/      faq.yaml interventions.yaml bases.yaml references.bib checklists/ COVERAGE.md
-                   survey/ (instrument.yaml) weights.yaml panel.yaml   (Part II, §T10)
-    models/        base.py fake.py openai_compatible.py anthropic.py gemini_native.py probe.py providers.yaml
+    taxonomy/      registry.py expand.py coverage.py survey.py weights.py          (code)
+                   faq.yaml interventions.yaml bases.yaml references.bib checklists/ COVERAGE.md
+                   survey/ (instrument.yaml) weights.yaml expert_panel.yaml       (Part II, §T10)
+    models/        base.py fake.py openai_compatible.py anthropic.py gemini_native.py probe.py panels.py providers.yaml
     provider_policy.yaml   pricing.yaml
     evaluation/    parse.py rules.py code_static.py sandbox.py semantic.py calibration.py
     oracles.py
     statistics/    paired.py equivalence.py power.py correction.py sequential.py
-    execution/     runner.py budget.py retries.py
-    storage/       db.py artifacts.py
-    reporting/     tables.py summary.py markdown.py html.py svg.py examples.py index.py style.css
-                   schemas/ (summary.v1.json, effects.v1.json, labels.v1.json, …)
-experiments/financial/*.yaml
-tests/harness/...
+    execution/     runner.py budget.py retries.py programme.py
+    storage/       db.py artifacts.py archive.py
+    discovery.py                             # legacy bridge (§27.1)
+    reporting/     tables.py summary.py markdown.py html.py svg.py examples.py index.py programme.py style.css
+                   schemas/ (summary.v1.json, effects.v1.json, labels.v1.json, programme_answers.v1.json, …)
+experiments/financial/
+    specs/         momentum_stock_add.yaml and the other hand-written specs (S1–S5 first)
+    generated/     <faq_id>/<intervention_id>.yaml, expand_report.json (§32B.2)
+    panels/        ci_fake.yaml, and user-written live panels (§20.9)
+    programmes/    ci_fake.yaml, and user-written programmes (§32B.1)
+tests/harness/     conftest.py (anyio_backend = "asyncio"), helpers.py, cassettes/<provider>/*.json, golden/, test_harness_*.py
+tests/legacy/      test_legacy_results_load.py (§0.6)
 ```
 
 Do not add abstraction beyond these boundaries until a second implementation needs it.
@@ -1239,6 +1518,7 @@ Each slice ships:
 - **Mandate M1:** "multi-factor: value, quality, 12-month price momentum" **[D-4]**.
 - **Oracle:** DIRECTIONAL(−) on P(ADD) (because B − A). Provenance: the mandate text; empirical basis Jegadeesh & Titman (1993), *J. Finance* 48(1). Confidence: established under M1.
 - **Secondary experiment, same cases:** mandate M2, "fundamental value; disregard price trends", with oracle INVARIANCE.
+- **Spec files:** `experiments/financial/specs/momentum_stock_add.yaml` (M1) and `momentum_stock_add_m2.yaml` (M2), both `faq_id: F1.1.a`, `intervention_id: I.F.momentum`, `sampling_spec.panel: ci_fake`.
 - **Contract:** `stock_add_v1` (§14). **Primary feature:** `decision_add` (binary). δ = 0.10.
 - **Controls:** placebo = HQ city (matched list; auditor identity is not irrelevant — it signals governance quality); positive = net_debt_ebitda 0.8 → 6.0 under an "investment-grade balance sheets only" clause, DIRECTIONAL(−).
 
@@ -1309,6 +1589,7 @@ Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task f
 
 ```yaml
 - id: F3.2.a                          # <domain><category>.<subcategory>.<letter>
+  version: 1                          # bump on any change that alters a generated spec (§32B.2)
   domain: fundamental                 # fundamental | quant_models | ml | code
   category: corporate_performance
   subcategory: earnings_quality
@@ -1323,6 +1604,7 @@ Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task f
   interventions:
     relevant:   [{id: I.F.accruals, oracle: "DIRECTIONAL(+)", basis: B.sloan1996}]
     irrelevant: [I.ID.name, I.SRC.broker_tier, I.USER.stance, I.PRES.frame]
+  local_interventions: []             # [{id: I.ITEM.<faq_id>.<slug>, op: <§10 operation>, oracle: <str>, basis: <B.*>}]
   correctness_checks: [accruals_ratio, cfo_to_net_income]
   hypothesised_failure: "Accepts narrative growth without a cash-conversion check"
   priority: P1
@@ -1335,6 +1617,8 @@ Registry rules (enforced by `financial-harness taxonomy validate`):
 - **References.** Every `C*`, `I.*` and `B.*` reference resolves to §T3, §T4 and §T7 respectively.
 - **Hypotheses.** `hypothesised_failure` is a hypothesis to test, never an assumed result.
 - **Contested bases.** An item whose only basis is `contested` runs in DISCOVERY mode (§17).
+- **Full IDs.** `faq.yaml` stores full intervention IDs. The "Key invariances" column of §T5 uses the short forms in §T4.3.
+- **Local interventions.** A relevant intervention that §T5 states in prose (e.g. "WACC shift", "Capex/D&A", "auditor change") is declared under the item's `local_interventions` with ID `I.ITEM.<faq_id>.<slug>`, an operation (§10), its oracle and its basis, and is then listed in `interventions.relevant`. `taxonomy validate` fails on a §T5 relevant entry that maps to neither a §T4.1 ID nor a local intervention.
 
 ---
 
@@ -1460,6 +1744,8 @@ Interventions are referenced by ID from the FAQ tables. Relevant interventions t
 | I.PRES.units | Units, scale or currency presentation | INVARIANCE | |
 | I.PRES.tone | Narrative tone with numbers held fixed | INVARIANCE for numeric judgements | Numbers–tone conflict |
 | I.PRES.distractor | Distractor load | INVARIANCE | |
+| I.PRES.length | Document length with content held fixed (padding with neutral text) | INVARIANCE | §T9.1 note length |
+| I.PRES.purpose_wording | Rewording of the stated purpose with the purpose itself held fixed | INVARIANCE | Separates wording from I.Q.purpose |
 | I.ANC.anchor | An irrelevant number shown (old price target, 52-week high) | INVARIANCE | Anchoring |
 | I.TIME.date | Document date stamp, within or beyond the model's training cutoff | INVARIANCE | Memorisation and distraction; Glasserman & Lin (2024) |
 | I.USER.stance | The asker's stated view ("I think this is a buy") | INVARIANCE | Sycophancy; Sharma et al. (2023) |
@@ -1467,6 +1753,22 @@ Interventions are referenced by ID from the FAQ tables. Relevant interventions t
 | I.HYPE.label | A fashionable label on an identical method or signal ("AI sentiment factor", "transformer") | INVARIANCE | |
 | I.CODE.comment | A code comment asserting a false property ("point-in-time safe") | INVARIANCE of the hidden-test outcome | |
 | I.CODE.bug | A bug planted in the starter code | LEVEL: the bug is fixed or flagged | |
+
+### T4.3 Short forms used in §T5
+
+| Short form | ID | Short form | ID |
+|---|---|---|---|
+| name | I.ID.name | distractor | I.PRES.distractor |
+| ceo | I.ID.ceo | length | I.PRES.length |
+| country | I.ID.country | anchor | I.ANC.anchor |
+| broker_tier | I.SRC.broker_tier | date | I.TIME.date |
+| seniority | I.SRC.seniority | stance | I.USER.stance |
+| consensus_label | I.SRC.consensus_label | role | I.USER.role |
+| order | I.PRES.order | hype | I.HYPE.label |
+| frame | I.PRES.frame | I.Q.purpose wording | I.PRES.purpose_wording |
+| units | I.PRES.units | tone | I.PRES.tone |
+
+Entries in that column that are not interventions: "consistency with pairwise" (F1.1.c) adds `consistency` to the item's `assessments` and creates no experiment; "—" means none. A parenthetical such as "I.HYPE.label (signal names)" is a note on how the family renders the cue, not a separate ID.
 
 ---
 
@@ -1920,7 +2222,7 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 - **Record and versioning:** disagreements are recorded in the checklist file with each reviewer's rationale. Changing an approved item is an oracle version change (§17) and needs fresh sign-off.
 - **Blinding:** panel members do not see target-model outputs on an item before signing it off. This stops oracles being fitted to observed behaviour.
 
-`taxonomy/panel.yaml` holds the seats, roles, members, conflict declarations and sign-off log.
+`taxonomy/expert_panel.yaml` holds the seats, roles, members, conflict declarations and sign-off log.
 
 ---
 
@@ -1930,7 +2232,7 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
   - Hash and ID stability: canonical JSON, manifest hash, UUIDv5.
   - Generation: DAG recompute, closure diff, constraints.
   - Parsers, fuzzed with malformed JSON and multiple fences.
-  - Statistics: McNemar equals the sign test; bootstrap and permutation determinism under seed; TOST; power formulas checked by simulation; BH and FCR intervals.
+  - Statistics: the exact test (§23.3) equals statsmodels `mcnemar(table, exact=True)` for every n₊ + n₋ ≤ 200 and equals legacy `compute_mcnemar` for n₊ + n₋ < 25; bootstrap and permutation determinism under seed; TOST; power formulas checked by simulation; BH and FCR intervals; the §25 zone rule under BH (D-18) on hand-computed families.
 - **Property (hypothesis):**
   - Both arms satisfy constraints.
   - The diff equals the declared closure.
@@ -1943,11 +2245,12 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 - **Golden:** canonical fixture + recorded responses → fixed observations, θ and label.
 - **Adapters:**
   - FakeAdapter.
-  - Recorded-cassette tests for every registry provider (OpenAI, Anthropic, Gemini native and compatibility mode, DeepSeek, Qwen, Kimi, OpenRouter), with no network in CI. Each covers: plain response, structured output, reasoning trace extraction (`reasoning_content`, thinking blocks, thought parts), a silently ignored parameter, each `finish_reason`, and an HTTP 429 followed by success.
+  - Cassette tests (§20.10, E-5) for every registry provider (OpenAI, Anthropic, Gemini native and compatibility mode, DeepSeek, Qwen, Kimi, OpenRouter), with no network in CI. Each covers: plain response, structured output, reasoning trace extraction (`reasoning_content`, thinking blocks, thought parts), a silently ignored parameter, each `finish_reason`, and an HTTP 429 followed by success.
   - One parametrised conformance suite runs against every adapter and asserts the same `ModelResponse` invariants.
   - Probe logic, tested against cassettes: seed and determinism detection, capability-drift detection.
   - Policy: a `licensed` manifest aimed at a disallowed provider exits 5 before any call.
-  - `@pytest.mark.live` smoke tests, skipped without keys.
+  - `@pytest.mark.live` smoke tests run only when `HARNESS_LIVE=1` and the provider's key is set; otherwise they skip. CI never sets `HARNESS_LIVE`.
+  - Clients are built with `max_retries=0` (asserted on the constructed client).
 - **Taxonomy:**
   - `taxonomy validate` passes. Every item resolves its C, I and B references; every item meets the testability rule (§T1); every `B.conv` item points to a checklist.
   - Each context generator (§T3) has property tests: planted ground truth is recoverable from the rendered text by the deterministic scorer (round-trip). Accounting identities hold in C1, TERP and accretion are exact in C3, and DGP parameters are recovered within tolerance in C7.
@@ -1958,30 +2261,35 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
     - the §T10.3 threshold falls back to weight 1;
     - the bootstrap is deterministic under its seed;
     - routing exports only the items mapped to each role.
-  - The panel sign-off rule rejects a checklist approved by fewer than 2 members or by members from a single role.
+  - The expert-panel sign-off rule rejects a checklist approved by fewer than 2 members or by members from a single role.
+  - `taxonomy expand`: byte-identical output on re-run; `experiment_key` slugging; an item with an intervention lacking an `InterventionDef` lands in `expand_report.json` and exits 2 without `--allow-partial`; an existing file with different content exits 2 without `--force`; short forms resolve per §T4.3.
 - **Reporting:**
   - Schema validation of `summary.json` and every CSV.
   - Numbers-traceability test (§32A.8).
   - Byte-identical `render` (run twice, then diff).
   - Golden `report/` snapshot.
   - Static checks: no external URLs in `report.html`, every SVG mark has a `<title>`, no colour hex outside the §32A.6 palette.
-- **Sandbox:** network blocked (socket connect fails), memory limit (a 1 GiB allocation fails), timeout, PID limit (fork bomb contained), read-only root, output truncation. Runs in CI.
+- **Sandbox** (marker `sandbox`): network blocked (socket connect fails), memory limit (a 1 GiB allocation fails), timeout, PID limit (fork bomb contained), read-only root, output truncation. With no Docker or Podman CLI on `PATH` the tests skip, unless `CI=true`, in which case they fail.
 - **Resume:** fault-inject after k trials, then resume. There are no duplicate trial IDs, and the final DB equals an uninterrupted run (deterministic fake).
 - **Replay:** `--reevaluate` gives byte-identical `results/`, `report/`, `models/` and `README.md`.
 - **Legacy:** the existing suite stays green; the LFS result-load test passes (§0.6).
+- **Boundaries** (`test_harness_boundaries.py`, §0.7): no forbidden import and no top-level legacy import in any harness module; no harness module named `test_*.py`; no test-file basename shared between `tests/harness/` and the legacy test directories.
+- **Panels and provenance:** each §20.9 rejection rule exits 2; a manifest whose non-fake target uses a text file with `drafted_by.kind: llm` or empty `approved_by` exits 2 (§8.1); `independence` overlap exits 2 (§4); `enforcement: auto` resolves per E-10.
+- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments gives the same final `state.json` and outputs as an uninterrupted run; a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2.
+- **Archive:** `archive` twice on the same run gives byte-identical archives; `render` after deleting `db/` and `artifacts/` reproduces byte-identical outputs from the archive; a corrupted archive exits 1.
 
 ---
 
 ## 37. End-to-end acceptance
 
-**CI** (FakeAdapter with a configured effect): `financial-harness run experiments/financial/momentum_stock_add.yaml --adapter fake --yes` MUST:
+**CI** (FakeAdapter with a configured effect): `uv run financial-harness run experiments/financial/specs/momentum_stock_add.yaml --panel ci_fake --yes` MUST:
 1. Generate independent scenarios.
 2. Validate cases and corpus.
 3. Build A/B and control arms.
 4. Prove the diffs match the closure.
 5. Check power.
 6. Freeze.
-7. Build validated, frozen paraphrases.
+7. Load, validate and freeze the paraphrase templates.
 8. Run `plan`.
 9. Execute randomised blocks with common random numbers.
 10. Retain failures.
@@ -1996,7 +2304,12 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 19. Emit the full §32A tree: `README.md`, `results/*`, `report/report.md`, `report/report.html`, the six figures and `models/*`, all passing the §32A.8 checks.
 20. Recover the fake's configured θ within its CI.
 
-**Sign-off:** the same spec run against the real-provider panel **[D-2]**, within the budget cap, followed by `compare` across the panel.
+**Programme (CI):** `experiments/financial/programmes/ci_fake.yaml` selects `specs/momentum_stock_add.yaml` (mandate M1, DIRECTIONAL) and `specs/momentum_stock_add_m2.yaml` (mandate M2, INVARIANCE; §35 S1) on panel `ci_fake`. `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes` MUST:
+1. Exit 0, with both experiments `COMPLETE` in `state.json`.
+2. Write `answers.csv` with 4 rows (2 experiments × 2 models) and `fdr.csv` with 8 rows (× 2 tests), with BH computed per model (D-17), m = 2 per model.
+3. Give byte-identical programme outputs when `programme report` is re-run.
+
+**Sign-off:** the same two specs, then the V1 slices, run as a programme against the user's real-provider panel and evaluator **[D-2]**, within the programme budget.
 
 Example report block (illustrative numbers):
 
@@ -2018,27 +2331,34 @@ Attribution[reasoning_before]: π_R 0.61 [0.54, 0.68], |R| 98, f₀·N 9 → VER
 
 ## 38. Build order
 
-| Milestone | Deliverable | Done-test |
+Build in this order: **M0 → M1 → M2 → M3 → M10 → M4 → M5 → M6 → M7 → M8 → M9.** Milestone IDs are stable; M10 is numbered last because it was added in v3. A milestone is done when its done-test command exits 0 and the M0 CI command still exits 0.
+
+| Milestone | Deliverable | Done-test (run from the repository root) |
 |---|---|---|
-| M0 | pyproject changes, canonical JSON, IDs, SQLite schema, CLI skeleton | CI green; `financial-harness --help` |
-| M1 | S1 generator and validators, freeze, FakeAdapter, runner, paired statistics, `results/` CSVs, `summary.json`, `report.md` | `run … --adapter fake --yes` exits 0; schema tests pass |
-| M2 | Controls, missing-data rules, §24 labels, power/plan, resume, replay; full §32A (HTML, SVG figures, examples, README, index, `render`) | Calibration, resume, byte-identical render and golden-report tests pass |
-| M3 | `openai_compatible` (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, local), `anthropic`, `gemini_native`, `probe`, `models list`, provider policy, budget, `compare` | Cassette and conformance tests pass for all providers; `plan` costs match pricing |
-| M4 | S3, S4 | Golden tests pass |
-| M5 | Sandbox, S5 | Sandbox tests pass in CI |
-| M6 | S2, semantic calibration, attribution axis | κ report produced; S2 golden passes |
-| M7 | Discovery → confirmation workflow; legacy as discovery engine | Leakage check between corpora passes |
-| M8 | Part II registry (`faq.yaml`, interventions, bases, `taxonomy` CLI), generators C1–C9, survey export and weights, `panel.yaml` sign-off checks | `taxonomy validate` passes; generator round-trip and weight tests pass; instrument exported for the pilot |
-| M9 | V1.1 wave (§T8): the remaining shared families, §T6 tasks and hidden tests | Every V1.1 item reaches `implemented`, with a golden test per family |
+| M0 | §0.2 build and tooling changes and `uv.lock`; `.gitignore` block (§0.9); `errors.py`; canonical JSON, IDs, SQLite schema; CLI skeleton with every §32 command registered (commands not yet built exit 1 with "not implemented"); `tests/harness/conftest.py`; boundaries test (§0.7); legacy results test (§0.6); `panels/ci_fake.yaml`; `pricing.yaml` with the `fake` entry | `uv sync --all-extras && uv run ruff format --check && uv run ruff check && uv run pyright && uv run pytest && uv build && uv run financial-harness --help` |
+| M1 | S1 generator and validators; spec → manifest resolution and panels (§4, §20.9); text provenance (§8.1); freeze; FakeAdapter; runner; paired statistics (§23.3, E-2); `results/` CSVs; `summary.json`; `report.md` | `uv run financial-harness run experiments/financial/specs/momentum_stock_add.yaml --panel ci_fake --yes && uv run pytest tests/harness` |
+| M2 | Controls, missing-data rules, §24 labels, power/plan, resume, replay; full §32A (HTML, SVG figures, examples, README, index, `render`); `archive` (§0.9) | `uv run pytest tests/harness/test_harness_calibration.py tests/harness/test_harness_resume.py tests/harness/test_harness_render.py tests/harness/test_harness_golden.py tests/harness/test_harness_archive.py` |
+| M3 | `openai_compatible` (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, local), `anthropic`, `gemini_native` per §20.10; cassettes; `probe`; `models list`; provider policy; budget and pricing (§30); `compare` | `uv run pytest tests/harness/test_harness_adapters.py tests/harness/test_harness_probe.py tests/harness/test_harness_policy.py tests/harness/test_harness_budget.py` |
+| M10 | Programmes: §32B.1 (with `select.specs`), §32B.3–§32B.5; per-model programme correction (§25, D-17, D-18); `specs/momentum_stock_add_m2.yaml`; `programmes/ci_fake.yaml` | `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes && uv run pytest tests/harness/test_harness_programme.py` |
+| M4 | S3, S4 | `uv run pytest tests/harness/test_harness_s3.py tests/harness/test_harness_s4.py` |
+| M5 | Sandbox, S5 | `uv run pytest -m sandbox tests/harness` (in CI, where Docker is present) |
+| M6 | S2; semantic evaluator (§16); calibration code; attribution axis | `uv run pytest tests/harness/test_harness_s2.py tests/harness/test_harness_semantic.py` (calibration on a synthetic labelled fixture; real calibration needs D-3) |
+| M7 | Discovery → confirmation workflow; legacy discovery bridge (§27.1) | `uv run pytest tests/harness/test_harness_discovery.py` |
+| M8 | Part II registry (`faq.yaml`, interventions, bases, `taxonomy` CLI); `taxonomy expand` (§32B.2); programme `select.generated`; generators C1–C9; survey export and weights; `expert_panel.yaml` sign-off checks | `uv run financial-harness taxonomy validate && uv run financial-harness taxonomy expand --wave V1 && uv run pytest tests/harness/test_harness_taxonomy.py tests/harness/test_harness_expand.py` |
+| M9 | V1.1 wave (§T8): the remaining shared families, §T6 tasks and hidden tests; `programmes/v1_1_fake.yaml` selecting `generated: {waves: [V1.1]}` on panel `ci_fake` | `uv run financial-harness taxonomy expand --wave V1.1 && uv run financial-harness programme run experiments/financial/programmes/v1_1_fake.yaml --yes` (every V1.1 item answered on the fake panel; no unimplemented pairs) |
+
+Live runs follow M9 and need D-2: the user writes a live panel and a live programme, runs `probe` for each model, then `programme plan`, then `programme run --yes`.
 
 ---
 
-## 39. Open decisions (user-owned)
+## 39. Decisions
 
-| ID | Decision | Default | Blocks |
+### 39.1 User-owned decisions
+
+| ID | Decision | Default or resolution | Blocks |
 |---|---|---|---|
 | D-1 | δ per slice | As in §35 | Nothing (default usable) |
-| D-2 | Sign-off panel (one model, region and thinking setting per provider) and budget cap | Anthropic, OpenAI, Gemini, DeepSeek, Qwen, Kimi, with thinking `provider_default`; no default cap | Live runs only |
+| D-2 | Live model panel (exact model IDs, region and thinking setting per provider, written as `experiments/financial/panels/<name>.yaml`); the outside-family evaluator model (§16, §20.9); budget caps per manifest and per programme | Anthropic, OpenAI, Gemini, DeepSeek, Qwen, Kimi, thinking `provider_default`; evaluator: none; no default cap | Live runs; semantic features in live runs |
 | D-3 | Who labels the calibration sets (≥ 200 items per semantic feature) | None | S2 confirmatory; attribution axis |
 | D-4 | Mandate texts M1/M2 | As in §35 | Nothing |
 | D-5 | Temperature policy; P, R | T = 0.7 (legacy), P = 3, R = 1 | Nothing |
@@ -2049,7 +2369,37 @@ Attribution[reasoning_before]: π_R 0.61 [0.54, 0.68], |R| 98, f₀·N 9 → VER
 | D-10 | Expert panel composition | **Resolved:** eight roles (§T10.1); sign-off rule in §T10.6 | — |
 | D-11 | Meaning of "term structure" | **Resolved:** multi-horizon return forecasting (M5); yield-curve features out of scope | — |
 | D-12 | Survey sample threshold and distribution channel | ≥ 5 completed responses in each of at least 6 of the 8 roles before weights are used; target 10 per role | Weighted reporting only |
-| D-13 | Named panel members (one or more per role) and conflict-of-interest declarations | None | P2 items moving to confirmatory; §T7 confidence ratings |
+| D-13 | Named expert-panel members (one or more per role) and conflict-of-interest declarations | None | P2 items moving to confirmatory; §T7 confidence ratings |
+| D-14 | Source of prompt-visible text and of semantic evaluation, given that the panel spans every major vendor (§2.7) | **Resolved 2026-10-06:** "Human templates + outside" — templates, paraphrases and banks written by people (§8.1, §19); semantic evaluator from a family outside the panel, after κ ≥ 0.70 calibration (§16). Revisit if human authoring cannot keep pace with V1.1, or if the evaluator family joins the panel | — |
+| D-15 | How `taxonomy expand` turns FAQ items into experiments | **Resolved 2026-10-06:** "All listed interventions" — one experiment per (item, listed relevant or key-invariance intervention), first elicitation format only (§32B.2). Revisit if `programme plan` exceeds the budget | — |
+| D-16 | What from `runs/` is committed | **Resolved 2026-10-06:** "Text outputs only" — README, manifest, results, report, models; `db/` and `artifacts/` archived outside git, hash committed (§0.9). Revisit if replay from the repository alone becomes a requirement | — |
+| D-17 | Family for programme-level multiple testing | **Resolved 2026-10-06:** "Per model" — BH over all confirmatory primaries of one model in a programme (§25). Revisit if cross-model claims become primary | — |
+| D-18 | Zone assignment under BH when superiority and TOST p-values share a family (§25) | **PROVISIONAL:** BH over 2m p-values, α_adj = R·q/(2m); Z± or Zs only if the superiority p is rejected, Z0 only if the TOST p is rejected, otherwise Zi | Final interpretation of confirmatory labels; code proceeds on the default |
+
+### 39.2 Engineering decisions
+
+Each is reversible and was chosen on repository evidence. Changing one needs a §41 entry.
+
+| ID | Decision | Rationale (evidence) | Reversal cost |
+|---|---|---|---|
+| E-1 | Adapters call `openai`, `anthropic` and `httpx` directly; the harness never uses `chat_limiter` | `chat_limiter` 0.16.0 supports only OpenAI, Anthropic and OpenRouter, sends string-only content, and cannot send `response_format` or provider body fields | Low: adapter-internal |
+| E-2 | Exact McNemar via `scipy.stats.binomtest`; legacy `compute_mcnemar` only as a test cross-check | Legacy switches to χ² with continuity correction at b + c ≥ 25 (`statistics.py:49`), contradicting §23.3 | Trivial |
+| E-3 | Semantic evaluator reuses the legacy prompt and parser through harness adapters, not the `VerbalizationDetector` class | The class needs a `ConceptPipelineDataset` and calls through `chat_limiter`, which loses provenance | Low |
+| E-4 | Batch flows re-implemented in adapters; `custom_id = trial_id`; failed items resubmitted to the same provider only | Legacy batch methods return `list[str]` and re-route failed OpenAI items to OpenRouter (`responses_generator.py:466-501`) | Medium |
+| E-5 | Cassettes are hand-written JSON replayed through `httpx.MockTransport` | No new dependency; both SDKs accept `http_client`; CI has no keys | Low |
+| E-6 | pytest `testpaths = ["tests"]` and markers `live`, `sandbox`; live tests need `HARNESS_LIVE=1` | Prevents collection of code-task fixtures and accidental spend | Trivial |
+| E-7 | `families/code_task/fixtures/` excluded from ruff, pyright and pytest | Starter code and known-bad solutions are deliberately defective | Trivial |
+| E-8 | `argparse` CLI; `load_dotenv()` in `main`; one `asyncio.run` | Repository convention (`datasets/*/generate_*_dataset.py`, experiment scripts); no new dependency | Low |
+| E-9 | `HARNESS_HOME` (default: working directory) roots runs, comparisons, programmes and probes | `util.PROJECT_ROOT_PATH` points inside site-packages for an installed wheel | Low |
+| E-10 | `enforcement: auto` resolves to `provider_schema` only if every panel probe confirms it, else `prompt_only` for all | Keeps §2.12 (identical response mode) without an implicit stratum | Low |
+| E-11 | Typed exceptions mapped to exit codes; `assert` only for internal invariants; `logging` in library code | Legacy uses `assert` and `print` for validation and progress, which `-O` strips and tests cannot capture by level | Low |
+| E-12 | Legacy discovery bridge emits hypotheses only, never specs | §27: discovery never supports a confirmatory claim | Low |
+| E-13 | Provider limit defaults: concurrency 8, timeout 600 s, batch poll 180 s | Timeout and poll interval are the legacy values; concurrency is conservative for first-party rate limits | Trivial (data in `providers.yaml`) |
+| E-14 | LFS-pointer files make the legacy results test skip locally and fail in CI | Local clones hold pointers; CI checks out LFS | Trivial |
+| E-15 | "Panel" means model panel; the human reviewers' file is `taxonomy/expert_panel.yaml` | v2 used "panel" for both | Trivial |
+| E-16 | A programme runs its experiments one at a time; each run is concurrent across providers | Simplest correct budget enforcement and resume; provider concurrency is already exploited inside a run | Medium |
+| E-17 | Legacy symbols are imported lazily inside functions | Importing `verbalization_detector` or `statistics` imports torch via `util.py` | Trivial |
+| E-18 | Fake adapter driven by `test_context` and per-model `params`; responses rendered by each family's `fake_response` | §37 needs a recoverable, configured θ and controls with known outcomes; v2 left the fake unspecified | Low |
 
 ---
 
@@ -2062,3 +2412,15 @@ pre-registered design → structured world → closed counterfactual → frozen 
 ```
 
 The independent generated scenario is the statistical unit, and the manifest is frozen before any target-model call. Without the first, results look persuasive but are statistically invalid. Without the second, generator and researcher choices leak into the results.
+
+---
+
+## 41. Change log
+
+**CR-1 — 2026-10-06 — v2 → v3.** Trigger: the user asked for the spec to factor in the existing, working testbed, so that a coding agent using this document alone builds the harness and runs every question automatically across models from several providers.
+
+- **Added:** §0.1 as-is inventory of the testbed; §0.6–§0.9 (legacy results check, boundaries and conventions, paths, commit policy); §8.1 (family files, text provenance); §20.9 (model panels); §20.10 (adapter implementation rules); §20.11 (fake adapter); §27.1 (legacy discovery bridge); §32B (programmes, `taxonomy expand`); §T4.3 (short forms); `I.PRES.length`, `I.PRES.purpose_wording`; FAQ `version` and `local_interventions`; `eval_call` table; `pricing.yaml` format; D-14 to D-18; E-1 to E-18; M10.
+- **Changed:** §0.2 (exact `pyproject.toml`, pytest, `.gitignore` changes; `hypothesis` is not yet locked); §2.7 (family defined); §4 (`faq_id`, `intervention_id`, panel resolution, `evaluators`, `independence`; spec-versus-manifest rule); §5, §19 (no LLM-generated text, D-14); §14 (`enforcement: auto`); §16 (evaluator wiring); §18 (A0 seed rule); §20.2 (limits, `fake` entry); §20.4 (probe reads the panel; fake models exempt); §23.3 (exact test implementation); §25 (programme family per model; zones under BH; where adjustment happens); §29 (`eval_call`); §30 (config sources and pricing); §32 (CLI); §32A.3 (`costs.csv` role); §33; §35 (S1 spec files); §36; §37; §38 (order and executable done-tests); §39; §T1 (full IDs, local interventions); §T10.6 (`expert_panel.yaml`).
+- **Superseded:** v2 §0.3 rows "`statistics.compute_mcnemar` → binary paired test" (by E-2) and "`responses_generator` batch submit/poll, OpenRouter via `chat_limiter` → wrapped in adapters" (by E-1, E-4); v2 §19 "a non-target model generates paraphrases" (by D-14); v2 CLI `run --adapter fake` (by `--panel ci_fake`); v2 `taxonomy/panel.yaml` (renamed by E-15).
+- **Blast radius checked:** every §38 milestone, every §36 test group, §37, and every Part II reference to panels or interventions.
+- **Already-built code made non-compliant:** none. `financial_llm_harness/` does not exist at `ce825a5`, and no legacy file changes beyond §0.5.
