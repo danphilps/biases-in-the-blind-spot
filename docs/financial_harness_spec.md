@@ -39,7 +39,7 @@ Apply all of these in milestone M0 (§38), in one commit, with `uv.lock` regener
 
 - **Package.** Add `[tool.hatch.build.targets.wheel] packages = ["biases_in_the_blind_spot", "financial_llm_harness"]`. Today hatch discovers the legacy package implicitly; the explicit list keeps it. Non-Python files in `financial_llm_harness/` (YAML, JSON Schemas, CSS, templates, fixtures) ship in the wheel and are read with `importlib.resources.files("financial_llm_harness")`, never through paths built from `__file__`.
 - **Entry point.** `[project.scripts] financial-harness = "financial_llm_harness.cli:main"`.
-- **Runtime dependencies** += `pyyaml>=6.0`, `httpx>=0.28`. Both are already locked transitively (6.0.2 and 0.28.1); they are declared because the harness imports them directly. YAML is read only with `yaml.safe_load`.
+- **Runtime dependencies** += `pyyaml>=6.0`, `httpx>=0.28`. Both are already locked transitively (6.0.2 and 0.28.1); they are declared because the harness imports them directly. YAML is read only through `HarnessSafeLoader` and written only through `HarnessSafeDumper` (§0.11) **[E-28]**.
 - **Dev dependencies** (`[dependency-groups].dev`, which `uv sync` installs by default) += `hypothesis>=6`, `jsonschema>=4.25`. `jsonschema` is already locked (4.25.1); `hypothesis` is new.
 - **Anthropic SDK bound:** change `anthropic>=0.75.0` to `anthropic>=0.75.0,<1` **[E-20]**. The 1.x line moves the SDK from `httpx` to `httpx2`, which would break the `httpx.MockTransport` cassettes (§20.10) and the `http_client` argument. `uv lock` keeps the locked 0.75.0.
 - **Not added:** no ORM (stdlib `sqlite3`); no pydantic (dataclasses plus explicit validators); no plotting library (SVG via `reporting/svg.py`, §32A.6); no CLI framework (stdlib `argparse`, as in `biases_in_the_blind_spot/datasets/*/generate_*_dataset.py`) **[E-8]**; no SDK beyond the locked `openai` 1.90.0 and `anthropic` 0.75.0. numpy, scipy and statsmodels are already locked.
@@ -130,6 +130,72 @@ programmes/*/logs/
 
 The last line re-includes `manifest/` on case-insensitive file systems, where the existing `MANIFEST` pattern would otherwise ignore it.
 
+### 0.10 Frozen experiment closure **[E-24]**
+
+A frozen experiment MUST be closed over every input capable of altering a target request, an observation or a label. `generate` writes the frozen bundle and `freeze` adds the lock (§4, §31A L1–L3):
+
+```
+manifest/
+    manifest.yaml
+    manifest.lock
+    cases.jsonl
+    renderings.jsonl
+    assets.json
+    corpus_report.json
+    probes/<model_key>.json
+```
+
+- **`cases.jsonl`** holds pre-hash scientific data only, one line per case in `case_idx` order: `case_idx`; `cluster_ordinal` (§6.2, §9.2); source and split; the state of every arm the case carries (§22); the state hashes; the declared intervention diff; and the oracle-computable truth (e.g. d*_i for computed MAGNITUDE, §17). It MUST NOT contain an identifier derived from `design_hash` or `manifest_hash` (§3).
+- **`renderings.jsonl`** holds the exact target-visible request for every (`case_idx`, `arm`, `paraphrase_idx`), one line each, sorted by `case_idx`, then arm in `arms` order, then `paraphrase_idx`:
+
+  ```json
+  {"case_idx": 0, "arm": "A", "paraphrase_idx": 0, "system": "...", "user": "...", "response_contract": {...}, "prompt_hash": "..."}
+  ```
+
+  The **frozen message object** is `{system, user, response_contract}`; `prompt_hash` is the sha256 of its canonical JSON (§4). The runner sends these frozen messages and MUST NOT re-render a prompt from a package template. The adapter applies only the deterministic protocol mapping declared for the model (§20): system-prompt inlining when the frozen probe says the system role is unsupported (§8), protocol envelope fields, and the structured-output field. The exact request body sent is stored as an artefact and its sha256 recorded with the attempt (§21).
+- **`assets.json`** is a JSON array with one row for every consumed asset, sorted by (`role`, `logical_name`):
+
+  ```json
+  {"role": "template|paraphrase|bank|mandate|oracle|contract|family_config|hidden_tests|sandbox_recipe|evaluator_prompt|evaluator_parser|panel|probe",
+   "logical_name": "...", "sha256": "...", "source": "package|repository|generated"}
+  ```
+
+  Every prompt-visible file, oracle-bearing file, response schema, family configuration, code-fixture manifest, hidden-test tree, evaluator prompt and parser, sandbox recipe, panel and probe used by the experiment MUST appear. For a code case (§13.1), `task.md`, `starter/` and any shown public tests have role `template`, the fixture manifest (`allowed_files`, `expected_invariants`) has role `family_config`, and `tests_hidden/` has role `hidden_tests`. `logical_name` is the POSIX path relative to the package directory (`source: package`), the repository root (`repository`) or the bundle directory (`generated`, e.g. `probes/<model_key>.json`); for a Python object (the legacy evaluator prompt and parser, §16) it is the dotted import path, with `source: package`. `sha256` is taken over the file's bytes; for a directory asset, by the tree rule below over every file in it; for a string object, over its UTF-8 bytes; for a function, over the UTF-8 bytes of `inspect.getsource`. Roles `template`, `paraphrase`, `bank`, `mandate`, `oracle`, `contract`, `family_config`, `hidden_tests` and `sandbox_recipe` are **scientific** and enter `design_hash`; the other roles enter only `manifest_hash` (§4).
+- **Executable source.** The manifest records the code identity (manifest only):
+
+  ```yaml
+  code_ref:
+    harness_git_sha: <sha|null>
+    harness_tree_sha256: <hex>
+    legacy_git_sha: <sha|null>
+    legacy_tree_sha256: <hex|null>
+    dirty: false
+  ```
+
+  - **Package directory:** `importlib.resources.files("financial_llm_harness")`, and `importlib.resources.files("biases_in_the_blind_spot")` for the legacy fields. The legacy fields are `null` when the experiment uses no legacy symbol at run time, i.e. has no semantic feature (§0.3, §16).
+  - **Tree hash:** `harness_tree_sha256` = sha256 of the canonical JSON (§4) of the list, sorted by path, of `[path, sha256(file bytes)]` for every `*.py` file under the package directory and every file under `reporting/`, where `path` is the POSIX path relative to the package directory, excluding `__pycache__/` and `families/code_task/fixtures/`. `legacy_tree_sha256` is the same over the legacy package's `*.py` files. Other package files (templates, paraphrases, banks, family and taxonomy YAML, code fixtures, sandbox recipes) enter the closure through `assets.json` when an experiment uses them, so editing an unused one changes no hash of that experiment.
+  - **Git identity:** `harness_git_sha` = `git -C <package directory> rev-parse HEAD`, and `legacy_git_sha` likewise. `dirty` is `true` iff `git -C <package directory> status --porcelain -- .` prints anything for either recorded package. Outside a git checkout (the command fails, e.g. for an installed wheel) the source tree is **unidentifiable**: the git SHA is `null` and `dirty` is `true`.
+  - **Clean-tree rule:** a confirmatory manifest with any target or evaluator whose provider is not `fake` MUST NOT be frozen with `dirty: true`; `generate` and `freeze` exit 2. Discovery and fake-only manifests MAY be frozen with `dirty: true`; both tree hashes are recorded regardless.
+- **Drift.** Before execution, and again before every resume, the runner recomputes every local asset and code hash (§4). A mismatch is FROZEN_INPUT_DRIFT; no target call is made.
+- **Materialisation.** At L6 (§31A) the run copies the whole bundle into `<run_dir>/manifest/` and stores each frozen message object, as canonical JSON, in the artefact store, where its key equals `prompt_hash` (§29). Every derived ID (§3) is computed there, after freeze.
+
+### 0.11 YAML semantics **[E-28]**
+
+All harness YAML (specs, manifests, panels, programmes, family, taxonomy and provider files) uses YAML 1.2 core-schema scalar semantics. `core/yaml_io.py` defines:
+
+- **`HarnessSafeLoader`**, a subclass of `yaml.SafeLoader` whose implicit resolvers are replaced by the YAML 1.2 core schema, with constructors to match:
+
+  | Type | Plain scalars resolved to it |
+  |---|---|
+  | bool | `true`, `True`, `TRUE`, `false`, `False`, `FALSE` |
+  | int | `[-+]?[0-9]+` (always decimal: `010` is 10), `0o[0-7]+`, `0x[0-9a-fA-F]+` |
+  | float | `[-+]?(\.[0-9]+\|[0-9]+(\.[0-9]*)?)([eE][-+]?[0-9]+)?`, `[-+]?\.(inf\|Inf\|INF)`, `\.(nan\|NaN\|NAN)` |
+  | null | `null`, `Null`, `NULL`, `~`, empty |
+
+  Every other plain scalar is a string, including the YAML 1.1 booleans `yes`, `no`, `on`, `off`, `y`, `n`, the YAML 1.1 timestamp `2026-10-06`, the sexagesimal `1:20` and the digit-separated `1_000`. Thus `mode: off`, `mode: on` and `approved_on: 2026-10-06` load as strings, never as booleans or `datetime.date`. The merge key `<<` is not resolved. Explicit tags are limited to `!!str`, `!!int`, `!!float`, `!!bool`, `!!null`, `!!seq` and `!!map`; any other (`!!timestamp`, `!!binary`, `!!set`, `!!python/…`) raises `HarnessValidationError` (exit 2), so no Python constructor is reachable.
+- **`HarnessSafeDumper`**, a subclass of `yaml.SafeDumper` whose implicit resolvers are `SafeDumper`'s YAML 1.1 set plus the YAML 1.2 int and float forms above. A string that either schema would read as another type (`'off'`, `'2026-10-06'`, `'1e5'`, `'0o17'`) is therefore quoted, and every file the harness writes loads identically under `HarnessSafeLoader` and under plain `yaml.safe_load`. `yaml_io.dump` calls `yaml.dump(data, Dumper=HarnessSafeDumper, sort_keys=False, allow_unicode=True)`; plain `yaml.safe_dump` is not used, because it leaves `1e5` and `0o17` unquoted.
+- **Types are validated.** Every validator rejects a value whose runtime type disagrees with its schema (exit 2); `bool` is never accepted where an `int` or `float` is declared.
+
 ---
 
 ## 1. Objective and terms
@@ -152,7 +218,7 @@ The harness covers fundamental judgement, investment decisions, summarisation, q
 
 ## 2. Non-negotiable rules
 
-1. Generate, validate and freeze the manifest before any target-model call. The runner refuses a manifest that is unfrozen or whose hash does not match its lock.
+1. Generate, validate and freeze the experiment bundle (§0.10) before any target-model call. Before any call, the runner refuses a bundle that is unfrozen, whose hash does not match its lock, or whose frozen inputs or executable source no longer match their hashes (FROZEN_INPUT_DRIFT, §4).
 2. Arms differ only in the declared intervention closure (§6.4).
 3. Each experiment has exactly one pre-registered primary feature, estimand, test and δ.
 4. Deterministic evaluators take precedence. Semantic evaluators require calibration (§16).
@@ -183,17 +249,22 @@ Experiment
 ```
 
 - **Block** = (i, p, r, m). It is the unit of randomisation and seeding, and holds one trial per arm.
-- **Cluster** = a TestCase, or a group of near-duplicate TestCases (§9.2). It is the unit of inference.
+- **Cluster** = a TestCase, or a group of near-duplicate TestCases (§9.2). It is the unit of inference. Clusters are formed before any hash exists and numbered by `cluster_ordinal`: 0, 1, … in order of each cluster's lowest `case_idx` (§6.2).
 - **Arm set.** The manifest declares its arms (`arms`, manifest only), derived by `generate`: `[A, B]` plus, in confirmatory mode, `A0`, `PL`, `PCA`, `PCB`; a correctness experiment (§32B.2, D-19) has `[A]` plus `A0`. The runner and the analysis iterate over `arms`; nothing assumes B exists.
+- **Two hashes [E-25]** (exact inputs in §4):
+  - `design_hash` identifies the scientific stimuli independently of the model panel. It covers the experiment's identity and design keys, its seeds, the hashes of `cases.jsonl` and `renderings.jsonl`, and the scientific assets of `assets.json` (§0.10). It excludes the model panel, evaluators, probes, capabilities, provider limits, budgets, prices, code identity and timestamps.
+  - `manifest_hash` identifies one executable frozen envelope: the whole canonical manifest, including `design_hash`, panel, evaluators, probes, capabilities, `code_ref` and budget.
 - **IDs** are deterministic UUIDv5 values: `uuid5(HARNESS_NS, canonical_key)`, where `HARNESS_NS = uuid5(NAMESPACE_URL, "financial-llm-harness")`. Keys are `/`-joined UTF-8 strings:
-  - Experiment: `"experiment/{manifest_hash}"`.
-  - TestCase: `"{manifest_hash}/{case_idx}"`. Variant: `"{testcase_id}/{arm}"`. Rendering: `"{variant_id}/{p}"`.
-  - Cluster: `"{manifest_hash}/cluster/{lowest case_idx in the cluster}"`.
+  - Experiment: `"experiment/{design_hash}"`.
+  - TestCase: `"{design_hash}/case/{case_idx}"`. Variant: `"{testcase_id}/{arm}"`. Rendering: `"{variant_id}/{p}"`.
+  - Cluster: `"{design_hash}/cluster/{cluster_ordinal}"`.
   - Block: `"{manifest_hash}/{case_idx}/{p}/{r}/{model_key}"`.
   - Trial key: `"{manifest_hash}/{case_idx}/{arm}/{p}/{r}/{model_key}"`.
   - Attempt key: `"{trial_id}/{attempt_no}"`.
   - Observation: `"{trial_id}/{feature_id}/{evaluator_version}"`, so re-evaluation with unchanged versions rewrites the same rows.
   - Eval call: `"{observation_id}/{call_no}"`.
+  - Only Block and Trial, and the IDs built from a trial ID (Attempt, Observation, Eval call), depend on `manifest_hash`. Every ID is computed after freeze (L6, §31A). No pre-hash file (`cases.jsonl`, `renderings.jsonl`, `assets.json`, `corpus_report.json`) contains one, so the corpus cannot enter a hash cycle.
+  - Trial seeds derive from `design_hash`, not `manifest_hash` (§18): the same design run on two panels requests the same seed from a model they share.
   - `uint31(x)` = the first four bytes of `sha256(x)` as a big-endian unsigned integer, masked with `0x7FFFFFFF`; `uint64(x)` = the first eight bytes, big-endian. `x` is the `|`-joined UTF-8 string of its arguments.
   - Run IDs are uuid4, because a run is an event. Resume reuses the run ID.
   - Regenerating from the same inputs gives the same IDs, so resume is idempotent.
@@ -203,15 +274,20 @@ Experiment
 ## 4. Specification, manifest and freezing
 
 - `spec.yaml` is author-written and declares what to generate.
-- `manifest.yaml` is generated. Its header is below. The corpus goes in `cases.jsonl`, referenced by sha256.
+- `manifest.yaml` is generated. Its header is below. The corpus, the exact renderings and the asset list are bundle files (§0.10), each referenced by sha256 under `corpus`.
 - `manifest.lock` holds `manifest_hash`.
 
-Canonical form: JSON, sorted keys, UTF-8, no insignificant whitespace, floats via Python `repr`, NaN/Inf forbidden. `manifest_hash = sha256(canonical(manifest − {manifest_hash, experiment_id, created_at}))`, and it covers the hash of `cases.jsonl`. `experiment_id = uuid5(HARNESS_NS, "experiment/" + manifest_hash)` (§3); it is excluded from the hash input because it is derived from the hash.
+Canonical form: JSON, sorted keys, UTF-8, no insignificant whitespace, floats via Python `repr`, NaN/Inf forbidden. Two hashes are taken over it **[E-25]**:
+- `design_hash = sha256(canonical(design projection))`. The design projection is the JSON object that keeps only these manifest keys, nested keys at their manifest paths: `schema_version`, `experiment_key`, `variant_id`, `mode`, `parent_discovery_experiment_id`, `faq_id`, `intervention_id`, `domain`, `task_family`, `concept`, `research_question`, `mandate`, `hypothesis`, `scenario_spec`, `intervention_spec`, `controls`, `arms`, `prompt_spec`, `paraphrase_spec`, `response_spec` without `enforcement_resolved` (so `enforcement` as written, e.g. `auto`), `feature_spec`, `oracle_spec`, `sampling_spec` without `panel_ref` and `models`, `statistical_spec` (including any `planning_ref`), `seeds`, `versions`, `corpus.cases.sha256` and `corpus.renderings.sha256`; plus `scientific_assets`, the `{role, logical_name, sha256}` of every `assets.json` row with a scientific role (§0.10), sorted by (`role`, `logical_name`).
+- `manifest_hash = sha256(canonical(manifest − {manifest_hash, experiment_id, created_at}))`. Beyond the design keys it covers `design_hash`, `corpus.assets.sha256`, `data_classification`, `response_spec.enforcement_resolved`, `panel_ref`, `models` (with probes and capabilities), `evaluators`, `independence`, `budget` and `code_ref`.
+- `experiment_id = uuid5(HARNESS_NS, "experiment/" + design_hash)` (§3). A derived value never enters its own hash: `design_hash`, `manifest_hash`, `experiment_id` and `created_at` are outside the design projection, and `manifest_hash`, `experiment_id` and `created_at` are outside the manifest-hash input. `code_ref` is outside the design projection on purpose: a code change that alters a stimulus already changes the hash of `cases.jsonl` or `renderings.jsonl`.
 
 ```yaml
-schema_version: 2
+schema_version: 3
 experiment_key: momentum_stock_add.v1
-experiment_id: <uuid5>
+variant_id: m1                          # taxonomy variant (§32B.2)
+experiment_id: <uuid5>                  # from design_hash (§3)
+design_hash: <hex>                      # design projection (above)
 mode: confirmatory                      # discovery | confirmatory
 parent_discovery_experiment_id: <uuid|null>
 faq_id: F1.1.a                          # Part II item (§T1); "none" only for harness self-test specs
@@ -242,7 +318,7 @@ controls: {null_arm: true, placebo: {node, values}, positive: {node, baseline, c
 arms: [A, B, A0, PL, PCA, PCB]          # manifest only (§3)
 prompt_spec: {template_family_ids: [...], template_version, field_order_policy: randomised_across_cases, framing: false, leak_terms: [...]}
 paraphrase_spec: {P: 3, template_files: [...], families: [...]}   # human-authored, §19 [D-14]
-response_spec: {contract_id, contract_version, reasoning_mode, enforcement, max_output_tokens, abstain_allowed}
+response_spec: {contract_id, contract_version, reasoning_mode, enforcement, max_output_tokens, abstain_allowed, enforcement_resolved}   # enforcement_resolved: manifest only (§14, E-10)
 feature_spec: [...]                     # §16
 oracle_spec: {...}                      # §17
 sampling_spec:
@@ -256,22 +332,35 @@ statistical_spec: {test, ci_method: case_bootstrap_percentile, bootstrap_B: 1000
 budget: {max_calls, max_input_tokens, max_output_tokens, max_cost_usd, pricing_table_version}
 evaluators: [{feature_id, model_key, family, prompt_hash, parser_version, calibration_ref}]   # manifest only; semantic features (§16)
 independence: {target_families: [...], text_author_families: [...], oracle_author_families: [...], evaluator_families: [...]}   # manifest only
-seeds: {generation: <int>, paraphrase: <int>, order: <int>, bootstrap: <int>, trial_seed_rule: "uint31(sha256(manifest_hash|i|p|r|m))"}
-versions: {generator, templates, evaluators, oracles, harness_git_sha}
-corpus: {path: cases.jsonl, sha256: <hex>}
-created_at: <iso8601>                   # excluded from hash
+seeds: {generation: <int>, paraphrase: <int>, order: <int>, bootstrap: <int>, trial_seed_rule: "uint31(design_hash|i|p|r|m)"}   # §18
+versions: {generator, templates, oracles}   # code identity is in code_ref
+corpus:                                 # bundle files (§0.10)
+  cases: {path: cases.jsonl, sha256: <hex>}
+  renderings: {path: renderings.jsonl, sha256: <hex>}
+  assets: {path: assets.json, sha256: <hex>}
+code_ref: {harness_git_sha, harness_tree_sha256, legacy_git_sha, legacy_tree_sha256, dirty}   # manifest only (§0.10)
+created_at: <iso8601>                   # excluded from both hashes
 manifest_hash: <hex>
 ```
 
-Any change to the canonical form produces a new hash, and therefore a new `experiment_id`; YAML whitespace and comments do not. Runs reference `manifest_hash`. The runner aborts if the hash recomputed from `manifest.yaml` ≠ `manifest.lock`, or if `sha256(cases.jsonl)` ≠ `corpus.sha256`.
+Any change to the design projection produces a new `design_hash`, and therefore a new `experiment_id` and new trial seeds; any other change to the canonical form (panel, evaluator, probes, budget, code identity) produces a new `manifest_hash` only. YAML whitespace and comments change neither. Runs reference `manifest_hash`.
 
-**`spec.yaml` versus manifest.** A spec has every manifest key above except those marked "manifest only" and the keys `generate` fills: `schema_version`, `experiment_id`, `versions`, `corpus`, `created_at`, `manifest_hash`, and `controls.subset_n` when the spec leaves it `null`. Keys marked "spec only" are consumed by `generate` and do not appear in the manifest. `generate`:
+**Frozen-input checks.** Before L6, and again at the start of every resume before L7 (§31A), the runner recomputes and compares: `manifest_hash` with the manifest and with `manifest.lock`; `design_hash` with the manifest; the sha256 of `cases.jsonl`, `renderings.jsonl` and `assets.json` with `corpus`; the sha256 of every asset listed in `assets.json`, recomputed from its current source (the package or repository file or Python object as it is now; for `source: generated`, the bundle copy), with its row; and `harness_tree_sha256` and, when set, `legacy_tree_sha256` with `code_ref` (§0.10). Any mismatch is **FROZEN_INPUT_DRIFT**: no target call is made, the command exits 2 naming every mismatch, and, when a run directory exists, an `event` of kind `frozen_input_drift` is written. It is never a trial status. Git SHAs and `dirty` are not re-checked, so a later commit that leaves every hashed input unchanged does not invalidate a frozen bundle. The runner reads frozen renderings and frozen metadata only; package code is used at run time only for deterministic functions (scorers, parsers, `fake_response`) whose source is covered by `code_ref` and verified before the first call.
+
+**Freeze.** `freeze` re-runs the `validate` checks and writes `manifest.lock` only after: 1. cases are generated and validated (§6, §9.1); 2. clusters are formed (§9.2); 3. controls are selected using pre-hash cluster ordinals (§6.2, §22); 4. every arm exists; 5. every exact rendering is materialised in `renderings.jsonl`; 6. every consumed asset is hashed in `assets.json`; 7. panel, probe and evaluator resolution is complete; 8. the power requirements pass (§23.6); 9. the source tree satisfies the clean-tree rule and its hashes are unchanged (§0.10). Otherwise it exits 2.
+
+**Regeneration.** Regenerating the same manifest means the same spec, source tree, generator versions, assets, panel and probes; it reproduces `manifest_hash` (`created_at` aside). The same spec, seeds and scientific assets reproduce `design_hash` on any panel, provided the source produces the same cases and renderings. A different code commit intentionally gives a different `manifest_hash`.
+
+**`spec.yaml` versus manifest.** A spec has every manifest key above except those marked "manifest only" and the keys `generate` fills: `schema_version`, `experiment_id`, `design_hash`, `versions`, `corpus`, `created_at`, `manifest_hash`, and `controls.subset_n` when the spec leaves it `null`. Keys marked "spec only" are consumed by `generate` and do not appear in the manifest. `generate`:
 - copies every other key verbatim, so a key missing from the spec is missing from the manifest and `validate` exits 2 naming it. Nothing is defaulted silently; family defaults are written into the spec by `taxonomy expand` (§32B.2), so the spec file shows every value;
 - resolves `sampling_spec.panel` (or `--panel NAME`, which overrides it) into `panel_ref` and `models`, copying each model's capabilities from its newest probe file (§20.4). Models with provider `fake` need no probe;
 - resolves `evaluators` from the panel's `evaluator` entry for every semantic feature (§16, §20.9);
 - derives `arms` (§3) and, when the spec leaves it `null`, `controls.subset_n` (§22);
+- builds the corpus before any hash or ID exists: accepted and validated cases (§6, §9.1), near-duplicate clusters and their `cluster_ordinal` (§9.2), the control subset by cluster ordinal (§6.2, §22) and every arm, written as `cases.jsonl`, `renderings.jsonl`, `assets.json` and `corpus_report.json` (§0.10);
+- resolves `response_spec.enforcement` into `response_spec.enforcement_resolved` (§14, E-10);
 - exits 6 if a panel model or the evaluator, other than a `fake` one, has no probe file;
-- derives `independence`: `target_families` from `models`, `text_author_families` from the non-null `drafted_by.family` values of every prompt-visible text file used (§8.1), `oracle_author_families` likewise from every oracle-bearing file used (§2.7), `evaluator_families` from `evaluators`. `validate` exits 2 if `target_families` intersects any of the other three, except for targets whose provider is `fake`.
+- derives `independence`: `target_families` from `models`, `text_author_families` from the non-null `drafted_by.family` values of every prompt-visible text file used (§8.1), `oracle_author_families` likewise from every oracle-bearing file used (§2.7), `evaluator_families` from `evaluators`. `validate` exits 2 if `target_families` intersects any of the other three, except for targets whose provider is `fake`;
+- computes `code_ref` (§0.10), exiting 2 under the clean-tree rule, then `design_hash`, `experiment_id` and `manifest_hash`, in that order.
 - `validate` also exits 2 if: `hypothesis.estimand` does not match the primary oracle type (`arm_level` ⇔ LEVEL; `paired_difference_vs_truth` ⇔ MAGNITUDE with `theta_star: computed`; `mean_paired_difference` otherwise); `hypothesis.direction` disagrees with the oracle (`positive`/`negative` = the sign of a DIRECTIONAL oracle, `none` for INVARIANCE and LEVEL, `two_sided` for MAGNITUDE and DISCOVERY); or `assessments` (§T1) includes `attribution` and the contract has neither `material_factors` nor a `reasoning`/`rationale` field (§16). `hypothesis.direction` never changes a test: every test and CI is two-sided.
 
 ---
@@ -280,13 +369,17 @@ Any change to the canonical form produces a new hash, and therefore a new `exper
 
 ```
 spec.yaml → ScenarioGenerator → InterventionApplier → ControlBuilder → Renderer
-          → Feature/Oracle binding → CaseValidator → CorpusValidator → PowerCheck → freeze
+          → Feature/Oracle binding → CaseValidator → CorpusValidator (clusters) → ControlSelector
+          → bundle (cases.jsonl, renderings.jsonl, assets.json) → panel/probe/evaluator resolution
+          → PowerCheck → code_ref → design_hash → manifest_hash → freeze
 ```
 
-- Generation is deterministic given (spec, seeds, generator version).
+- Generation is deterministic given the spec, its seeds, the executable source (`code_ref`) and the consumed assets (§0.10). No step before `design_hash` reads or computes a hash-derived ID (§3).
+- ControlBuilder builds every control arm's state for every case (any placebo value is drawn from the case's `rng_k`, §6.2), and Renderer renders every arm, so a case's acceptance never depends on which clusters later carry controls. CorpusValidator forms the near-duplicate clusters and their `cluster_ordinal` (§9.2); only then does ControlSelector pick the control subset by cluster ordinal and drop the control arms of the other clusters (§6.2, §22).
+- Every exact rendering and every consumed asset is written to the bundle before freeze (§0.10).
 - V1 has no LLM-assisted generation step: paraphrase templates, sentence banks and narrative item banks are human-authored files (§8.1) **[D-14]**. If a later version adds such a step, it runs once per request hash, its outputs are frozen as artefacts, and its family is added to `independence.text_author_families`.
 - PowerCheck: `validate` fails if N_clusters < N_required (§23.6).
-- The generator produces experiments, not prompts.
+- The generator produces experiments, not free-standing prompts: every frozen rendering is a function of a case state and a human-authored template (§19).
 
 ---
 
@@ -312,11 +405,12 @@ correlation: {nodes: [price_now, eps_ttm], matrix: [[1.0, 0.6], [0.6, 1.0]]}
 - **Display formats** (`display`): `money` (currency symbol of the case, thousands separator), `money_m`, `money_bn`, `pct` (value × 100, `%`), `multiple` (`×` suffix), `int`, `number`, `text`. `precision` is decimal places of the displayed quantity.
 - **Constraints** are parsed, not evaluated: one or two comparisons of the form `[<number> <op>] <node> <op> <number>` with `<op>` ∈ {`<`, `<=`, `>`, `>=`}. Anything else exits 2.
 
-6.2 Joint sampling (deterministic given the manifest):
-- Draw attempt k (k = 0, 1, 2, …) uses `numpy.random.default_rng(uint64(seed_stream | seeds.generation | k))` (§3, §27), drawing nodes in topological order.
-- An attempt is accepted if the sampled state and every arm state (after intervention, §6.4) satisfy every constraint, and the case passes §9.1. Accepted attempts receive `case_idx` 0, 1, 2, … in attempt order.
-- Generation stops when `n_cases` attempts are accepted. If that has not happened after `2·n_cases` attempts, the constraint acceptance rate is below 50%, the distributions are mis-specified, and `generate` exits 2. Rejections by §9.1 also count towards the 30% limit there.
-- Record the acceptance rate in `corpus_report.json`.
+6.2 Joint sampling (deterministic given the spec and its frozen inputs, §5; it uses only pre-hash values):
+- Draw attempt k (k = 0, 1, 2, …) uses `rng_k = numpy.random.default_rng(uint64(seed_stream | seeds.generation | k))` (§3, §27), drawing nodes in topological order. No sampling input depends on `design_hash`, `manifest_hash` or a derived ID.
+- An attempt is accepted if the sampled state and every arm state (after intervention, §6.4, control arms included, §5) satisfy every constraint, and the case passes §9.1. Accepted attempts receive `case_idx` 0, 1, 2, … in attempt order.
+- Generation stops when `n_cases` attempts are accepted. If that has not happened after `2·n_cases` attempts, `generate` exits 2, reporting the acceptance rate and the rejection counts by reason. The cap is an engineering guard, not evidence that the distributions are necessarily mis-specified. Rejections by §9.1 also count towards the 30% limit there.
+- **Clusters and controls.** After acceptance, near-duplicate clusters are formed (§9.2) before any hash exists. Each cluster receives `cluster_ordinal` by sorting the clusters on their lowest `case_idx`; members are ordered by `case_idx`. The control subset is selected from cluster ordinals, never from derived UUIDs: it is the first `subset_n` entries of `numpy.random.default_rng(uint64("controls" | seeds.generation)).permutation(N_clusters)`, a permutation of [0, …, N_clusters − 1] (§22).
+- **`corpus_report.json`** records the acceptance rate, the rejection counts by reason and, over the accepted cases' sampled states (that is, after constraint and intervention rejection), the realised marginal distribution of every primitive (numeric: mean, SD, minimum, 5th, 25th, 50th, 75th and 95th percentiles, maximum; categorical: category shares) and the realised Pearson correlation matrix of the continuous primitives, each next to its declared counterpart.
 
 6.3 Rendering only formats state values, using each node's unit, precision and display format. It never computes.
 
@@ -367,9 +461,9 @@ class TaskFamily:
 
 Prompt rules:
 - Every decision prompt contains the mandate text. The oracle is conditional on the mandate.
-- The manipulated field is rendered in the same position style and format as every other field. Field order is identical across the arms of a case, and randomised across cases with a seed.
+- The manipulated field is rendered in the same position style and format as every other field. Field order is identical across the arms of a case and, under `field_order_policy: randomised_across_cases`, randomised across cases: the template's field slots take their declared order permuted by `numpy.random.default_rng(uint64("field_order" | seeds.paraphrase | case_idx | template_family_id)).permutation`, where `template_family_id` is the family of the rendering's template. The seed uses no hash (§3).
 - No wording may reveal which field varies. Only experiments that declare `framing: true` are exempt.
-- The system prompt is identical across arms and models. If a model has no system role, the adapter inlines the system prompt as the first paragraph of the user turn and records `system_mode: inlined`. Inlined models form a stratum (§2.12).
+- The system prompt is identical across arms and models. If a model has no system role, the adapter inlines the frozen system prompt (§0.10) as the first paragraph of the user turn and records `system_mode: inlined`. Inlined models form a stratum (§2.12).
 - If the contract has `abstain_allowed: true`, ABSTAIN is a valid category, not a failure. Whether to allow it is a design variable.
 
 ### 8.1 Family files and text provenance
@@ -387,7 +481,7 @@ Every prompt-visible text file (templates, paraphrases, banks, mandate texts and
 provenance:
   drafted_by: {kind: human | llm, family: <family or null>, id: <person or model ID>}
   approved_by: [<person>, ...]
-  approved_on: <date or null>
+  approved_on: "<YYYY-MM-DD>"           # a quoted ISO 8601 date string, or null (§0.11)
 ```
 
 - A coding agent that writes such a file records `kind: llm` and its own family. It never records `kind: human`.
@@ -410,7 +504,7 @@ provenance:
 | Non-triviality | At least two other decision-relevant fields are rendered and vary across cases. The oracle outcome is not a function of the manipulated field alone. |
 | Neutrality | No `leak_terms` appear (e.g. "changed", "note that", "unlike", or the concept name when it is not a rendered field label). The manipulated field has no distinct formatting. A semantic check runs but is advisory only. |
 | Paraphrase fidelity | Numeric round-trip: the renderer records the character span of every filled slot; the multiset of numbers parsed from the slot spans equals the multiset of displayed state values, within display precision. Template literal text outside slots contains no digit except those listed in the template's `literal_numerals` (e.g. "12-month"). The family's lexicon terms are preserved. |
-| Context fit | Rendered tokens + `max_output_tokens` ≤ the minimum usable context in the panel. |
+| Context fit | Checked per model, never a rejection: a case whose rendered tokens + `max_output_tokens` exceed a model's usable context is EXCLUDED_CONTEXT for that model (§20.8), so the corpus stays panel-independent (§4). |
 
 - A failed case is rejected with VALIDATION_REJECTED and a reason.
 - If more than 30% of cases are rejected, `generate` fails, because the generator is defective.
@@ -419,8 +513,9 @@ provenance:
 
 | Diagnostic | Rule |
 |---|---|
-| Near-duplicates (structured) | Standardised Euclidean distance on primitives < ε, with ε = 0.05·√k (k = number of primitives). |
-| Near-duplicates (text) | Jaccard on word 5-shingles ≥ 0.8. Use exact computation; MinHash is allowed above 2,000 cases. |
+| Near-duplicates (structured) | Euclidean distance < ε between two cases' sampled states, over the numeric primitive fields only (categorical, text, latent and derived nodes excluded), each standardised by its mean and SD (ddof 0) over the accepted cases. Fields with zero variance are omitted. ε = 0.05·√k, with k = the number of fields retained. |
+| Near-duplicates (text) | Jaccard similarity ≥ 0.8 between the sets of word 5-shingles of the case's filled slot spans (§9.1), concatenated in slot order, of its arm-A rendering at `paraphrase_idx` 0, lower-cased and split on whitespace; template literal text, shared by every case, is excluded. Use exact computation; MinHash is allowed above 2,000 cases, seeded with `uint64("minhash" \| seeds.generation)`. |
+| Clustering | Deterministic: either threshold creates an undirected edge between two cases (the union of structured and text edges); clusters are the connected components, isolated cases included as singletons. Members are ordered by `case_idx`; clusters by their lowest `case_idx`, which gives `cluster_ordinal` (§6.2). |
 | Handling | Near-duplicates are merged into one cluster, never deleted silently. Report N_clusters. |
 | Template concentration | No template family exceeds max(40%, 1/n_families) of cases. |
 | Stratum coverage | Each declared stratum (e.g. sector, size bucket) has at least `n_min` cases. |
@@ -460,7 +555,7 @@ Run the checks in this order:
 
 State fields, as applicable: N, T, frequency, panel structure, missingness, outliers, noise, cross-sectional and serial correlation, non-stationarity, regimes, feature scale, target structure, class imbalance, transaction costs, turnover, portfolio constraints, look-ahead risk.
 
-Datasets are generated from the state with a seeded RNG and stored as artefacts. The oracle is computed from the state, never from the prose.
+Datasets are generated from the state with `numpy.random.default_rng(uint64("dataset" | seed_stream | seeds.generation | case_idx))`, a pre-hash seed (§6.2), and stored as artefacts. The oracle is computed from the state, never from the prose.
 
 ---
 
@@ -526,7 +621,7 @@ Example contract `stock_add_v1` with `reasoning_before`:
                        "stance": "supports|opposes"}]}
 ```
 
-- `enforcement` is `provider_schema`, `prompt_only` or `auto`, and is identical across the panel. `auto` resolves at `generate` to `provider_schema` if every panel model's frozen probe reports `schema_enforced: true`, and otherwise to `prompt_only` for all models **[E-10]**. Models are split into enforcement strata only if the spec sets `response_spec.enforcement_strata: true`.
+- `enforcement` is `provider_schema`, `prompt_only` or `auto`, and is identical across the panel. `auto` resolves at `generate` to `provider_schema` if every panel model's frozen probe reports `schema_enforced: true`, and otherwise to `prompt_only` for all models **[E-10]**. The resolution is stored in the manifest-only `response_spec.enforcement_resolved`, which is outside `design_hash` (§4). Models are split into enforcement strata only if the spec sets `response_spec.enforcement_strata: true`.
 - Parsing: strip at most one surrounding code fence, run `json.loads` on the rest, then validate enums and ranges. Any failure is PARSE_FAILURE, and the raw response is kept. Partial salvage is forbidden.
 - Provider reasoning traces are stored as a separate artefact with `trace_visibility ∈ {none, summary, full}`. They are never concatenated into the response text.
 - Contracts are versioned. A contract change is a manifest change.
@@ -608,12 +703,12 @@ category: "<concept_category text>"            # semantic features only
 
 - Factors: case i (N), paraphrase template p (P, shared across arms), repetition r (R), model m (analysed separately), arm a.
 - **Seeds:**
-  - `seed = uint31(manifest_hash | i | p | r | m)` (§3), with m = `model_key`. It is identical across arms within a block (common random numbers: A, B, PL, PCA and PCB) and distinct across r. The null arm A0 uses `uint31("A0" | manifest_hash | i | p | r | m)`, its independent stream (§22).
-  - If a provider ignores the seed, record `seed_effective: false`.
-  - If temperature is 0 and the seed is honoured, set R = 1.
+  - The requested seed of a trial is `seed = uint31(design_hash | i | p | r | m)` (§3), with i = `case_idx` and m = `model_key`. It does not depend on `manifest_hash`, so the same design run on two panels requests the same seed from a model they share. It is identical across the arms of a block (A, B, PL, PCA and PCB) and distinct across r: a **matched requested seed**. No assumption is made that a provider couples its stochastic draws across different prompts; pairing rests on the block design (§23), not on seed coupling. The null arm A0 requests `uint31("A0" | design_hash | i | p | r | m)`, its independent stream (§22).
+  - Every trial records the seed requested. Whether a model accepts the seed parameter, and how often identical seeded requests reproduce, are frozen probe results (`seed_parameter`, `seed_reproducibility_rate`, §20.4). Reports never claim reproducibility merely because the parameter was accepted.
+  - R is a design parameter in `design_hash` and never changes with probe results; `plan` MAY print an advisory when a model reproduces at T = 0.
 - **Order:**
-  - Shuffle blocks with `seeds.order`.
-  - Submit the arms of a block consecutively, in random order.
+  - Each model's blocks, sorted by (`case_idx`, p, r), are submitted in the order of the permutation drawn by `numpy.random.default_rng(uint64("block_order" | seeds.order | model_key)).permutation`.
+  - The arms of a block are submitted consecutively: the arms the case carries, listed in `arms` order, permuted by `numpy.random.default_rng(uint64("arm_order" | seeds.order | case_idx | p | r | model_key)).permutation`.
   - With batch APIs, put all arms of a block in the same batch.
   - Record `submission_seq` and timestamps.
 - Calls are stateless, with no conversation history.
@@ -623,8 +718,9 @@ category: "<concept_category text>"            # semantic features only
 
 ## 19. Paraphrases
 
-- Paraphrases are made at template level, with slots intact. A person writes them, three families per item (terse, memo, embedded; §T2.4), with the provenance block of §8.1 **[D-14]**. No LLM generates paraphrases. They are validated (§9.1 fidelity) and frozen before execution.
-- A rendering (i, a, p) is template p filled with state(i, a). So A and B have identical surface form except for slot values.
+- Paraphrases are made at template level, with slots intact. A person writes them, three families per item (terse, memo, embedded; §T2.4), with the provenance block of §8.1 **[D-14]**. No LLM generates paraphrases. They are validated (§9.1 fidelity).
+- A rendering (i, a, p) is template p filled with state(i, a), with the field order of §8. So A and B have identical surface form except for slot values.
+- **Freezing is at the rendered-message level [E-24].** Template and paraphrase files stay human-authored (D-14), but what is frozen is every rendering, materialised in `renderings.jsonl` before freeze (§0.10). After freeze, an edit to a used template cannot change what is sent: the runner refuses the bundle (FROZEN_INPUT_DRIFT, §4). Changing a template and regenerating changes `design_hash`. Replay never reads a live template file (§31).
 - Paraphrase is a blocking variable within a cluster, never an independent case.
 - Paraphrase families are split between discovery and confirmation.
 
@@ -861,8 +957,8 @@ evaluator: null                          # or one entry with the same fields; re
 
 ### 20.11 Fake adapter **[E-18]**
 
-- `ModelRequest` carries `test_context: {arm, case_idx, paraphrase_idx, repetition, seed, block_seed} | None`, where `seed` is the trial's seed and `block_seed` the block's common seed (equal except in A0, §18). The runner always fills it; real adapters ignore it and never send it.
-- A fake model's behaviour is set in its panel entry's `params`: `{base_rate: <float>, theta: <float>, pc_theta: <float>, invalid_rate: <float>, sd: <float>, a0_stability: <float, default 0>, factor_mention_rate: <float, default 0.5>}`. Let p_a = `base_rate` in arms A, A0, PL and PCA, `base_rate + theta` in B, and `base_rate + pc_theta` in PCB (clipped to [0, 1] for binary features). The fake draws, in this order, U₁, U₂, U₃ ~ Uniform(0, 1) from `numpy.random.default_rng(test_context.seed)`. For arm A0 it first draws V from the A0 seed's generator: if V < `a0_stability`, it uses U₁ drawn from `default_rng(block_seed)` (arm A's U₁) instead of its own (a model whose repeat runs mostly agree). Binary feature: Y = 1[U₁ < p_a]. Scalar feature: Y = p_a + `sd`·Φ⁻¹(U₁), clipped to the feature's declared range. If U₂ < `invalid_rate`, it returns a non-JSON string instead (PARSE_FAILURE). The seed is shared by a block's arms (§18), so A, B, PL, PCA and PCB share U₁ (common random numbers).
+- `ModelRequest` carries `test_context: {arm, case_idx, paraphrase_idx, repetition, seed, block_seed} | None`, where `seed` is the trial's seed and `block_seed` the block's matched requested seed (equal except in A0, §18). The runner always fills it; real adapters ignore it and never send it.
+- A fake model's behaviour is set in its panel entry's `params`: `{base_rate: <float>, theta: <float>, pc_theta: <float>, invalid_rate: <float>, sd: <float>, a0_stability: <float, default 0>, factor_mention_rate: <float, default 0.5>}`. Let p_a = `base_rate` in arms A, A0, PL and PCA, `base_rate + theta` in B, and `base_rate + pc_theta` in PCB (clipped to [0, 1] for binary features). The fake draws, in this order, U₁, U₂, U₃ ~ Uniform(0, 1) from `numpy.random.default_rng(test_context.seed)`. For arm A0 it first draws V from the A0 seed's generator: if V < `a0_stability`, it uses U₁ drawn from `default_rng(block_seed)` (arm A's U₁) instead of its own (a model whose repeat runs mostly agree). Binary feature: Y = 1[U₁ < p_a]. Scalar feature: Y = p_a + `sd`·Φ⁻¹(U₁), clipped to the feature's declared range. If U₂ < `invalid_rate`, it returns a non-JSON string instead (PARSE_FAILURE). The requested seed is matched across a block's arms (§18) and the fake consumes it, so A, B, PL, PCA and PCB genuinely share U₁; this coupling is a property of the fake, not an assumption about real providers.
 - The response body comes from the family: `family.py` defines `fake_response(contract_id: str, y: int | float, mention: bool, rng: numpy.random.Generator) -> str`, returning a contract-valid response whose primary feature equals y, with `mention = U₃ < factor_mention_rate` deciding whether the intervention's `concept_factor` appears in `material_factors` (contracts that have the field). For code tasks it returns the known-good reference solution when y = 1 and the known-bad one when y = 0 (§36); code-task primary features are coded 1 = correct (§17).
 - The fake reports usage from character counts (chars / 4), `finish_reason = stop`, latency 0, cost 0, and a constant `provider_request_id` derived from the trial ID. Its capabilities are fixed: seed honoured, schema enforced, system role supported, `trace_visibility: none`, every parameter `accepted`.
 - A fake evaluator returns `<verbalized>YES</verbalized><witness>fake</witness>` when U₁ < `params.verbalised_rate` (default 0.5), and `<verbalized>NO</verbalized>` otherwise, with U₁ drawn from a generator seeded by `uint31(observation_id)`.
@@ -875,9 +971,9 @@ evaluator: null                          # or one entry with the same fields; re
 Every Trial stores:
 - **Identity:** trial_id, experiment_id, testcase_id, variant_id, block_id, cluster_id.
 - **Model:** model_key, provider, model, model_revision if exposed, region, transport, serving, upstream_routing, probe_ref.
-- **Parameters:** requested and effective; seed requested and effective; temperature requested and effective; thinking requested and effective; stream flag.
-- **Prompt:** messages artefact hash, prompt_hash, context_hash.
-- **Versions:** manifest_hash, generator, template, contract, evaluator, oracle, harness git SHA, sandbox image digest.
+- **Parameters:** requested and effective; seed requested (its support is the model's frozen `seed_parameter`, §18); temperature requested and effective; thinking requested and effective; stream flag.
+- **Prompt:** rendering_id; the frozen message hash `prompt_hash` (§0.10); context_hash; and, per attempt, the sha256 of the exact request body sent, which is stored as an artefact (§0.10).
+- **Versions:** design_hash, manifest_hash and code_ref (§4, §0.10), which together fix the generator, template, contract, evaluator and oracle versions; `sandbox_image_id` for code trials (§13.4).
 - **Execution:** timestamps, submission_seq, batch_id, attempt count, latency.
 - **Usage and cost:** input, output and reasoning tokens; cost_usd and pricing_table_version.
 - **Output:** finish_reason, trace_visibility, status, raw response artefact hash.
@@ -1051,7 +1147,7 @@ In discovery mode, controls are optional and do not gate; labels come from the D
 
 ## 27. Discovery → confirmation
 
-- **Seed streams.** Seeds are derived from `sha256("disc"|…)` versus `sha256("conf"|…)`. The validator checks that no confirmatory primitive vector lies within ε of any discovery vector.
+- **Seed streams.** Generation draws are keyed by `scenario_spec.seed_stream`, `disc` versus `conf` (§6.2); trial seeds derive from `design_hash` (§18), which differs between the two. The validator checks that no confirmatory primitive vector lies within ε of any discovery vector.
 - **Held-out families.** At least one template family and one paraphrase family are held out for confirmation. The manifest lists both partitions.
 - **Freezing.** The confirmatory manifest references `parent_discovery_experiment_id`. It copies and freezes the hypothesis, δ and primary feature, and takes its power variance from discovery.
 - **Legacy outputs.** Legacy concept-pipeline outputs are discovery only.
@@ -1095,11 +1191,11 @@ REFUSAL is assigned only from a provider refusal stop reason or field, or a cont
 Each run has its own SQLite database, `<run_dir>/db/run.sqlite`, in WAL mode (directory layout in §32A.1). The runner is the single writer.
 
 ```
-run(run_id PK, manifest_hash, status, started_at, completed_at, harness_git_sha, resume_count, budget_override_json)
-manifest(manifest_hash PK, experiment_id, schema_version, manifest_artifact, frozen_at)
-testcase(testcase_id PK, manifest_hash, case_idx, cluster_id, split, state_hash)
+run(run_id PK, manifest_hash, status, started_at, completed_at, code_ref_json, resume_count, budget_override_json)   -- code_ref_json: code identity at L6 (§0.10, §31A)
+manifest(manifest_hash PK, design_hash, experiment_id, schema_version, manifest_artifact, frozen_at)
+testcase(testcase_id PK, design_hash, case_idx, cluster_id, cluster_ordinal, split, state_hash)
 variant(variant_id PK, testcase_id, arm, state_hash, diff_json)
-rendering(rendering_id PK, variant_id, paraphrase_idx, prompt_hash, messages_artifact, n_tokens_est)
+rendering(rendering_id PK, variant_id, paraphrase_idx, prompt_hash, n_tokens_est)   -- prompt_hash is the artefact key of the frozen message object (§0.10)
 trial(trial_id PK, rendering_id, block_id, model_key, arm, repetition, seed, status, used_attempt_id, submission_seq, created_at, completed_at)
 attempt(attempt_id PK, trial_id, attempt_no, started_at, ended_at, transport_status, http_status, provider_request_id, batch_id)   -- append-only
 response(attempt_id PK, trial_id, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, usage_estimated, latency_ms, effective_params_json, cost_usd)   -- one row per attempt that returned a body
@@ -1150,23 +1246,23 @@ The run directory layout and every output file are specified in §32A.
 
 | Command | Contract |
 |---|---|
-| `replay RUN_ID --reevaluate` | Re-parse stored responses and re-run deterministic evaluators and the analysis. Every file under `results/`, `report/` and `models/`, plus `README.md`, MUST be byte-identical (§32A.8). Semantic evaluators reuse stored outputs unless `--re-judge` is given. |
+| `replay RUN_ID --reevaluate` | First runs the §4 frozen-input checks: frozen bundle hashes, executable source (`harness_tree_sha256` and `legacy_tree_sha256` against the manifest's `code_ref`) and the `evaluator_prompt` and `evaluator_parser` hashes in `assets.json`. On any mismatch it refuses (FROZEN_INPUT_DRIFT, exit 2) and writes nothing. Otherwise it re-parses stored responses and re-runs deterministic evaluators and the analysis, reading the frozen bundle, never a live template. Every file under `results/`, `report/` and `models/`, plus `README.md`, MUST be byte-identical (§32A.8). Semantic evaluators reuse stored outputs unless `--re-judge` is given. Evaluating old responses under changed evaluator code is not replay: a future migration command may do it, writing a new analysis version (§29). |
 | `replay RUN_ID --reexecute` | A new run from the same manifest and effective params. It is reported as a replication: θ difference with CI, and label agreement. |
-| `generate` regeneration | The same spec, seeds and generator version reproduce `manifest_hash`. |
+| `generate` regeneration | The same spec, source tree, generator versions, assets, panel and probes reproduce `manifest_hash`; the same spec, seeds and scientific assets reproduce `design_hash` on any panel (§4). A different code commit intentionally gives a different `manifest_hash`. |
 
 ## 31A. Run lifecycle (execution map)
 
-`run` executes these steps in order. Every step after L6 is idempotent: re-running it on the same database rewrites the same rows (IDs are deterministic, §3), so `--resume` simply restarts at L7.
+`run` executes these steps in order. Every step after L6 is idempotent: re-running it on the same database rewrites the same rows (IDs are deterministic, §3), so `--resume` repeats the §4 frozen-input checks (exit 2 on FROZEN_INPUT_DRIFT, also written as an `event`) and then restarts at L7.
 
 | Step | Owner | Reads | Writes | Postcondition | On failure |
 |---|---|---|---|---|---|
-| L1 generate (spec input only) | `generation/` | spec, family files, panel, probes | `manifest.yaml`, `cases.jsonl`, `corpus_report.json` in a temporary directory | §4 resolution done | exit 2, or 6 for a missing probe |
-| L2 validate | `core/manifest.py`, `generation/validate_*.py` | manifest, corpus, panel, probes, provenance blocks | — | every §4, §8.1, §9, §20.4, §20.9, §22, §23.6 check passes | exit 2, or 6 for a stale probe |
-| L3 freeze | `core/manifest.py` | manifest | `manifest.lock` (spec input only) | lock equals the recomputed hash. Spec input writes the lock; manifest input requires an existing lock (rule §2.1) | exit 2 for a missing lock on manifest input, or a lock with another hash |
+| L1 generate (spec input only) | `generation/`, `core/bundle.py`, `core/code_ref.py` | spec, family files, panel, probes, package source | the §0.10 bundle without the lock (`manifest.yaml`, `cases.jsonl`, `renderings.jsonl`, `assets.json`, `corpus_report.json`, `probes/`) in a temporary directory | §4 resolution done; every rendering materialised; every consumed asset and the source tree hashed; no ID computed | exit 2 (including the clean-tree rule, §0.10), or 6 for a missing probe |
+| L2 validate | `core/manifest.py`, `generation/validate_*.py` | bundle, panel, probes, provenance blocks | — | every §0.10, §0.11, §4, §8.1, §9, §20.4, §20.9, §22, §23.6 check passes | exit 2, or 6 for a stale probe |
+| L3 freeze | `core/manifest.py`, `core/bundle.py` | bundle, local assets, package source | `manifest.lock` (spec input only) | the §4 freeze conditions hold, the lock equals the recomputed hash, and the frozen-input checks pass (§4). Spec input writes the lock; manifest input requires an existing lock (rule §2.1) | exit 2 for a missing lock on manifest input, a lock with another hash, or FROZEN_INPUT_DRIFT |
 | L4 plan | `execution/budget.py`, `statistics/power.py` | manifest, `pricing.yaml` | stdout | §30 report printed | exit 2 for a missing price |
 | L5 policy | `execution/runner.py` | manifest, `provider_policy.yaml` | — | rule §2.14 holds | exit 5 |
 | — confirm | `cli.py` | `--yes`, `--dry-run` | — | without `--yes`, or with `--dry-run`, stop here with exit 0; no run directory exists yet | — |
-| L6 materialise | `storage/db.py`, `storage/artifacts.py` | manifest, cases | run directory, `run.json`, `manifest/` copies (including `probes/<model_key>.json`), rows `run`, `manifest`, `testcase`, `variant`, `rendering`, `trial` (PENDING) | one trial per (case, arm, p, r, model) in the control subset rules of §22 | exit 1 |
+| L6 materialise | `storage/db.py`, `storage/artifacts.py` | bundle | run directory, `run.json`, `manifest/` (a copy of the whole bundle), the frozen message artefacts (§0.10), rows `run`, `manifest`, `testcase`, `variant`, `rendering` (from `renderings.jsonl`), `trial` (PENDING) | the §4 frozen-input checks passed first; every derived ID (§3) computed; one trial per (case, arm, p, r, model) in the control subset rules of §22 | exit 2 for FROZEN_INPUT_DRIFT, otherwise 1 |
 | L7 execute | `execution/runner.py`, `models/` | PENDING and SUBMITTED trials | `attempt`, `response`, artefacts, trial status | every trial terminal, or budget breach | exit 3 (budget), 1 (other) |
 | L8 evaluate, deterministic | `evaluation/parse.py`, `rules.py`, `code_static.py`, `sandbox.py` | responses | `observation` | one observation per (trial with a body, deterministic feature) | per-trial statuses (§28); never exits |
 | L9 analyse, sensitivity | `statistics/`, `oracles.py` | observations | `analysis` rows (effects, zones, sensitivity labels, `is_bias`) | one row per model × feature × contrast | exit 1 |
@@ -1181,16 +1277,16 @@ Runtime loops and their bounds: the transport retry loop (§15: 5 tries; 20 cons
 
 **Run directory identity.** `<run_dir>/run.json` (committed) holds `{schema_version, run_id, experiment_key, manifest_hash, started_at}`. A `RUN_ID` argument is a full run ID or a unique prefix of at least 8 hexadecimal characters; it resolves to the directory under `$HARNESS_HOME/runs/` whose `run.json` has that ID. No match exits 1; an ambiguous prefix exits 2.
 
-**Injected identity for tests [E-23].** `execution.runner.run_experiment(path: Path, panel: str | None, *, yes: bool, run_id: str | None = None, clock: Callable[[], datetime] | None = None, git_sha: str | None = None) -> RunResult` is the library entry point that `cli.main` calls with the defaults (uuid4, UTC now, the SHA below). The golden and replay tests pass fixed values, so run IDs, dates and the SHA in rendered files are stable. `harness_git_sha` is `git rev-parse HEAD` in the package's repository, with `-dirty` appended when `git status --porcelain` is non-empty, or `unknown` outside a git checkout.
+**Injected identity for tests [E-23].** `execution.runner.run_experiment(path: Path, panel: str | None, *, yes: bool, run_id: str | None = None, clock: Callable[[], datetime] | None = None, code_ref: CodeRef | None = None) -> RunResult` is the library entry point that `cli.main` calls with the defaults (uuid4, UTC now, and the code identity that `core/code_ref.py` computes as in §0.10). `CodeRef` is the frozen dataclass of the five `code_ref` fields. An injected `code_ref` replaces the computed one everywhere in that process: in the manifest written at L1, in the frozen-input checks (§4) and in `run.code_ref_json`. The golden and replay tests pass fixed values, so run IDs, dates, the code identity and hence `manifest_hash` in rendered files are stable.
 
 ---
 
 ## 32. CLI
 
 ```
-financial-harness generate SPEC.yaml -o DIR [--panel NAME]   # manifest.yaml, cases.jsonl, corpus_report.json
+financial-harness generate SPEC.yaml -o DIR [--panel NAME]   # §0.10 bundle without the lock: manifest.yaml, cases.jsonl, renderings.jsonl, assets.json, corpus_report.json, probes/
 financial-harness validate MANIFEST.yaml               # case + corpus + power + panel + provenance checks
-financial-harness freeze   MANIFEST.yaml               # writes manifest.lock
+financial-harness freeze   MANIFEST.yaml               # writes manifest.lock after the §4 freeze conditions and frozen-input checks
 financial-harness plan     MANIFEST.yaml
 financial-harness run      MANIFEST.yaml [--dry-run] [--yes]
 financial-harness run      SPEC.yaml [--panel NAME] [--dry-run] [--yes]   # = §31A L1–L13
@@ -1217,7 +1313,7 @@ financial-harness taxonomy weights --responses PATH                             
 Exit codes: 0 OK · 1 error · 2 validation failure · 3 budget stop · 4 incomplete run · 5 policy refusal (§2.14) · 6 stale or missing probe.
 
 Command semantics not stated elsewhere:
-- `run FILE` treats FILE as a manifest if its top level has `manifest_hash`, otherwise as a spec. A spec's generated files are written into the run directory's `manifest/` at L6; `generate -o DIR` is the way to keep them elsewhere.
+- `run FILE` treats FILE as a manifest if its top level has `manifest_hash`, otherwise as a spec. A manifest is read with the rest of its bundle from the same directory (§0.10). A spec's generated bundle is written into the run directory's `manifest/` at L6; `generate -o DIR` is the way to keep it elsewhere.
 - `--yes` is required for any command that makes provider calls, including fake ones; without it the command prints the plan and exits 0. `--dry-run` stops after L5 even with `--yes`.
 - `evaluate RUN_ID` runs §31A L8–L10; `analyse RUN_ID` runs L9 and L11; `render RUN_ID` runs L12–L13. Each takes an exclusive `fcntl.flock` on `<run_dir>/db/LOCK` and exits 1 if another process holds it; `run` holds it from L6 to L13.
 - `status RUN_ID` prints the run status and, per model, counts of trials by status and the spend against each cap; exit 0.
@@ -1238,10 +1334,12 @@ runs/
 └── 2026-10-06_momentum-stock-add-v1_3f9c2a1b/     # <UTC start date>_<experiment_key slug>_<run_id[:8]>
     ├── README.md                                 # entry point: status, headline, file map, how to reproduce
     ├── run.json                                  # run identity (§31A)
-    ├── manifest/
+    ├── manifest/                                 # the frozen bundle (§0.10)
     │   ├── manifest.yaml
     │   ├── manifest.lock
     │   ├── cases.jsonl
+    │   ├── renderings.jsonl
+    │   ├── assets.json
     │   ├── corpus_report.json
     │   └── probes/<model_key>.json
     ├── results/                                  # machine-readable; the source of every reported number
@@ -1323,8 +1421,9 @@ Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PCB_vs_PCA`, `invalid_rate_B_vs_
 ```json
 {
   "schema_version": "1.0",
-  "run": {"run_id": "…", "experiment_key": "momentum_stock_add.v1", "experiment_id": "…", "manifest_hash": "…",
-          "mode": "confirmatory", "status": "COMPLETE", "started_at": "…Z", "completed_at": "…Z", "harness_git_sha": "…"},
+  "run": {"run_id": "…", "experiment_key": "momentum_stock_add.v1", "experiment_id": "…", "design_hash": "…", "manifest_hash": "…",
+          "mode": "confirmatory", "status": "COMPLETE", "started_at": "…Z", "completed_at": "…Z",
+          "code_ref": {"harness_git_sha": "…", "harness_tree_sha256": "…", "legacy_git_sha": null, "legacy_tree_sha256": null, "dirty": false}},
   "design": {"concept": "momentum_12m", "mandate_id": "M1", "intervention": "+25% (A) → −25% (B) via price_12m_ago",
              "primary_feature": "decision_add", "effect_scale": "risk_difference", "delta": 0.1, "alpha": 0.05,
              "n_clusters_planned": 430, "P": 3, "R": 1},
@@ -1348,7 +1447,7 @@ Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PCB_vs_PCA`, `invalid_rate_B_vs_
 
 ```
 # <Experiment title>: <concept> under mandate <mandate_id>
-Run `3f9c2a1b` · 2026-10-06 · confirmatory · COMPLETE · manifest `a1b2c3d4` · harness `abc1234`
+Run `3f9c2a1b` · 2026-10-06 · confirmatory · COMPLETE · design `9e8d7c6b` · manifest `a1b2c3d4` · harness `abc1234`
 
 ## 1. Headline            Model | θ̂ [95% CI] | Zone | Sensitivity | Attribution | Gates failed
 ## 2. Design              key/value table: question, mandate, intervention, closure, primary feature, estimand, δ, α, N planned/achieved, P, R, panel
@@ -1361,6 +1460,8 @@ Run `3f9c2a1b` · 2026-10-06 · confirmatory · COMPLETE · manifest `a1b2c3d4` 
 ## 9. Diagnostics         corpus report, evaluator calibration, probes, capability drift, cost (figure 06)
 ## 10. Provenance         hashes, versions, seeds, file map
 ```
+
+In the header, `design` and `manifest` show the first 8 hex characters of `design_hash` and `manifest_hash`; `harness` shows the first 7 characters of `code_ref.harness_git_sha`, suffixed `-dirty` when `code_ref.dirty` is true, or `unidentified` when the SHA is null (§0.10).
 
 Number formats (presentation only):
 
@@ -1459,7 +1560,7 @@ The forest plot is the canonical view; every other figure is supporting.
 - `financial-harness render RUN_ID` regenerates `README.md`, `results/`, `report/` and `models/` from `db/run.sqlite` and artefacts only. Output is byte-identical across renders and after `replay --reevaluate`. Timestamps and host details go only to `logs/build_info.json`.
 - `summary.json` and every CSV validate against `reporting/schemas/*.json` (JSON Schema 2020-12) in tests.
 - A test parses `report.md` and `report.html` and asserts that every number appears in a `results/` file at the stated precision.
-- Golden snapshot: the `report/` directory from the S1 fake-adapter run, produced through `run_experiment` with `run_id="00000000-0000-4000-8000-000000000001"`, a clock fixed at `2026-01-01T00:00:00Z` and `git_sha="0000000"` (§31A, E-23), is committed under `tests/harness/golden/` and compared byte for byte. Without the injection the run ID, dates and SHA would change the bytes on every run and commit. `HARNESS_UPDATE_GOLDEN=1 uv run pytest tests/harness/test_harness_golden.py` rewrites it; the rewrite is reviewed like any code change.
+- Golden snapshot: the `report/` directory from the S1 fake-adapter run, produced through `run_experiment` with `run_id="00000000-0000-4000-8000-000000000001"`, a clock fixed at `2026-01-01T00:00:00Z` and a fixed `code_ref` (`"0000000"` for each git SHA and `"0" * 64` for each tree hash the experiment records, `dirty: false`) (§31A, E-23), is committed under `tests/harness/golden/` and compared byte for byte. Without the injection the run ID, dates and code identity (and with it `manifest_hash`) would change the bytes on every run and commit. `HARNESS_UPDATE_GOLDEN=1 uv run pytest tests/harness/test_harness_golden.py` rewrites it; the rewrite is reviewed like any code change.
 
 ---
 
@@ -1565,6 +1666,7 @@ financial_llm_harness/
     cli.py                                   # argparse; load_dotenv(); asyncio.run; exit codes (§32)
     errors.py                                # HarnessValidationError, PolicyRefusal, BudgetExhausted, … (§0.7)
     core/          schema.py ids.py manifest.py canonical_json.py
+                   yaml_io.py (§0.11) bundle.py (§0.10 bundle, §4 frozen-input checks) code_ref.py (§0.10 code identity)
     generation/    scenario.py intervention.py render.py paraphrase.py validate_case.py validate_corpus.py provenance.py
     families/      fundamental_judgement/ fundamental_extraction/ corporate_action/ call_analysis/
                    broker_synthesis/ quant_method_choice/ quant_dgp/ ml_design/ code_task/   (§34)
@@ -2282,7 +2384,7 @@ Once survey weights exist (§T10.3), "frequently asked" means the item is in the
    - delistings with delisting returns;
    - publication lags on characteristics.
 3. **Known truth:** population IC per signal, the true covariance (so estimator choice can be scored by out-of-sample loss), the regime path, and which signals are spanned.
-4. **Determinism:** seeded per §18. Datasets are artefacts; the oracle reads the DGP parameters, never the prose.
+4. **Determinism:** seeded per §12, never from a hash-derived seed. Datasets are artefacts; the oracle reads the DGP parameters, never the prose.
 
 ---
 
@@ -2368,12 +2470,29 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 ## 36. Automated tests (required for V1)
 
 - **Unit:**
-  - Hash and ID stability: canonical JSON, manifest hash, UUIDv5.
+  - Hash and ID stability: canonical JSON; `design_hash` over exactly the §4 design projection and `manifest_hash` over the rest; UUIDv5 keys (§3); `uint31`/`uint64`; `harness_tree_sha256` ignores `__pycache__/` and package files outside the tree rule, and changes with any edit to a file inside it (§0.10).
   - Generation: DAG recompute, closure diff, constraints.
   - Parsers, fuzzed with malformed JSON and multiple fences.
   - Statistics: the exact test (§23.3) equals statsmodels `mcnemar(table, exact=True)` for every n₊ + n₋ ≤ 200 and equals legacy `compute_mcnemar` for n₊ + n₋ < 25 (both to relative tolerance 1e-12); bootstrap and permutation determinism under the E-19 seed derivation; the TOST p-value rejects at a exactly when CI_{1−2a} ⊂ (−δ, δ) on fixtures away from the bootstrap boundary; LEVEL CIs and p_meets/p_below; the `paired_difference_vs_truth` estimand; degenerate samples; the §23.6 worked check (391, 429, 234, 257); power formulas checked by simulation; BH and FCR intervals; the §25 zone rule under BH (D-18) on hand-computed families.
-  - Generation: the distribution and constraint grammars (§6.1) accept the documented forms and reject everything else; `form: set` with `counterbalance: true` exits 2; `controls.subset_n` is computed per §22 and a smaller spec value exits 2.
+  - Generation: the distribution and constraint grammars (§6.1) accept the documented forms and reject everything else; `form: set` with `counterbalance: true` exits 2; `controls.subset_n` is computed per §22 and a smaller spec value exits 2; near-duplicate clustering (§9.2) on a hand-built fixture omits a zero-variance field from k, joins A–B by a structured edge and B–C by a text edge into one cluster {A, B, C}, and numbers clusters by lowest `case_idx`; `corpus_report.json` carries the realised marginals and correlations (§6.2).
   - Classification: gate precedence (UNSTABLE before INSTRUMENT_INSENSITIVE before INDETERMINATE); discovery mode uses the DISCOVERY row and `is_bias = false`; `is_bias` and the composites on a truth table of (mode, confidence, sensitivity label, attribution label); the `factors` attribution channel on fixed `material_factors`; UNKNOWN-only clusters dropped from R; eligibility with f₀ defined on the A0 contrast.
+- **Frozen closure (§0.10, §4):**
+  - Editing a used template after freeze makes `run` exit 2 with FROZEN_INPUT_DRIFT before any call; the same edit before `--resume` stops the run before L7 and writes a `frozen_input_drift` event.
+  - Editing an unused template changes no hash, and the run proceeds.
+  - Editing a family scorer (`family.py`) changes `harness_tree_sha256`, and editing a hidden test changes its `hidden_tests` row in `assets.json`; either is FROZEN_INPUT_DRIFT.
+  - With cassette adapters, the messages in the request body sent equal the frozen `system` and `user` strings byte for byte, and the stored request-body artefact hashes to the value recorded for the attempt (§21).
+  - A confirmatory spec with a non-fake target is refused (exit 2) from a dirty or non-git source tree; discovery and fake-only specs freeze with `dirty: true` and both tree hashes recorded.
+  - `replay --reevaluate` refuses (exit 2) after an edit to the evaluator parser or to hashed source.
+- **Hash acyclicity (§3, §4):**
+  - Generation up to the hash computation completes with the §3 ID functions patched to raise, so no manifest-derived UUID exists before freeze; `cases.jsonl`, `renderings.jsonl` and `assets.json` contain no hash-derived value.
+  - Regenerating an identical pre-hash corpus gives an identical `design_hash`.
+  - Changing the panel, the evaluator, a probe, the budget or `code_ref` changes `manifest_hash` but not `design_hash`, `experiment_id`, TestCase or Cluster IDs, or trial seeds; changing a scientific asset, `seeds` or `n_cases` changes both hashes.
+  - The control subset depends only on `cluster_ordinal`, `subset_n` and `seeds.generation`.
+- **YAML (§0.11):**
+  - `off`, `on`, `yes`, `no` and `2026-10-06` load as strings; `true`, `false` and `null` (also `~` and empty) keep their YAML types.
+  - `1:20` and `1_000` load as strings, `010` as the integer 10, `0o17` as 15, `0x1F` as 31, and `1e5` as a float.
+  - An explicit `!!timestamp` or `!!python/object` tag exits 2; a validator rejects `true` for an `int` field.
+  - Round trip: data holding the strings `'off'`, `'on'`, `'2026-10-06'`, `'1e5'` and `'0o17'`, written by `yaml_io.dump`, reloads unchanged under `HarnessSafeLoader` and under plain `yaml.safe_load`.
 - **Property (hypothesis):**
   - Both arms satisfy constraints.
   - The diff equals the declared closure.
@@ -2419,7 +2538,7 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 - **Boundaries** (`test_harness_boundaries.py`, §0.7): no forbidden import and no top-level legacy import in any harness module; no harness module named `test_*.py`; no test-file basename shared between `tests/harness/` and the legacy test directories.
 - **Panels and provenance:** each §20.9 rejection rule exits 2; a manifest whose non-fake target uses a prompt-visible or oracle-bearing file with `drafted_by.kind: llm` or empty `approved_by` exits 2 (§8.1); `independence` overlap, including `oracle_author_families`, exits 2 (§4); `enforcement: auto` resolves per E-10; a confirmatory semantic feature without a calibration record exits 2 (§16).
 - **Lifecycle (§31A):** `--dry-run` and a missing `--yes` create no run directory; `RUN_ID` resolves by full ID and by unique 8-character prefix, and an ambiguous prefix exits 2; a SUBMITTED trial without `batch_id` is resubmitted on resume with a new Attempt; a second process on the same run exits 1 on the lock; after a fake-only run without semantic features, `torch` and `chat_limiter` are not in `sys.modules` (§0.7).
-- **Golden and identity:** the golden run uses the E-23 injection; a run without injection differs from the golden only in run ID, dates and SHA.
+- **Golden and identity:** the golden run uses the E-23 injection; a run without injection differs from the golden only in run ID, dates, code identity, and `manifest_hash` with the IDs derived from it (§3).
 - **Programme:** the §37 programme acceptance; resume after an injected stop between experiments gives the same final `state.json` and outputs as an uninterrupted run; a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2; the `question_answers.csv` verdict rule (D-20) on a hand-built `answers.csv`; cross-format consistency on two fake experiments with matched cases.
 - **Archive:** `archive` twice on the same run gives byte-identical archives; `render` after deleting `db/` and `artifacts/` reproduces byte-identical outputs from the archive; a corrupted archive exits 1.
 
@@ -2433,10 +2552,10 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 3. Build A/B and control arms.
 4. Prove the diffs match the closure.
 5. Check power.
-6. Freeze.
-7. Load, validate and freeze the paraphrase templates.
+6. Freeze the bundle (§0.10): the exact renderings, the hashes of every consumed asset, and the code identity.
+7. Load and validate the paraphrase templates, then send only their frozen renderings.
 8. Run `plan`.
-9. Execute randomised blocks with common random numbers.
+9. Execute randomised blocks with matched requested seeds.
 10. Retain failures.
 11. Extract the primary observable.
 12. Evaluate the oracle.
