@@ -309,8 +309,17 @@ def build_adapter(
     http_client: Any = None,
     key: str | None = None,
 ) -> ModelAdapter:
-    """The adapter class named by the provider's registry entry; branches on ``adapter`` only."""
-    kind = provider_entry(entry["provider"])["adapter"]
+    """The adapter for the entry's resolved request profile; branches on ``protocol`` only (§20.1).
+
+    Gemini's ``openai_compat`` transport has a ``chat_completions`` profile and so
+    uses the ``openai_compatible`` adapter.
+    """
+    protocol = request_profile(entry["provider"], caps.request_profile_id)["protocol"]
+    kind = {
+        "chat_completions": "openai_compatible",
+        "anthropic_messages": "anthropic",
+        "gemini_generate_content": "gemini_native",
+    }.get(protocol, provider_entry(entry["provider"])["adapter"])
     if kind == "openai_compatible":
         from financial_llm_harness.models.openai_compatible import (
             OpenAICompatibleAdapter,

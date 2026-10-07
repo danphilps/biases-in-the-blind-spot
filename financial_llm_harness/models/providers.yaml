@@ -3,6 +3,10 @@
 # are dotted paths into the request body or the response JSON. A path segment may be
 # an integer index, `*` (every element) or `name[key=value]` (the elements of the list
 # `name` whose `key` equals `value`). `probe` re-verifies every value before freeze.
+# Field names were set at M3 (2026-10-07) from provider documentation; the Anthropic
+# entries were checked against platform.claude.com. The build container could not
+# reach the Google, OpenAI, OpenRouter, DeepSeek, Alibaba Cloud or Moonshot sites, so
+# those names follow §20.3 and are unverified until a live probe or live test passes.
 registry_version: "2026-10-06"
 providers:
   openai:
@@ -85,7 +89,7 @@ providers:
         profile_version: 1
         protocol: gemini_generate_content
         max_output_field: generationConfig.maxOutputTokens
-        structured_output: {kind: native_schema, field: generationConfig.responseSchema}
+        structured_output: {kind: native_schema, field: generationConfig.responseJsonSchema}
         thinking: {kind: thinking_config, fields: [generationConfig.thinkingConfig]}
         seed_field: generationConfig.seed
         routing_fields: null
@@ -148,7 +152,7 @@ providers:
         protocol: chat_completions
         max_output_field: max_tokens
         structured_output: {kind: json_object, field: response_format}
-        thinking: {kind: reasoning_effort, fields: [reasoning_effort]}
+        thinking: {kind: reasoning_effort, fields: [reasoning.effort]}
         seed_field: seed
         routing_fields: null
         trace_paths: [choices.0.message.reasoning_content]

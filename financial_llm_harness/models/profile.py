@@ -586,3 +586,35 @@ def complete_response(
 
 def elapsed_ms(t0: float) -> int:
     return int(round((time.monotonic() - t0) * 1000))
+
+
+# ---------------------------------------------------------------------------
+# Batch items (§20.10, E-4)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class BatchSubmission:
+    batch_id: str
+    created_at: float  # epoch seconds, from the provider
+    lines: dict[
+        str, bytes
+    ]  # custom_id → the request line sent (the item's request artefact)
+    built: dict[str, BuiltRequest]
+
+
+@dataclass(frozen=True)
+class BatchState:
+    ended: bool
+    created_at: float
+    status: str
+
+
+def batch_item_failure(
+    line: bytes,
+    transport_status: str,
+    raw: bytes | None,
+    http_status: int | None = None,
+) -> ModelResponse:
+    """An errored or expired batch item: transport-class, provenance only (§15)."""
+    return failure_response(line, transport_status, http_status=http_status, body=raw)

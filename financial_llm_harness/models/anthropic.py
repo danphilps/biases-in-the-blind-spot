@@ -7,6 +7,7 @@ SDK does not model (thinking, ``output_config``) travel in ``extra_body``.
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Mapping
 from typing import Any
@@ -118,6 +119,102 @@ class AnthropicAdapter:
     async def list_model_ids(self) -> list[str]:
         page = await self.client.models.list(limit=1000)
         return sorted(m.id for m in page.data)
+
+    # -- Anthropic Message Batches (batch: anthropic_message_batches, §20.10) --
+
+    async def batch_submit(
+        self, items: list[tuple[str, ModelRequest]]
+    ) -> P.BatchSubmission:
+        """One batch, ``custom_id = trial_id``; each item's params are the profile's body."""
+        lines: dict[str, bytes] = {}
+        built: dict[str, P.BuiltRequest] = {}
+        requests = []
+        for custom_id, req in items:
+            b = P.build_body(self.profile, self.entry, self.caps, req)
+            item = {"custom_id": custom_id, "params": b.body}
+            requests.append(item)
+            lines[custom_id] = json.dumps(item, ensure_ascii=False).encode("utf-8")
+            built[custom_id] = b
+        resp = await self.client.post(
+            "/v1/messages/batches",
+            body={"requests": requests},
+            cast_to=httpx.Response,
+        )
+        data = resp.json()
+        return P.BatchSubmission(
+            str(data["id"]), _epoch(data.get("created_at")), lines, built
+        )
+
+    async def batch_state(self, batch_id: str) -> P.BatchState:
+        resp = await self.client.get(
+            f"/v1/messages/batches/{batch_id}", cast_to=httpx.Response
+        )
+        data = resp.json()
+        status = str(data.get("processing_status"))
+        return P.BatchState(status == "ended", _epoch(data.get("created_at")), status)
+
+    async def batch_cancel(self, batch_id: str) -> None:
+        await self.client.post(
+            f"/v1/messages/batches/{batch_id}/cancel", cast_to=httpx.Response
+        )
+
+    async def batch_results(
+        self, batch_id: str, sub: P.BatchSubmission
+    ) -> dict[str, ModelResponse]:
+        meta = (
+            await self.client.get(
+                f"/v1/messages/batches/{batch_id}", cast_to=httpx.Response
+            )
+        ).json()
+        out: dict[str, ModelResponse] = {}
+        url = meta.get("results_url")
+        if url:
+            content = (await self.client.get(url, cast_to=httpx.Response)).content
+            for raw in content.splitlines():
+                if not raw.strip():
+                    continue
+                item = json.loads(raw)
+                cid = str(item.get("custom_id"))
+                if cid not in sub.lines:
+                    continue
+                result = item.get("result") or {}
+                kind = result.get("type")
+                msg = result.get("message")
+                if kind == "succeeded" and isinstance(msg, dict):
+                    out[cid] = P.complete_response(
+                        self.profile,
+                        sub.built[cid],
+                        sub.lines[cid],
+                        200,
+                        raw,
+                        {"request-id": str(msg.get("id") or "")},
+                        self.entry.get("region"),
+                        0,
+                        payload=msg,
+                    )
+                elif kind == "errored":
+                    out[cid] = P.batch_item_failure(
+                        sub.lines[cid], "batch_errored", raw
+                    )
+                else:  # expired or canceled
+                    out[cid] = P.batch_item_failure(
+                        sub.lines[cid], "batch_expired", raw
+                    )
+        for cid, line in sub.lines.items():
+            if cid not in out:
+                out[cid] = P.batch_item_failure(line, "batch_expired", None)
+        return out
+
+
+def _epoch(value: Any) -> float:
+    """RFC 3339 → epoch seconds; numbers pass through."""
+    from datetime import datetime
+
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str) and value:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+    return 0.0
 
 
 def _sent(slot: list[bytes]) -> bytes:

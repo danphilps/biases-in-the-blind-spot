@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -50,10 +51,14 @@ def fake_planning_refs(variance: float = 0.05) -> list[dict[str, Any]]:
 
 
 def small_spec(
-    tmp: Path, n_cases: int = 50, name: str = "small.yaml", **overrides: Any
+    tmp: Path,
+    n_cases: int = 50,
+    name: str = "small.yaml",
+    base: Path = S1_SPEC,
+    **overrides: Any,
 ) -> Path:
     """A small S1-shaped spec planned with fake-design variances, for fast lifecycle tests."""
-    spec = copy.deepcopy(load_spec())
+    spec = copy.deepcopy(load_spec(base))
     spec["scenario_spec"]["n_cases"] = n_cases
     spec["statistical_spec"]["planning_ref"] = fake_planning_refs()
     spec["statistical_spec"]["bootstrap_B"] = 500
@@ -218,3 +223,82 @@ def run_small(
         res = run_experiment(spec, "ci_fake", yes=True, run_id=run_id)
     assert res.status == "COMPLETE" and res.run_dir is not None
     return res.run_dir
+
+
+# ---------------------------------------------------------------------------
+# Cassettes (§20.10, E-5): replayed through httpx.MockTransport, no network
+# ---------------------------------------------------------------------------
+
+CASSETTES = Path(__file__).resolve().parent / "cassettes"
+
+
+class Cassette:
+    """Replays ``tests/harness/cassettes/<dir>/<case>.json`` entries in order.
+
+    A request matches on method, URL path and canonical JSON body; an unmatched
+    request is recorded and answered with HTTP 599 so the test fails visibly.
+    """
+
+    def __init__(self, directory: str, *cases: str) -> None:
+        self.entries: list[dict[str, Any]] = []
+        for case in cases:  # no case: an empty cassette (see from_entries)
+            self.entries += json.loads(
+                (self.dir(directory) / f"{case}.json").read_text()
+            )
+        self.used = [False] * len(self.entries)
+        self.requests: list[Any] = []
+        self.response_bytes: list[bytes] = []
+        self.unmatched: list[str] = []
+
+    @staticmethod
+    def dir(directory: str) -> Path:
+        return CASSETTES / directory
+
+    @classmethod
+    def from_entries(cls, entries: list[dict[str, Any]]) -> Cassette:
+        """A cassette built in a test from hand-written entries in the same format."""
+        c = cls("__none__")
+        c.entries = list(entries)
+        c.used = [False] * len(c.entries)
+        return c
+
+    def handler(self, request: Any) -> Any:
+        from urllib.parse import urlparse
+
+        import httpx
+
+        from financial_llm_harness.core.canonical_json import canonical
+
+        body = json.loads(request.content) if request.content else None
+        for i, e in enumerate(self.entries):
+            if self.used[i]:
+                continue
+            r = e["request"]
+            if (
+                r["method"] == request.method
+                and urlparse(r["url"]).path == request.url.path
+                and canonical(r["json"]) == canonical(body)
+            ):
+                self.used[i] = True
+                self.requests.append(request)
+                resp = e["response"]
+                data = (
+                    resp["body"].encode()
+                    if isinstance(resp["body"], str)
+                    else json.dumps(resp["body"]).encode()
+                )
+                self.response_bytes.append(data)
+                return httpx.Response(
+                    resp["status"], headers=resp["headers"], content=data
+                )
+        self.unmatched.append(f"{request.method} {request.url.path} {body}")
+        return httpx.Response(599, content=b"unmatched cassette request")
+
+    def client(self) -> Any:
+        import httpx
+
+        return httpx.AsyncClient(transport=httpx.MockTransport(self.handler))
+
+    def assert_exhausted(self) -> None:
+        assert self.unmatched == [], f"unmatched requests: {self.unmatched}"
+        assert all(self.used), "cassette entries not requested"

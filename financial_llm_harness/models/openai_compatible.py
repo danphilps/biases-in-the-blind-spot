@@ -125,6 +125,88 @@ class OpenAICompatibleAdapter:
         page = await self.client.models.list()
         return sorted(m.id for m in page.data)
 
+    # -- OpenAI Batch (batch: openai_batch, §20.10) --------------------------
+
+    async def batch_submit(
+        self, items: list[tuple[str, ModelRequest]]
+    ) -> P.BatchSubmission:
+        """Upload one JSONL file (``custom_id = trial_id``) and create the batch."""
+        lines: dict[str, bytes] = {}
+        built: dict[str, P.BuiltRequest] = {}
+        for custom_id, req in items:
+            b = P.build_body(self.profile, self.entry, self.caps, req)
+            line = {
+                "custom_id": custom_id,
+                "method": "POST",
+                "url": "/v1/chat/completions",
+                "body": b.body,
+            }
+            lines[custom_id] = json.dumps(line, ensure_ascii=False).encode("utf-8")
+            built[custom_id] = b
+        data = b"\n".join(lines[c] for c, _ in items) + b"\n"
+        f = await self.client.files.create(
+            file=("batch.jsonl", data, "application/jsonl"), purpose="batch"
+        )
+        batch = await self.client.batches.create(
+            input_file_id=f.id,
+            endpoint="/v1/chat/completions",
+            completion_window="24h",
+        )
+        return P.BatchSubmission(batch.id, float(batch.created_at), lines, built)
+
+    async def batch_state(self, batch_id: str) -> P.BatchState:
+        b = await self.client.batches.retrieve(batch_id)
+        ended = b.status in ("completed", "failed", "expired", "cancelled")
+        return P.BatchState(ended, float(b.created_at), str(b.status))
+
+    async def batch_cancel(self, batch_id: str) -> None:
+        await self.client.batches.cancel(batch_id)
+
+    async def batch_results(
+        self, batch_id: str, sub: P.BatchSubmission
+    ) -> dict[str, ModelResponse]:
+        """Read both the output and the error file; an item in neither is expired."""
+        b = await self.client.batches.retrieve(batch_id)
+        out: dict[str, ModelResponse] = {}
+        for file_id in (b.output_file_id, b.error_file_id):
+            if not file_id:
+                continue
+            content = (await self.client.files.content(file_id)).content
+            for raw in content.splitlines():
+                if not raw.strip():
+                    continue
+                item = json.loads(raw)
+                cid = str(item.get("custom_id"))
+                if cid not in sub.lines:
+                    continue
+                resp = item.get("response") or {}
+                status = resp.get("status_code")
+                body = resp.get("body")
+                if (
+                    item.get("error") is None
+                    and status == 200
+                    and isinstance(body, dict)
+                ):
+                    out[cid] = P.complete_response(
+                        self.profile,
+                        sub.built[cid],
+                        sub.lines[cid],
+                        200,
+                        raw,
+                        {"x-request-id": str(resp.get("request_id") or "")},
+                        self.entry.get("region"),
+                        0,
+                        payload=body,
+                    )
+                else:
+                    out[cid] = P.batch_item_failure(
+                        sub.lines[cid], "batch_errored", raw, status
+                    )
+        for cid, line in sub.lines.items():
+            if cid not in out:
+                out[cid] = P.batch_item_failure(line, "batch_expired", None)
+        return out
+
 
 def _sent(slot: list[bytes]) -> bytes:
     return slot[-1] if slot else b""

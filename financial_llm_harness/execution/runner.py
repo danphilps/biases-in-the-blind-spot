@@ -279,6 +279,7 @@ class RunContext:
     sleep: Callable[[float], Any] = asyncio.sleep
     interrupt_after: int | None = None
     executed: int = 0
+    drift_logged: set[tuple[str, str]] = field(default_factory=set)
 
     @property
     def bundle_dir(self) -> Path:
@@ -643,7 +644,12 @@ def _price(ctx: RunContext, model_key: str) -> BU.Price | None:
 
 
 def _store_attempt_response(
-    ctx: RunContext, trial: Mapping[str, Any], attempt_id: str, resp: ModelResponse
+    ctx: RunContext,
+    trial: Mapping[str, Any],
+    attempt_id: str,
+    resp: ModelResponse,
+    *,
+    batch: bool = False,
 ) -> BU.Spend:
     db, store = ctx.db, ctx.store
     req_art = store.put(resp.request_body)
@@ -685,7 +691,11 @@ def _store_attempt_response(
             )
             ot = BU.estimate_tokens(resp.text or "") if ot is None else ot
         price = _price(ctx, trial["model_key"])
-        cost = price.cost(int(it), int(ot), int(rt)) if price is not None else 0.0
+        cost = (
+            price.cost(int(it), int(ot), int(rt), batch=batch)
+            if price is not None
+            else 0.0
+        )
         db.execute(
             "INSERT OR REPLACE INTO response(attempt_id, trial_id, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, usage_estimated, latency_ms, effective_params_json, serving_fingerprint_json, cost_usd) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -731,6 +741,16 @@ def _next_attempt_no(ctx: RunContext, trial_id: str) -> int:
     return 1 if row[0] is None else int(row[0]) + 1
 
 
+def select_used_attempt(db: Any, trial_id: str) -> str | None:
+    """The ``complete`` attempt with the lowest ``attempt_no`` (§29); never a transport-error body."""
+    row = db.execute(
+        "SELECT a.attempt_id FROM attempt a JOIN response r ON r.attempt_id = a.attempt_id "
+        "WHERE a.trial_id = ? AND a.transport_status = 'complete' ORDER BY a.attempt_no LIMIT 1",
+        (trial_id,),
+    ).fetchone()
+    return None if row is None else str(row[0])
+
+
 def _finish_trial(
     ctx: RunContext, trial_id: str, status: str, used_attempt: str | None
 ) -> None:
@@ -750,7 +770,8 @@ async def run_trial(ctx: RunContext, trial: Mapping[str, Any]) -> BU.Spend:
     n_in = BU.estimate_tokens(rendering["system"]) + BU.estimate_tokens(
         rendering["user"]
     )
-    if (
+    # context_tokens 0: the provider does not expose its limit and the probe recorded none (§20.4)
+    if caps.context_tokens > 0 and (
         n_in + int(ctx.manifest["response_spec"]["max_output_tokens"])
         > caps.context_tokens
     ):
@@ -786,6 +807,8 @@ async def run_trial(ctx: RunContext, trial: Mapping[str, Any]) -> BU.Spend:
             )
             _finish_trial(ctx, trial["trial_id"], status, attempt_id)
             return total
+        if kind == "api_error":
+            _check_capability_drift(ctx, trial["model_key"], caps, resp)
         last_kind = "timeout" if resp.transport_status == "timeout" else kind
         action, wait = RT.next_action(state, kind, resp.retry_after_s)
         if action == "retry":
@@ -803,16 +826,55 @@ async def run_trial(ctx: RunContext, trial: Mapping[str, Any]) -> BU.Spend:
 def _check_capability_drift(
     ctx: RunContext, model_key: str, caps: ModelCapabilities, resp: ModelResponse
 ) -> None:
-    if caps.trace_visibility == "none" and resp.reasoning_trace:
-        ctx.db.event(
-            "capability_drift",
-            {
-                "model_key": model_key,
-                "field": "trace_visibility",
-                "expected": "none",
-                "observed": "trace",
-            },
+    """A run-time response that contradicts a frozen capability (§20.4): one event per model and field."""
+    if resp.transport_status == "complete":
+        if caps.trace_visibility == "none" and resp.reasoning_trace:
+            _capability_event(ctx, model_key, "trace_visibility", "none", "trace")
+        elif caps.trace_visibility != "none" and not resp.reasoning_trace:
+            _capability_event(
+                ctx, model_key, "trace_visibility", caps.trace_visibility, "none"
+            )
+        return
+    if resp.http_status == 400 and resp.raw_payload:
+        from financial_llm_harness.models.probe import named_params
+
+        named = named_params(
+            resp.raw_payload.decode("utf-8", errors="replace"),
+            resp.effective_params or _sent_param_names(ctx, model_key),
+            set(),
         )
+        for name in named:
+            _capability_event(ctx, model_key, f"param:{name}", "accepted", "rejected")
+
+
+def _sent_param_names(ctx: RunContext, model_key: str) -> dict[str, Any]:
+    m = next(x for x in ctx.models if x["model_key"] == model_key)
+    names: dict[str, Any] = {
+        "max_output_tokens": True,
+        "temperature": True,
+        "seed": True,
+        "response_schema": True,
+    }
+    names.update(dict.fromkeys(m.get("params") or {}, True))
+    return names
+
+
+def _capability_event(
+    ctx: RunContext, model_key: str, field_name: str, expected: str, observed: str
+) -> None:
+    key = (model_key, field_name)
+    if key in ctx.drift_logged:
+        return
+    ctx.drift_logged.add(key)
+    ctx.db.event(
+        "capability_drift",
+        {
+            "model_key": model_key,
+            "field": field_name,
+            "expected": expected,
+            "observed": observed,
+        },
+    )
 
 
 def pending_blocks(ctx: RunContext, model_key: str) -> list[list[dict[str, Any]]]:
@@ -867,6 +929,9 @@ async def execute(ctx: RunContext) -> None:
     async def worker(model: Mapping[str, Any]) -> None:
         from financial_llm_harness.models.base import provider_limits
 
+        if model.get("batch"):
+            await batch_worker(ctx, model)
+            return
         key = (model["provider"], model.get("region"))
         if key not in sems:
             sems[key] = asyncio.Semaphore(
@@ -911,6 +976,196 @@ async def execute(ctx: RunContext) -> None:
 
     await asyncio.gather(*(worker(m) for m in ctx.models))
     ctx.db.commit()
+
+
+# ---------------------------------------------------------------------------
+# Batch flows (§20.10, E-4; retries §15; resume §29)
+# ---------------------------------------------------------------------------
+
+BATCH_MAX_ITEMS = 10_000
+
+
+def _live_batches(ctx: RunContext, model_key: str) -> dict[str, list[dict[str, Any]]]:
+    """batch_id → (trial, attempt) rows of SUBMITTED trials whose attempt is still in flight."""
+    rows = ctx.db.execute(
+        "SELECT a.batch_id, a.attempt_id, a.request_artifact, t.trial_id, t.model_key, t.arm, t.repetition, t.seed, "
+        "t.status, t.case_idx, t.paraphrase_idx FROM attempt a JOIN trial t ON t.trial_id = a.trial_id "
+        "WHERE t.model_key = ? AND t.status = 'SUBMITTED' AND a.transport_status = 'in_flight' AND a.batch_id IS NOT NULL "
+        "ORDER BY a.batch_id, t.trial_id",
+        (model_key,),
+    ).fetchall()
+    ctx.db.commit()
+    out: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in rows:
+        out[str(r["batch_id"])].append(dict(r))
+    return out
+
+
+def _batch_failures(ctx: RunContext, trial_id: str) -> tuple[int, bool]:
+    rows = ctx.db.execute(
+        "SELECT transport_status FROM attempt WHERE trial_id = ? AND transport_status IN ('batch_errored', 'batch_expired') "
+        "ORDER BY attempt_no",
+        (trial_id,),
+    ).fetchall()
+    return len(rows), bool(rows) and rows[-1][0] == "batch_expired"
+
+
+async def _submit_batch(
+    ctx: RunContext, adapter: Any, trials: list[dict[str, Any]]
+) -> tuple[str, Any]:
+    """Submit one batch; store every item's attempt (in flight, with the batch ID) before the first poll."""
+    items = [(t["trial_id"], build_request(ctx, t)) for t in trials]
+    sub = await adapter.batch_submit(items)
+    ctx.db.begin()
+    for t in trials:
+        attempt_no = _next_attempt_no(ctx, t["trial_id"])
+        attempt_id = ids.attempt_id(t["trial_id"], attempt_no)
+        req_art = ctx.store.put(sub.lines[t["trial_id"]])
+        ctx.submission_seq += 1
+        ctx.db.execute(
+            "INSERT INTO attempt(attempt_id, trial_id, attempt_no, started_at, ended_at, transport_status, http_status, provider_request_id, batch_id, request_artifact) "
+            "VALUES (?, ?, ?, ?, NULL, 'in_flight', NULL, NULL, ?, ?)",
+            (
+                attempt_id,
+                t["trial_id"],
+                attempt_no,
+                ctx.db.now(),
+                sub.batch_id,
+                req_art,
+            ),
+        )
+        ctx.db.execute(
+            "UPDATE trial SET status = 'SUBMITTED', submission_seq = ? WHERE trial_id = ? AND status IN ('PENDING', 'SUBMITTED')",
+            (ctx.submission_seq, t["trial_id"]),
+        )
+    ctx.db.event(
+        "batch_submitted",
+        {
+            "model_key": trials[0]["model_key"],
+            "batch_id": sub.batch_id,
+            "items": len(trials),
+        },
+    )
+    ctx.db.commit()
+    ctx.executed += len(trials)
+    return sub.batch_id, sub
+
+
+async def _settle_batch(
+    ctx: RunContext,
+    adapter: Any,
+    batch_id: str,
+    rows: list[dict[str, Any]],
+    sub: Any,
+    poll_s: float,
+) -> tuple[list[dict[str, Any]], BU.Spend]:
+    """Poll until the batch ends (cancelling it 25 h after creation), store every item, return the items to resubmit."""
+    from financial_llm_harness.models.profile import BatchSubmission
+
+    while True:
+        state = await adapter.batch_state(batch_id)
+        if state.ended:
+            break
+        if time.time() - state.created_at > RT.BATCH_CANCEL_AFTER_S:
+            await adapter.batch_cancel(batch_id)
+            ctx.db.event("batch_cancelled", {"batch_id": batch_id})
+            ctx.db.commit()
+            continue
+        await ctx.sleep(poll_s)
+    if (
+        sub is None
+    ):  # re-polled after resume: rebuild the request lines from the stored artefacts
+        lines = {r["trial_id"]: ctx.store.get(r["request_artifact"]) for r in rows}
+        built = {r["trial_id"]: _rebuild(ctx, adapter, r) for r in rows}
+        sub = BatchSubmission(batch_id, 0.0, lines, built)
+    results = await adapter.batch_results(batch_id, sub)
+    caps = ctx.capabilities[rows[0]["model_key"]]
+    rs = ctx.manifest["response_spec"]
+    resubmit: list[dict[str, Any]] = []
+    total = BU.Spend()
+    ctx.db.begin()
+    for r in rows:
+        resp = results[r["trial_id"]]
+        attempt_id = r["attempt_id"]
+        total.add(_store_attempt_response(ctx, r, attempt_id, resp, batch=True))
+        if resp.transport_status == "complete":
+            _check_capability_drift(ctx, r["model_key"], caps, resp)
+            used = select_used_attempt(ctx.db, r["trial_id"])
+            status = model_status(
+                resp, ctx.contract, rs["reasoning_mode"], bool(rs["abstain_allowed"])
+            )
+            _finish_trial(ctx, r["trial_id"], status, used)
+            continue
+        errors, expired = _batch_failures(ctx, r["trial_id"])
+        action = RT.batch_item_action(errors, expired)
+        if action == "resubmit":
+            resubmit.append(r)
+        else:
+            _finish_trial(ctx, r["trial_id"], action, None)
+    ctx.db.commit()
+    return resubmit, total
+
+
+def _rebuild(ctx: RunContext, adapter: Any, row: Mapping[str, Any]) -> Any:
+    from financial_llm_harness.models.profile import build_body
+
+    return build_body(
+        adapter.profile, adapter.entry, adapter.caps, build_request(ctx, row)
+    )
+
+
+async def batch_worker(ctx: RunContext, model: Mapping[str, Any]) -> None:
+    """One model's trials through its provider's batch flow (OpenAI Batch or Anthropic Message Batches)."""
+    from financial_llm_harness.models.base import provider_entry
+
+    mk = model["model_key"]
+    adapter = ctx.adapters[mk]
+    poll_s = float(provider_entry(model["provider"]).get("batch_poll_seconds", 180))
+    # 1. batches live from an earlier process are re-polled, never resubmitted (§29)
+    live = _live_batches(ctx, mk)
+    in_live = {r["trial_id"] for rows in live.values() for r in rows}
+    queue: list[tuple[str, list[dict[str, Any]], Any, BU.Spend]] = [
+        (bid, rows, None, BU.Spend()) for bid, rows in sorted(live.items())
+    ]
+    # 2. new blocks, all arms of a block in the same batch, within the budget
+    fresh: list[dict[str, Any]] = []
+    reserved = BU.Spend()
+    for block in pending_blocks(ctx, mk):
+        block = [t for t in block if t["trial_id"] not in in_live]
+        if not block:
+            continue
+        bound = _block_bound(ctx, block)
+        if not ctx.budget.reserve(bound):
+            break
+        reserved.add(bound)
+        fresh.extend(block)
+    for i in range(0, len(fresh), BATCH_MAX_ITEMS):
+        chunk = fresh[i : i + BATCH_MAX_ITEMS]
+        bid, sub = await _submit_batch(ctx, adapter, chunk)
+        rows = _rows_for(ctx, bid)
+        queue.append((bid, rows, sub, BU.Spend()))
+        if ctx.interrupt_after is not None and ctx.executed >= ctx.interrupt_after:
+            raise InjectedInterruption()
+    # 3. settle every batch; failed items go into the next batch, at most twice (§15)
+    while queue:
+        bid, rows, sub, _ = queue.pop(0)
+        retry, spend = await _settle_batch(ctx, adapter, bid, rows, sub, poll_s)
+        ctx.budget.record(spend)
+        if retry:
+            nbid, nsub = await _submit_batch(ctx, adapter, retry)
+            queue.append((nbid, _rows_for(ctx, nbid), nsub, BU.Spend()))
+    ctx.budget.release(reserved)
+
+
+def _rows_for(ctx: RunContext, batch_id: str) -> list[dict[str, Any]]:
+    rows = ctx.db.execute(
+        "SELECT a.batch_id, a.attempt_id, a.request_artifact, t.trial_id, t.model_key, t.arm, t.repetition, t.seed, "
+        "t.status, t.case_idx, t.paraphrase_idx FROM attempt a JOIN trial t ON t.trial_id = a.trial_id "
+        "WHERE a.batch_id = ? AND a.transport_status = 'in_flight' ORDER BY t.trial_id",
+        (batch_id,),
+    ).fetchall()
+    ctx.db.commit()
+    return [dict(r) for r in rows]
 
 
 def serving_drift_check(ctx: RunContext) -> None:
@@ -1040,6 +1295,12 @@ def open_context(
             m["capabilities"]
         )
         ctx.adapters[m["model_key"]] = make_adapter(manifest, m)
+    for (payload,) in db.execute(
+        "SELECT payload_json FROM event WHERE kind = 'capability_drift'"
+    ).fetchall():
+        p = json.loads(payload)
+        ctx.drift_logged.add((p["model_key"], p["field"]))
+    db.commit()
     return ctx
 
 

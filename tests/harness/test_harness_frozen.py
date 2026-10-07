@@ -358,3 +358,55 @@ def test_replay_refuses_after_hashed_source_edit(
         reevaluate(GOLDEN_RUN_ID, code_ref=REF)
     assert main(["replay", GOLDEN_RUN_ID, "--reevaluate"]) == 2
     assert output_files(run_dir) == before
+
+
+# ---------------------------------------------------------------------------
+# Cassette clause (M3)
+# ---------------------------------------------------------------------------
+
+
+def test_cassette_requests_carry_the_frozen_messages(
+    tmp_path: Path, harness_home: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import hashlib
+    import sqlite3
+
+    from financial_llm_harness.storage.artifacts import ArtifactStore
+    from financial_llm_harness.storage.db import db_path
+    from tests.harness.helpers import FAKE_A
+    from tests.harness.test_harness_adapters import _cassette_run, _s1_handler
+
+    sent: list[bytes] = []
+    inner = _s1_handler("rev-a")
+
+    def handler(request):  # type: ignore[no-untyped-def]
+        sent.append(bytes(request.content))
+        return inner(request)
+
+    res = _cassette_run(tmp_path, monkeypatch, handler)
+    frozen = {
+        (r["system"], r["user"])
+        for r in B.read_jsonl(res.run_dir / "manifest" / B.RENDERINGS_FILE)
+    }
+    assert sent
+    for body in sent:
+        msgs = json.loads(body)["messages"]
+        assert msgs[0]["role"] == "system" and msgs[1]["role"] == "user"
+        # byte for byte: the decoded strings equal a frozen (system, user) pair exactly
+        assert (msgs[0]["content"], msgs[1]["content"]) in frozen
+    store = ArtifactStore(res.run_dir / "artifacts")
+    conn = sqlite3.connect(str(db_path(res.run_dir)))
+    try:
+        rows = conn.execute(
+            "SELECT a.request_artifact FROM attempt a JOIN trial t ON t.trial_id = a.trial_id WHERE t.model_key = ?",
+            (FAKE_A,),
+        ).fetchall()
+    finally:
+        conn.close()
+    assert len(rows) == len(sent)
+    stored = set()
+    for (sha,) in rows:
+        data = store.get(sha)
+        assert hashlib.sha256(data).hexdigest() == sha
+        stored.add(data)
+    assert stored == set(sent)  # the artefact is exactly the body sent

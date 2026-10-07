@@ -66,3 +66,14 @@ def next_action(
             return "TRANSPORT_EXHAUSTED", 0.0
         return "retry", float(2**state.transport_tries)
     return "API_ERROR", 0.0
+
+
+def batch_item_action(errors: int, expired: bool) -> str:
+    """After a batch item's ``errors``-th failure: ``resubmit``, or the terminal status (§15).
+
+    At most 2 resubmissions per item; the third failure ends API_ERROR (errored)
+    or TIMEOUT (expired).
+    """
+    if errors <= MAX_BATCH_RESUBMISSIONS:
+        return "resubmit"
+    return "TIMEOUT" if expired else "API_ERROR"

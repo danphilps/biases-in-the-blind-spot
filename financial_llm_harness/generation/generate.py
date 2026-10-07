@@ -173,6 +173,8 @@ def resolve_evaluators(
             {
                 "feature_id": f["feature_id"],
                 "model_key": ev["model_key"],
+                "provider": ev["provider"],
+                "model": ev["model"],
                 "family": ev["family"],
                 "prompt_hash": sem.prompt_hash(),
                 "parser_version": sem.PARSER_VERSION,
