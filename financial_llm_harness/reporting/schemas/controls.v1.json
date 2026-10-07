@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:controls.csv",
+  "title": "controls.csv",
+  "description": "One row per model × control; sorted by panel order, control.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "control",
+    "contrast",
+    "n_clusters",
+    "n_blocks_matched",
+    "theta",
+    "ci_low",
+    "ci_high",
+    "ci2a_low",
+    "ci2a_high",
+    "control_alpha",
+    "margin",
+    "method",
+    "p_raw",
+    "p_tost",
+    "expected",
+    "observed_label",
+    "passed"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "control": {
+      "enum": [
+        "null",
+        "placebo",
+        "positive"
+      ],
+      "description": "Control",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "contrast": {
+      "enum": [
+        "A0_vs_A",
+        "PL_vs_A",
+        "PCB_vs_PCA"
+      ],
+      "description": "Contrast",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_clusters": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Clusters in the control subset",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "n_blocks_matched": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Matched valid blocks",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "theta": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Point estimate",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "CI_{1−α} lower bound at control_alpha",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "CI_{1−α} upper bound at control_alpha",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci2a_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "CI_{1−2α} lower bound at control_alpha",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci2a_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "CI_{1−2α} upper bound at control_alpha",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "control_alpha": {
+      "type": "number",
+      "description": "α for the control",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "margin": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "null_margin, placebo_margin, or δ for the positive control",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§22"
+    },
+    "method": {
+      "enum": [
+        "tost_t",
+        "oracle_ungated"
+      ],
+      "description": "Classification method",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "p_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Two-sided p-value against 0",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "p_tost": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "TOST p-value; empty for the positive control",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "expected": {
+      "type": "string",
+      "description": "Expected outcome",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "observed_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Observed outcome",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "passed": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the observed outcome matches the expected one",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§22"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "control",
+    "contrast",
+    "n_clusters",
+    "n_blocks_matched",
+    "theta",
+    "ci_low",
+    "ci_high",
+    "ci2a_low",
+    "ci2a_high",
+    "control_alpha",
+    "margin",
+    "method",
+    "p_raw",
+    "p_tost",
+    "expected",
+    "observed_label",
+    "passed"
+  ],
+  "additionalProperties": false
+}

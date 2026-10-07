@@ -1,0 +1,53 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://api.deepseek.com/chat/completions",
+      "json": {
+        "model": "deepseek-test",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a careful assistant. Use only the information provided."
+          },
+          {
+            "role": "user",
+            "content": "Reply with a JSON object with the key decision, YES or NO."
+          }
+        ],
+        "max_tokens": 256,
+        "temperature": 0.0,
+        "seed": 12345
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "x-request-id": "deepseek-req-1"
+      },
+      "body": {
+        "id": "chatcmpl-test-1",
+        "object": "chat.completion",
+        "created": 1767225600,
+        "model": "deepseek-test",
+        "system_fingerprint": "fp_test_1",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"decision\": \"YES\"}"
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 31,
+          "completion_tokens": 7,
+          "total_tokens": 38
+        }
+      }
+    }
+  }
+]

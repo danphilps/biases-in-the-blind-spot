@@ -136,8 +136,9 @@ def load_panel(name: str) -> Panel:
     if not path.exists():
         raise HarnessValidationError(f"panel {name!r} not found at {path}")
     data = yaml_io.load(path)
-    stem = path.stem
-    panel = Panel(stem, path, as_mapping(data, str(path)))  # type: ignore[arg-type]
+    in_dir = path.resolve().parent == panels_dir().resolve()
+    ident = path.stem if in_dir else str(path)
+    panel = Panel(ident, path, as_mapping(data, str(path)))  # type: ignore[arg-type]
     validate_panel(panel)
     return panel
 
@@ -169,6 +170,8 @@ def _validate_entry(
         raise fail(where, f"thinking.effort {thinking['effort']!r} is invalid")
     as_opt_int(thinking["budget_tokens"], f"{where}.thinking.budget_tokens")
     prov = providers[provider]
+    if transport != "native" and transport not in (prov.get("alt_transports") or {}):
+        raise fail(where, f"provider {provider!r} has no transport {transport!r}")
     profile_id = resolve_profile_id(
         provider, transport, as_opt_str(e["request_profile"], where)
     )

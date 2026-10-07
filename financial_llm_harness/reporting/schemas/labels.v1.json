@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:labels.csv",
+  "title": "labels.csv",
+  "description": "One row per model × feature; sorted by panel order, feature.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "experiment_key",
+    "faq_id",
+    "variant_id",
+    "model_key",
+    "feature_id",
+    "mode",
+    "mandate_id",
+    "oracle_type",
+    "oracle_direction",
+    "oracle_confidence",
+    "zone",
+    "sensitivity_label",
+    "is_bias",
+    "is_normative_failure",
+    "attribution_label",
+    "attribution_channel",
+    "composite_label",
+    "gates_failed",
+    "reasons"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "experiment_key": {
+      "type": "string",
+      "description": "Experiment key",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "variant_id": {
+      "type": "string",
+      "description": "Taxonomy variant",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "feature_id": {
+      "type": "string",
+      "description": "Feature",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§11"
+    },
+    "mode": {
+      "enum": [
+        "confirmatory",
+        "discovery"
+      ],
+      "description": "Experiment mode",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§2"
+    },
+    "mandate_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Mandate of the primary oracle; empty on non-primary rows",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§35"
+    },
+    "oracle_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Oracle type (DIRECTIONAL, INVARIANCE, MAGNITUDE, LEVEL, DISCOVERY, …)",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "oracle_direction": {
+      "enum": [
+        "positive",
+        "negative",
+        "none",
+        "two_sided",
+        null
+      ],
+      "description": "Direction the oracle requires",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "oracle_confidence": {
+      "enum": [
+        "established",
+        "contested",
+        null
+      ],
+      "description": "Oracle confidence",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "zone": {
+      "enum": [
+        "Z+",
+        "Z-",
+        "Z0",
+        "Zs",
+        "Zi",
+        null
+      ],
+      "description": "Zone",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.1"
+    },
+    "sensitivity_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Sensitivity label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "is_bias": {
+      "type": "boolean",
+      "description": "True only when §24 assigns a bias label",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "is_normative_failure": {
+      "type": "boolean",
+      "description": "True when the model fails the oracle's normative requirement",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "attribution_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Headline attribution label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "attribution_channel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Channel of the headline attribution label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "composite_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Composite of sensitivity and attribution",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "gates_failed": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "`;`-separated failed gates",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "reasons": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "`;`-separated reasons",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    }
+  },
+  "required": [
+    "row_id",
+    "experiment_key",
+    "faq_id",
+    "variant_id",
+    "model_key",
+    "feature_id",
+    "mode",
+    "mandate_id",
+    "oracle_type",
+    "oracle_direction",
+    "oracle_confidence",
+    "zone",
+    "sensitivity_label",
+    "is_bias",
+    "is_normative_failure",
+    "attribution_label",
+    "attribution_channel",
+    "composite_label",
+    "gates_failed",
+    "reasons"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:clusters.csv",
+  "title": "clusters.csv",
+  "description": "One row per model × cluster × contrast; sorted by panel order, cluster_ordinal, contrast.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "cluster_id",
+    "cluster_ordinal",
+    "contrast",
+    "n_cases",
+    "n_blocks_scheduled",
+    "n_blocks_matched",
+    "n_blocks_invalid",
+    "n_blocks_missing",
+    "n_blocks_excluded",
+    "mean_a",
+    "mean_b",
+    "x_c",
+    "responsive"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "cluster_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Cluster ID",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§3"
+    },
+    "cluster_ordinal": {
+      "type": "integer",
+      "description": "Cluster ordinal",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§9.2"
+    },
+    "contrast": {
+      "enum": [
+        "B_vs_A",
+        "A0_vs_A",
+        "PL_vs_A",
+        "PCB_vs_PCA",
+        "invalid_rate_B_vs_A",
+        "B_vs_A_bound_lower",
+        "B_vs_A_bound_upper",
+        "level_A",
+        "level_B",
+        "level_A_bound_lower",
+        "level_A_bound_upper",
+        "level_B_bound_lower",
+        "level_B_bound_upper"
+      ],
+      "description": "Contrast",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_cases": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Cases in the cluster",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§9.2"
+    },
+    "n_blocks_scheduled": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Blocks scheduled",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_matched": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Matched valid blocks",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_invalid": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Invalid blocks",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_missing": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Missing blocks",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_excluded": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Excluded blocks",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "mean_a": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Reference-arm mean over matched valid blocks",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "mean_b": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Other-arm mean over matched valid blocks",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "x_c": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Cluster value entering §23.3; empty without a matched valid block",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "responsive": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "e · x_c ≥ δ on B_vs_A and A0_vs_A rows when §24.3 applies",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "cluster_id",
+    "cluster_ordinal",
+    "contrast",
+    "n_cases",
+    "n_blocks_scheduled",
+    "n_blocks_matched",
+    "n_blocks_invalid",
+    "n_blocks_missing",
+    "n_blocks_excluded",
+    "mean_a",
+    "mean_b",
+    "x_c",
+    "responsive"
+  ],
+  "additionalProperties": false
+}

@@ -295,3 +295,86 @@ def base_url_for(provider: str, region: str | None, transport: str) -> str | Non
 
 def provider_limits(provider: str) -> dict[str, Any]:
     return dict(provider_entry(provider).get("limits") or {})
+
+
+# ---------------------------------------------------------------------------
+# Adapter construction and model listing (§20.1, §32 `models list`)
+# ---------------------------------------------------------------------------
+
+
+def build_adapter(
+    entry: Mapping[str, Any],
+    caps: ModelCapabilities,
+    *,
+    http_client: Any = None,
+    key: str | None = None,
+) -> ModelAdapter:
+    """The adapter class named by the provider's registry entry; branches on ``adapter`` only."""
+    kind = provider_entry(entry["provider"])["adapter"]
+    if kind == "openai_compatible":
+        from financial_llm_harness.models.openai_compatible import (
+            OpenAICompatibleAdapter,
+        )
+
+        return OpenAICompatibleAdapter(entry, caps, http_client=http_client, key=key)
+    if kind == "anthropic":
+        from financial_llm_harness.models.anthropic import AnthropicAdapter
+
+        return AnthropicAdapter(entry, caps, http_client=http_client, key=key)
+    if kind == "gemini_native":
+        from financial_llm_harness.models.gemini_native import GeminiNativeAdapter
+
+        return GeminiNativeAdapter(entry, caps, http_client=http_client, key=key)
+    raise HarnessValidationError(
+        f"provider {entry['provider']!r}: adapter {kind!r} is built by the runner"
+    )
+
+
+def unprobed_capabilities(entry: Mapping[str, Any]) -> ModelCapabilities:
+    """Neutral capabilities for calls made before a probe exists (``models list``, the probe itself)."""
+    provider = entry["provider"]
+    pid = resolve_profile_id(provider, entry["transport"], entry.get("request_profile"))
+    return ModelCapabilities(
+        provider=provider,
+        model=entry["model"],
+        region=entry.get("region"),
+        transport=entry["transport"],
+        serving=str(provider_entry(provider).get("serving", "first_party")),
+        revision=None,
+        request_profile_id=pid,
+        request_profile_sha256=profile_sha256(provider, pid),
+        context_tokens=0,
+        max_output_tokens=0,
+        temperature_range=None,
+        seed_parameter="accepted",
+        seed_reproducibility_rate=None,
+        supports_system=True,
+        supports_schema=True,
+        thinking_effective="not_controllable",
+        trace_visibility="none",
+        stream_required=False,
+        upstream_routing=None,
+        probe_serving_fingerprint=None,
+        param_support=(),
+    )
+
+
+def list_models(provider: str, region: str | None = None) -> list[str]:
+    """Model IDs from the provider's models endpoint; model IDs are never hard-coded (§20.2)."""
+    import asyncio
+
+    cfg = provider_entry(provider)
+    if cfg["adapter"] == "fake":
+        return ["a", "b", "eval"]
+    entry = {
+        "provider": provider,
+        "model": "",
+        "region": region,
+        "transport": "native",
+        "request_profile": None,
+        "thinking": {"mode": "provider_default", "effort": None, "budget_tokens": None},
+        "params": {},
+        "upstream_routing": None,
+    }
+    adapter = build_adapter(entry, unprobed_capabilities(entry))
+    return list(asyncio.run(adapter.list_model_ids()))  # type: ignore[attr-defined]

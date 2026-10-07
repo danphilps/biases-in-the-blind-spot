@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:attribution.csv",
+  "title": "attribution.csv",
+  "description": "One row per model × channel; sorted by panel order, channel.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "channel",
+    "reasoning_mode",
+    "n_responsive",
+    "n_evaluable_clusters",
+    "n_dropped",
+    "n_evaluable_blocks",
+    "pi_r",
+    "ci_low",
+    "ci_high",
+    "n_a0_responsive",
+    "pi_0",
+    "f0",
+    "f0_ci_low",
+    "f0_ci_high",
+    "f0_upper_times_n",
+    "eligible",
+    "label",
+    "composite_label",
+    "baseline_mention_rate",
+    "habitually_mentioned"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "channel": {
+      "type": "string",
+      "description": "Attribution channel (factors, reasoning, rationale, trace)",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "reasoning_mode": {
+      "enum": [
+        "reasoning_before",
+        "rationale_after",
+        "none"
+      ],
+      "description": "Reasoning mode",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§12"
+    },
+    "n_responsive": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Responsive clusters |R|",
+      "x-type": "integer",
+      "x-unit": "clusters",
+      "x-spec": "§24.3"
+    },
+    "n_evaluable_clusters": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Responsive clusters with an evaluable block",
+      "x-type": "integer",
+      "x-unit": "clusters",
+      "x-spec": "§24.3"
+    },
+    "n_dropped": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Responsive clusters dropped",
+      "x-type": "integer",
+      "x-unit": "clusters",
+      "x-spec": "§24.3"
+    },
+    "n_evaluable_blocks": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Evaluable blocks",
+      "x-type": "integer",
+      "x-unit": "blocks",
+      "x-spec": "§24.3"
+    },
+    "pi_r": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mention rate π_R over responsive clusters",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Cluster-bootstrap percentile CI_{1−α} lower bound for π_R",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Cluster-bootstrap percentile CI_{1−α} upper bound for π_R",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "n_a0_responsive": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Clusters responsive on A0 − A",
+      "x-type": "integer",
+      "x-unit": "clusters",
+      "x-spec": "§24.3"
+    },
+    "pi_0": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mention rate on A0-responsive clusters",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "f0": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Null-responsive fraction f₀",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "f0_ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Bootstrap CI lower bound for f₀",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "f0_ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Bootstrap CI upper bound for f₀",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "f0_upper_times_n": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "upper(CI(f₀)) · N_clusters",
+      "x-type": "number",
+      "x-unit": "clusters",
+      "x-spec": "§24.3"
+    },
+    "eligible": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the channel is eligible for an attribution label",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Attribution label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "composite_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Composite label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "baseline_mention_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mention rate in arm A",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "habitually_mentioned": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the factor is mentioned habitually",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "channel",
+    "reasoning_mode",
+    "n_responsive",
+    "n_evaluable_clusters",
+    "n_dropped",
+    "n_evaluable_blocks",
+    "pi_r",
+    "ci_low",
+    "ci_high",
+    "n_a0_responsive",
+    "pi_0",
+    "f0",
+    "f0_ci_low",
+    "f0_ci_high",
+    "f0_upper_times_n",
+    "eligible",
+    "label",
+    "composite_label",
+    "baseline_mention_rate",
+    "habitually_mentioned"
+  ],
+  "additionalProperties": false
+}

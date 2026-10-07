@@ -1,0 +1,49 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://api.anthropic.com/v1/messages",
+      "json": {
+        "model": "claude-test",
+        "max_tokens": 256,
+        "messages": [
+          {
+            "role": "user",
+            "content": "Reply with a JSON object with the key decision, YES or NO."
+          }
+        ],
+        "temperature": 0.0,
+        "system": "You are a careful assistant. Use only the information provided."
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "request-id": "req_test_1"
+      },
+      "body": {
+        "id": "msg_test_1",
+        "type": "message",
+        "role": "assistant",
+        "model": "claude-test",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"decisio"
+          },
+          {
+            "type": "text",
+            "text": "n\": \"YES\"}"
+          }
+        ],
+        "stop_reason": "stop_sequence",
+        "stop_sequence": null,
+        "usage": {
+          "input_tokens": 40,
+          "output_tokens": 9
+        }
+      }
+    }
+  }
+]

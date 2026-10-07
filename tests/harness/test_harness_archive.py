@@ -161,3 +161,85 @@ def test_oversized_member_rejected(
     with pytest.raises(arch.ArchiveError):
         arch.extract_archive(run, out)
     assert not out.exists()
+
+
+# ---------------------------------------------------------------------------
+# Whole runs (M2)
+# ---------------------------------------------------------------------------
+
+
+def test_whole_run_archive_and_render_from_archive(
+    tmp_path: Path, harness_home: Path
+) -> None:
+    import shutil
+
+    from financial_llm_harness.cli import main
+    from tests.harness.helpers import GOLDEN_RUN_ID, output_files, run_small
+
+    run_dir = run_small(tmp_path)
+    assert main(["archive", GOLDEN_RUN_ID]) == 0
+    first = (run_dir / arch.ARCHIVE_NAME).read_bytes()
+    assert main(["archive", GOLDEN_RUN_ID[:8]]) == 0
+    assert (run_dir / arch.ARCHIVE_NAME).read_bytes() == first
+    sha = (run_dir / arch.ARCHIVE_SHA_NAME).read_text().split()[0]
+    assert sha == hashlib.sha256(first).hexdigest()
+    before = output_files(run_dir)
+    for part in ("results", "report", "models"):
+        shutil.rmtree(run_dir / part)
+    (run_dir / "README.md").unlink()
+    shutil.rmtree(run_dir / "db")
+    shutil.rmtree(run_dir / "artifacts")
+    assert main(["render", GOLDEN_RUN_ID]) == 0
+    after = output_files(run_dir)
+    assert sorted(after) == sorted(before)
+    assert [k for k in before if before[k] != after[k]] == []
+    # render extracts into the run directory (§0.9 Extraction), leaving no temporary directory
+    assert (run_dir / "db" / "run.sqlite").exists() and (run_dir / "artifacts").is_dir()
+    assert not list(run_dir.glob("fh-extract-*"))
+    # a corrupted archive exits 1 and writes nothing
+    shutil.rmtree(run_dir / "db")
+    shutil.rmtree(run_dir / "artifacts")
+    data = bytearray(first)
+    data[len(data) // 2] ^= 0xFF
+    (run_dir / arch.ARCHIVE_NAME).write_bytes(bytes(data))
+    shutil.rmtree(run_dir / "results")
+    assert main(["render", GOLDEN_RUN_ID]) == 1
+    assert not (run_dir / "results").exists()
+    assert not (run_dir / "db").exists() and not (run_dir / "artifacts").exists()
+    assert not list(run_dir.glob("fh-extract-*"))
+
+
+def test_replay_from_archive_is_byte_identical(
+    tmp_path: Path, harness_home: Path
+) -> None:
+    import shutil
+
+    from financial_llm_harness.reporting.replay import reevaluate
+    from tests.harness.helpers import (
+        FIXED_CODE_REF,
+        GOLDEN_RUN_ID,
+        output_files,
+        run_small,
+    )
+
+    run_dir = run_small(tmp_path)
+    arch.archive_run(run_dir)
+    before = output_files(run_dir)
+    shutil.rmtree(run_dir / "db")
+    shutil.rmtree(run_dir / "artifacts")
+    reevaluate(GOLDEN_RUN_ID, code_ref=FIXED_CODE_REF)
+    after = output_files(run_dir)
+    assert [k for k in before if before[k] != after.get(k)] == []
+
+
+def test_render_without_db_or_archive_exits_1(
+    tmp_path: Path, harness_home: Path
+) -> None:
+    import shutil
+
+    from financial_llm_harness.cli import main
+    from tests.harness.helpers import GOLDEN_RUN_ID, run_small
+
+    run_dir = run_small(tmp_path)
+    shutil.rmtree(run_dir / "db")
+    assert main(["render", GOLDEN_RUN_ID]) == 1

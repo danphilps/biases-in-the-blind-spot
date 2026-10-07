@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:detection.csv",
+  "title": "detection.csv",
+  "description": "One row per model × finding type (type D items).",
+  "x-spec": "§32A.3, §T2.1",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "faq_id",
+    "finding_type",
+    "n_planted",
+    "n_reported",
+    "precision",
+    "recall",
+    "f1",
+    "ci_low_f1",
+    "ci_high_f1"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "finding_type": {
+      "enum": [
+        "difference",
+        "inaccuracy",
+        "ambiguity",
+        "novel",
+        "evasion"
+      ],
+      "description": "Finding type",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "n_planted": {
+      "type": "integer",
+      "description": "Planted findings",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "n_reported": {
+      "type": "integer",
+      "description": "Reported findings",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "precision": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Precision",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "recall": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Recall",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "f1": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "F1",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "ci_low_f1": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "CI lower bound for F1",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    },
+    "ci_high_f1": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "CI upper bound for F1",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.1"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "faq_id",
+    "finding_type",
+    "n_planted",
+    "n_reported",
+    "precision",
+    "recall",
+    "f1",
+    "ci_low_f1",
+    "ci_high_f1"
+  ],
+  "additionalProperties": false
+}

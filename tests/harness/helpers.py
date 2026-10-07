@@ -1,0 +1,220 @@
+"""Shared helpers for the harness tests (imported as ``tests.harness.helpers``)."""
+
+from __future__ import annotations
+
+import copy
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from financial_llm_harness.core import yaml_io
+from financial_llm_harness.core.code_ref import CodeRef
+
+ROOT = Path(__file__).resolve().parents[2]
+S1_SPEC = ROOT / "experiments" / "financial" / "specs" / "momentum_stock_add.yaml"
+S1_M2_SPEC = ROOT / "experiments" / "financial" / "specs" / "momentum_stock_add_m2.yaml"
+GOLDEN_RUN_ID = "00000000-0000-4000-8000-000000000001"
+FAKE_A = "fake--a--b89ac294"
+FAKE_B = "fake--b--fc598cd9"
+FIXED_CODE_REF = CodeRef("0000000", "0" * 64, None, None, False)
+
+
+def fixed_clock() -> datetime:
+    return datetime(2026, 1, 1, tzinfo=UTC)
+
+
+def load_spec(path: Path = S1_SPEC) -> dict[str, Any]:
+    data = yaml_io.load(path)
+    assert isinstance(data, dict)
+    return data
+
+
+def fake_planning_refs(variance: float = 0.05) -> list[dict[str, Any]]:
+    """Fake-design planning variances (§22): run_id null, analytic derivation stated, fake models only."""
+    refs = []
+    for mk in (FAKE_A, FAKE_B):
+        for contrast in ("B_vs_A", "A0_vs_A", "PL_vs_A", "PCB_vs_PCA"):
+            refs.append(
+                {
+                    "run_id": None,
+                    "model_key": mk,
+                    "feature_id": "decision_add",
+                    "contrast": contrast,
+                    "variance": variance,
+                    "source_row_id": None,
+                    "source_sha256": None,
+                    "derivation": "test-only bound for the fake mechanism",
+                }
+            )
+    return refs
+
+
+def small_spec(
+    tmp: Path, n_cases: int = 50, name: str = "small.yaml", **overrides: Any
+) -> Path:
+    """A small S1-shaped spec planned with fake-design variances, for fast lifecycle tests."""
+    spec = copy.deepcopy(load_spec())
+    spec["scenario_spec"]["n_cases"] = n_cases
+    spec["statistical_spec"]["planning_ref"] = fake_planning_refs()
+    spec["statistical_spec"]["bootstrap_B"] = 500
+    for key, value in overrides.items():
+        cur: Any = spec
+        parts = key.split("__")
+        for p in parts[:-1]:
+            cur = cur[p]
+        cur[parts[-1]] = value
+    path = tmp / name
+    path.write_text(yaml_io.dump(spec), encoding="utf-8")
+    return path
+
+
+THINK_DEFAULT = {"mode": "provider_default", "effort": None, "budget_tokens": None}
+
+
+def local_entry(
+    model: str = "local-model", family: str = "local_family", **kw: Any
+) -> dict[str, Any]:
+    """A non-fake (self-hosted) panel entry with its derived key."""
+    from financial_llm_harness.models.panels import derive_model_key
+
+    e: dict[str, Any] = {
+        "provider": "local",
+        "family": family,
+        "model": model,
+        "region": None,
+        "transport": "native",
+        "thinking": dict(THINK_DEFAULT),
+        "request_profile": None,
+        "batch": False,
+        "upstream_routing": None,
+        "params": {},
+    }
+    e.update(kw)
+    e = {"model_key": derive_model_key(e), **e}
+    return e
+
+
+def write_probe(
+    home: Path, entry: dict[str, Any], date: str = "2026-01-01", **caps: Any
+) -> Path:
+    """A probe file in the §20.4 layout, for tests that need a non-fake model."""
+    import json
+
+    from financial_llm_harness.models.base import profile_sha256, resolve_profile_id
+
+    pid = resolve_profile_id(
+        entry["provider"], entry["transport"], entry.get("request_profile")
+    )
+    capabilities = {
+        "provider": entry["provider"],
+        "model": entry["model"],
+        "region": entry.get("region"),
+        "transport": entry["transport"],
+        "serving": "self_hosted",
+        "revision": None,
+        "request_profile_id": pid,
+        "request_profile_sha256": profile_sha256(entry["provider"], pid),
+        "context_tokens": 128000,
+        "max_output_tokens": 8192,
+        "temperature_range": [0.0, 2.0],
+        "seed_parameter": "accepted",
+        "seed_reproducibility_rate": 1.0,
+        "supports_system": True,
+        "supports_schema": True,
+        "thinking_effective": "not_controllable",
+        "trace_visibility": "none",
+        "stream_required": False,
+        "upstream_routing": None,
+        "probe_serving_fingerprint": None,
+        "param_support": [
+            ["max_output_tokens", "accepted"],
+            ["seed", "accepted"],
+            ["temperature", "accepted"],
+        ],
+    }
+    capabilities.update(caps)
+    d = home / "probes" / entry["model_key"]
+    d.mkdir(parents=True, exist_ok=True)
+    path = d / f"{date}.json"
+    payload = {
+        "schema_version": 1,
+        "model_key": entry["model_key"],
+        "date": date,
+        "request_profile_id": pid,
+        "request_profile_sha256": profile_sha256(entry["provider"], pid),
+        "capabilities": capabilities,
+        "checks": {},
+        "calls": 0,
+        "cost_usd": 0.0,
+    }
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def write_panel(
+    tmp: Path,
+    models: list[dict[str, Any]],
+    evaluator: dict[str, Any] | None = None,
+    name: str = "panel.yaml",
+) -> Path:
+    path = tmp / name
+    path.write_text(
+        yaml_io.dump({"panel_version": 1, "models": models, "evaluator": evaluator}),
+        encoding="utf-8",
+    )
+    return path
+
+
+def ci_fake_entries() -> list[dict[str, Any]]:
+    data = yaml_io.load(ROOT / "experiments" / "financial" / "panels" / "ci_fake.yaml")
+    return list(data["models"])
+
+
+OUTPUT_PARTS = ("README.md", "results", "report", "models")
+
+
+def output_files(run_dir: Path) -> dict[str, bytes]:
+    """Every file that must be byte-identical across renders, resumes and replays (§32A.8)."""
+    out: dict[str, bytes] = {}
+    for part in OUTPUT_PARTS:
+        p = run_dir / part
+        if p.is_file():
+            out[part] = p.read_bytes()
+        elif p.is_dir():
+            for f in sorted(p.rglob("*")):
+                if f.is_file():
+                    out[f.relative_to(run_dir).as_posix()] = f.read_bytes()
+    return out
+
+
+def assert_same_files(a: dict[str, bytes], b: dict[str, bytes]) -> None:
+    assert sorted(a) == sorted(b)
+    differing = [k for k in a if a[k] != b[k]]
+    assert differing == [], f"files differ: {differing}"
+
+
+def run_small(
+    tmp: Path,
+    run_id: str = GOLDEN_RUN_ID,
+    *,
+    inject: bool = True,
+    name: str = "small.yaml",
+    **overrides: Any,
+) -> Path:
+    """A COMPLETE small fake run in the current HARNESS_HOME; returns its run directory."""
+    from financial_llm_harness.execution.runner import run_experiment
+
+    spec = small_spec(tmp, name=name, **overrides)
+    if inject:
+        res = run_experiment(
+            spec,
+            "ci_fake",
+            yes=True,
+            run_id=run_id,
+            clock=fixed_clock,
+            code_ref=FIXED_CODE_REF,
+        )
+    else:
+        res = run_experiment(spec, "ci_fake", yes=True, run_id=run_id)
+    assert res.status == "COMPLETE" and res.run_dir is not None
+    return res.run_dir

@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:costs.csv",
+  "title": "costs.csv",
+  "description": "One row per model × role; sorted by panel order, then the evaluator.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "role",
+    "provider",
+    "region",
+    "calls",
+    "input_tokens",
+    "output_tokens",
+    "reasoning_tokens",
+    "cost_usd",
+    "probe_cost_usd",
+    "pricing_table_version"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "role": {
+      "enum": [
+        "target",
+        "evaluator"
+      ],
+      "description": "Role",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§30"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Provider",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.1"
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Region",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.2"
+    },
+    "calls": {
+      "type": "integer",
+      "description": "Attempts with a response row (evaluator: eval_call rows with a body)",
+      "x-type": "integer",
+      "x-unit": "calls",
+      "x-spec": "§29"
+    },
+    "input_tokens": {
+      "type": "integer",
+      "description": "Input tokens",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§30"
+    },
+    "output_tokens": {
+      "type": "integer",
+      "description": "Output tokens",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§30"
+    },
+    "reasoning_tokens": {
+      "type": "integer",
+      "description": "Reasoning tokens",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§30"
+    },
+    "cost_usd": {
+      "type": "number",
+      "description": "Cost",
+      "x-type": "number",
+      "x-unit": "USD",
+      "x-spec": "§30"
+    },
+    "probe_cost_usd": {
+      "type": "number",
+      "description": "Probe cost",
+      "x-type": "number",
+      "x-unit": "USD",
+      "x-spec": "§20.4"
+    },
+    "pricing_table_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "pricing.yaml version",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§30"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "role",
+    "provider",
+    "region",
+    "calls",
+    "input_tokens",
+    "output_tokens",
+    "reasoning_tokens",
+    "cost_usd",
+    "probe_cost_usd",
+    "pricing_table_version"
+  ],
+  "additionalProperties": false
+}

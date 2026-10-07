@@ -94,3 +94,5 @@ markers = [
     "live: calls a real provider API",
     "sandbox: needs a Docker or Podman CLI",
 ]
+tmp_path_retention_count = 1
+tmp_path_retention_policy = "failed"

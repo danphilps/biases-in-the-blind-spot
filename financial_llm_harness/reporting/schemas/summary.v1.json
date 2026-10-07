@@ -1,0 +1,866 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:summary.json",
+  "title": "summary.json",
+  "description": "The one-file machine answer for a run.",
+  "x-spec": "§32A.3",
+  "x-format": "json",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version of this file",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "run": {
+      "type": "object",
+      "description": "Run identity",
+      "x-spec": "§32A.3",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Run ID",
+          "x-unit": null,
+          "x-spec": "§31A"
+        },
+        "experiment_key": {
+          "type": "string",
+          "description": "Experiment key",
+          "x-unit": null,
+          "x-spec": "§T1"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Experiment ID (UUIDv5 of design_hash)",
+          "x-unit": null,
+          "x-spec": "§3"
+        },
+        "design_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Design hash",
+          "x-unit": null,
+          "x-spec": "§4"
+        },
+        "manifest_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Manifest hash",
+          "x-unit": null,
+          "x-spec": "§4"
+        },
+        "faq_id": {
+          "type": "string",
+          "description": "Taxonomy item",
+          "x-unit": null,
+          "x-spec": "§T1"
+        },
+        "variant_id": {
+          "type": "string",
+          "description": "Taxonomy variant",
+          "x-unit": null,
+          "x-spec": "§T1"
+        },
+        "intervention_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Intervention ID",
+          "x-unit": null,
+          "x-spec": "§T4"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "confirmatory",
+            "discovery"
+          ],
+          "description": "Experiment mode",
+          "x-unit": null,
+          "x-spec": "§2"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "RUNNING",
+            "COMPLETE",
+            "INCOMPLETE",
+            "PAUSED_BUDGET",
+            "FAILED"
+          ],
+          "description": "Run status",
+          "x-unit": null,
+          "x-spec": "§29"
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Start time, ISO 8601 UTC",
+          "x-unit": null,
+          "x-spec": "§32A.2"
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Completion time, ISO 8601 UTC",
+          "x-unit": null,
+          "x-spec": "§32A.2"
+        },
+        "data_classification": {
+          "type": "string",
+          "enum": [
+            "synthetic",
+            "licensed",
+            "confidential"
+          ],
+          "description": "Data classification",
+          "x-unit": null,
+          "x-spec": "§30.1"
+        },
+        "code_ref": {
+          "type": "object",
+          "description": "Code identity",
+          "x-spec": "§0.10",
+          "properties": {
+            "harness_git_sha": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Harness git SHA",
+              "x-unit": null,
+              "x-spec": "§0.10"
+            },
+            "harness_tree_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "SHA-256 tree hash of the harness source",
+              "x-unit": null,
+              "x-spec": "§0.10"
+            },
+            "legacy_git_sha": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Legacy package git SHA",
+              "x-unit": null,
+              "x-spec": "§0.10"
+            },
+            "legacy_tree_sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Legacy package tree hash",
+              "x-unit": null,
+              "x-spec": "§0.10"
+            },
+            "dirty": {
+              "type": "boolean",
+              "description": "Whether the source tree had uncommitted changes",
+              "x-unit": null,
+              "x-spec": "§0.10"
+            }
+          },
+          "required": [
+            "harness_git_sha",
+            "harness_tree_sha256",
+            "legacy_git_sha",
+            "legacy_tree_sha256",
+            "dirty"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "run_id",
+        "experiment_key",
+        "experiment_id",
+        "design_hash",
+        "manifest_hash",
+        "faq_id",
+        "variant_id",
+        "intervention_id",
+        "mode",
+        "status",
+        "started_at",
+        "completed_at",
+        "data_classification",
+        "code_ref"
+      ],
+      "additionalProperties": false
+    },
+    "output_policy": {
+      "type": "object",
+      "description": "Recorded output policy",
+      "x-spec": "§30.1",
+      "properties": {
+        "publishable": {
+          "type": "boolean",
+          "description": "Whether the reports are publishable",
+          "x-unit": null,
+          "x-spec": "§30.1"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "synthetic",
+            "non_synthetic_default",
+            "user_output_policy"
+          ],
+          "description": "Reason",
+          "x-unit": null,
+          "x-spec": "§30.1"
+        }
+      },
+      "required": [
+        "publishable",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "programme_adjustment": {
+      "type": "string",
+      "enum": [
+        "pending"
+      ],
+      "description": "Present when the primary belongs to the programme correction family: run-level p-values are not yet programme-adjusted",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "design": {
+      "type": "object",
+      "description": "Design",
+      "x-spec": "§32A.3",
+      "properties": {
+        "concept": {
+          "type": "string",
+          "description": "Concept node",
+          "x-unit": null,
+          "x-spec": "§4"
+        },
+        "mandate_id": {
+          "type": "string",
+          "description": "Mandate",
+          "x-unit": null,
+          "x-spec": "§35"
+        },
+        "intervention": {
+          "type": "string",
+          "description": "Intervention, as text",
+          "x-unit": null,
+          "x-spec": "§10"
+        },
+        "primary_feature": {
+          "type": "string",
+          "description": "Primary feature",
+          "x-unit": null,
+          "x-spec": "§11"
+        },
+        "estimand": {
+          "type": "string",
+          "enum": [
+            "mean_paired_difference",
+            "arm_level",
+            "paired_difference_vs_truth"
+          ],
+          "description": "Estimand",
+          "x-unit": null,
+          "x-spec": "§4"
+        },
+        "effect_scale": {
+          "type": "string",
+          "enum": [
+            "risk_difference",
+            "mean_difference",
+            "ordinal_shift"
+          ],
+          "description": "Effect scale",
+          "x-unit": null,
+          "x-spec": "§4"
+        },
+        "delta": {
+          "type": "number",
+          "description": "δ",
+          "x-unit": "effect units",
+          "x-spec": "§24"
+        },
+        "alpha": {
+          "type": "number",
+          "description": "α",
+          "x-unit": null,
+          "x-spec": "§23"
+        },
+        "oracle_type": {
+          "type": "string",
+          "description": "Primary oracle type",
+          "x-unit": null,
+          "x-spec": "§24.2"
+        },
+        "oracle_confidence": {
+          "type": "string",
+          "enum": [
+            "established",
+            "contested"
+          ],
+          "description": "Primary oracle confidence",
+          "x-unit": null,
+          "x-spec": "§24.2"
+        },
+        "n_cases": {
+          "type": "integer",
+          "description": "Cases planned",
+          "x-unit": null,
+          "x-spec": "§9"
+        },
+        "n_clusters": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Clusters achieved",
+          "x-unit": null,
+          "x-spec": "§9.2"
+        },
+        "n_clusters_required": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Clusters required for the primary",
+          "x-unit": null,
+          "x-spec": "§23.6"
+        },
+        "subset_n": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Control subset size",
+          "x-unit": null,
+          "x-spec": "§22"
+        },
+        "planning": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Planning-variance source",
+          "x-unit": null,
+          "x-spec": "§23.6"
+        },
+        "planning_variance": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Planning variance",
+          "x-unit": null,
+          "x-spec": "§23.6"
+        },
+        "P": {
+          "type": "integer",
+          "description": "Paraphrases per case",
+          "x-unit": null,
+          "x-spec": "§9"
+        },
+        "R": {
+          "type": "integer",
+          "description": "Repetitions per rendering",
+          "x-unit": null,
+          "x-spec": "§13"
+        },
+        "control_alpha": {
+          "type": "number",
+          "description": "α for the controls",
+          "x-unit": null,
+          "x-spec": "§22"
+        },
+        "null_margin": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Null-control margin",
+          "x-unit": "effect units",
+          "x-spec": "§22"
+        },
+        "placebo_margin": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Placebo-control margin",
+          "x-unit": "effect units",
+          "x-spec": "§22"
+        },
+        "seeds": {
+          "type": "object",
+          "description": "Seeds",
+          "x-spec": "§3",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": [
+        "concept",
+        "mandate_id",
+        "intervention",
+        "primary_feature",
+        "estimand",
+        "effect_scale",
+        "delta",
+        "alpha",
+        "oracle_type",
+        "oracle_confidence",
+        "n_cases",
+        "n_clusters",
+        "n_clusters_required",
+        "subset_n",
+        "planning",
+        "planning_variance",
+        "P",
+        "R",
+        "control_alpha",
+        "null_margin",
+        "placebo_margin",
+        "seeds"
+      ],
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "type": "object",
+      "description": "Corpus diagnostics",
+      "x-spec": "§9",
+      "properties": {
+        "acceptance_rate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Generator acceptance rate",
+          "x-unit": null,
+          "x-spec": "§9"
+        },
+        "attempts": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Generator attempts",
+          "x-unit": null,
+          "x-spec": "§9"
+        },
+        "rejections": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Rejections by reason",
+          "x-spec": "§9",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "largest_cluster": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Largest near-duplicate cluster",
+          "x-unit": null,
+          "x-spec": "§9.2"
+        },
+        "structured_edges": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Structured near-duplicate edges",
+          "x-unit": null,
+          "x-spec": "§9.2"
+        },
+        "text_edges": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Text near-duplicate edges",
+          "x-unit": null,
+          "x-spec": "§9.2"
+        }
+      },
+      "required": [
+        "acceptance_rate",
+        "attempts",
+        "rejections",
+        "largest_cluster",
+        "structured_edges",
+        "text_edges"
+      ],
+      "additionalProperties": false
+    },
+    "models": {
+      "type": "array",
+      "description": "One entry per panel model, in panel order",
+      "x-spec": "§32A.3",
+      "items": {
+        "type": "object",
+        "description": "Model",
+        "x-spec": "§32A.3",
+        "properties": {
+          "model_key": {
+            "type": "string",
+            "description": "Model key",
+            "x-unit": null,
+            "x-spec": "§20.6"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider",
+            "x-unit": null,
+            "x-spec": "§20.1"
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Region",
+            "x-unit": null,
+            "x-spec": "§20.2"
+          },
+          "serving": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Serving class",
+            "x-unit": null,
+            "x-spec": "§20.4"
+          },
+          "primary": {
+            "type": "object",
+            "description": "Primary result",
+            "x-spec": "§32A.3",
+            "properties": {
+              "theta": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "θ̂ (λ̂ for arm_level)",
+                "x-unit": "effect units",
+                "x-spec": "§23.3"
+              },
+              "ci": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "minItems": 2,
+                "maxItems": 2,
+                "description": "CI_{1−α}",
+                "x-unit": null,
+                "x-spec": "§23.3"
+              },
+              "ci2a": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "minItems": 2,
+                "maxItems": 2,
+                "description": "CI_{1−2α}",
+                "x-unit": null,
+                "x-spec": "§23.3"
+              },
+              "p_dev": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Deviation p-value",
+                "x-unit": null,
+                "x-spec": "§25"
+              },
+              "p_eq": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Equivalence p-value",
+                "x-unit": null,
+                "x-spec": "§25"
+              },
+              "zone": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Zone",
+                "x-unit": null,
+                "x-spec": "§24.1"
+              },
+              "sensitivity_label": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Sensitivity label",
+                "x-unit": null,
+                "x-spec": "§24.2"
+              },
+              "is_bias": {
+                "type": "boolean",
+                "description": "Bias flag",
+                "x-unit": null,
+                "x-spec": "§24.2"
+              },
+              "is_normative_failure": {
+                "type": "boolean",
+                "description": "Normative-failure flag",
+                "x-unit": null,
+                "x-spec": "§24.2"
+              },
+              "attribution_label": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Headline attribution label",
+                "x-unit": null,
+                "x-spec": "§24.3"
+              },
+              "composite_label": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Composite label",
+                "x-unit": null,
+                "x-spec": "§24.3"
+              },
+              "gates_failed": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Failed gates",
+                "x-unit": null,
+                "x-spec": "§24.2"
+              }
+            },
+            "required": [
+              "theta",
+              "ci",
+              "ci2a",
+              "p_dev",
+              "p_eq",
+              "zone",
+              "sensitivity_label",
+              "is_bias",
+              "is_normative_failure",
+              "attribution_label",
+              "composite_label",
+              "gates_failed"
+            ],
+            "additionalProperties": false
+          },
+          "controls": {
+            "type": "object",
+            "description": "Control outcomes",
+            "x-spec": "§22",
+            "additionalProperties": false,
+            "properties": {
+              "null": {
+                "enum": [
+                  "PASSED",
+                  "FAILED",
+                  "NO_DATA"
+                ]
+              },
+              "placebo": {
+                "enum": [
+                  "PASSED",
+                  "FAILED",
+                  "NO_DATA"
+                ]
+              },
+              "positive": {
+                "enum": [
+                  "PASSED",
+                  "FAILED",
+                  "NO_DATA"
+                ]
+              }
+            }
+          },
+          "missingness": {
+            "type": "object",
+            "description": "Missingness",
+            "x-spec": "§23.4",
+            "properties": {
+              "invalid_rate_a": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Invalid rate, arm A (or the level arm)",
+                "x-unit": null,
+                "x-spec": "§23.4"
+              },
+              "invalid_rate_b": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Invalid rate, arm B",
+                "x-unit": null,
+                "x-spec": "§23.4"
+              },
+              "bounds_change_zone": {
+                "type": "boolean",
+                "description": "Whether the worst-case bounds change the zone",
+                "x-unit": null,
+                "x-spec": "§23.4"
+              }
+            },
+            "required": [
+              "invalid_rate_a",
+              "invalid_rate_b",
+              "bounds_change_zone"
+            ],
+            "additionalProperties": false
+          },
+          "drift": {
+            "type": "object",
+            "description": "Drift",
+            "x-spec": "§20.8",
+            "properties": {
+              "capability": {
+                "type": "boolean",
+                "description": "Capability drift observed",
+                "x-unit": null,
+                "x-spec": "§20.4"
+              },
+              "serving": {
+                "type": "boolean",
+                "description": "Serving drift observed",
+                "x-unit": null,
+                "x-spec": "§20.8"
+              }
+            },
+            "required": [
+              "capability",
+              "serving"
+            ],
+            "additionalProperties": false
+          },
+          "cost": {
+            "type": "object",
+            "description": "Cost",
+            "x-spec": "§30",
+            "properties": {
+              "calls": {
+                "type": "integer",
+                "description": "Calls",
+                "x-unit": null,
+                "x-spec": "§30"
+              },
+              "cost_usd": {
+                "type": "number",
+                "description": "Cost",
+                "x-unit": "USD",
+                "x-spec": "§30"
+              }
+            },
+            "required": [
+              "calls",
+              "cost_usd"
+            ],
+            "additionalProperties": false
+          },
+          "rows": {
+            "type": "object",
+            "description": "Row pointers",
+            "x-spec": "§32A.3",
+            "properties": {
+              "effect": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "row_id of the primary effects.csv row",
+                "x-unit": null,
+                "x-spec": "§32A.3"
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "row_id of the primary labels.csv row",
+                "x-unit": null,
+                "x-spec": "§32A.3"
+              }
+            },
+            "required": [
+              "effect",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "model_key",
+          "provider",
+          "region",
+          "serving",
+          "primary",
+          "controls",
+          "missingness",
+          "drift",
+          "cost",
+          "rows"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "Relative paths of the main files",
+      "x-spec": "§32A.3",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "run",
+    "output_policy",
+    "design",
+    "diagnostics",
+    "models",
+    "files"
+  ],
+  "additionalProperties": false
+}
