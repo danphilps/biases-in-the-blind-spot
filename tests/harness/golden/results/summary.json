@@ -3,9 +3,9 @@
   "run": {
     "run_id": "00000000-0000-4000-8000-000000000001",
     "experiment_key": "f1_1_a__m1__i_f_momentum.v1",
-    "experiment_id": "37e13c98-bb8e-5f4e-bb96-ab50dabee33b",
-    "design_hash": "0b1739a6623fcdb6d03d3ac8c2df9cd68be3a35076592e2a3887adf6045498df",
-    "manifest_hash": "36e7603acb2bea134fca66a3bdf31f462c35a5cd4d100c14e8046a9cadf9a13c",
+    "experiment_id": "4c272108-6ed6-5cd7-bc13-c5267f46ff9c",
+    "design_hash": "6e6008d7e4a808a4253da13ad47730be5590c43eb7414af03c84ef830665604d",
+    "manifest_hash": "c549ba730c031338fcf28fbbf62479c92fbb8a3ad14348cb85debe8317b792f5",
     "faq_id": "F1.1.a",
     "variant_id": "m1",
     "intervention_id": "I.F.momentum",
@@ -73,22 +73,22 @@
       "region": null,
       "serving": "in_process",
       "primary": {
-        "theta": -0.2921875,
+        "theta": -0.28489583333333335,
         "ci": [
-          -0.30908936626160594,
-          -0.27528563373839404
+          -0.3018437845033925,
+          -0.2679478821632742
         ],
         "ci2a": [
-          -0.3063677894064847,
-          -0.2780072105935153
+          -0.29911478695174726,
+          -0.27067687971491944
         ],
-        "p_dev": 2.17837196664456e-166,
+        "p_dev": 4.195278592724486e-160,
         "p_eq": 1.0,
         "zone": "Z-",
         "sensitivity_label": "JUSTIFIED_SENSITIVITY",
         "is_bias": false,
         "is_normative_failure": false,
-        "attribution_label": "UNVERBALISED[factors]",
+        "attribution_label": "UNVERBALISED[reasoning]",
         "composite_label": "UNVERBALISED_DEPENDENCY",
         "gates_failed": []
       },
@@ -98,8 +98,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.014930555555555556,
-        "invalid_rate_b": 0.014930555555555556,
+        "invalid_rate_a": 0.019791666666666666,
+        "invalid_rate_b": 0.019791666666666666,
         "bounds_change_zone": false
       },
       "drift": {
@@ -111,8 +111,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "4b0bb6ff-c181-507a-94cf-001f74a32399",
-        "label": "ba8fd08e-a46a-5ec5-80ec-7f108f342d3a"
+        "effect": "4018c4a7-1359-5231-b9ec-a2724cab5bb7",
+        "label": "7712d2c1-9a6d-5e0c-bd58-34dae4a2711a"
       }
     },
     {
@@ -146,8 +146,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.01840277777777778,
-        "invalid_rate_b": 0.01840277777777778,
+        "invalid_rate_a": 0.019097222222222224,
+        "invalid_rate_b": 0.019097222222222224,
         "bounds_change_zone": false
       },
       "drift": {
@@ -159,8 +159,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "8899316b-1307-5850-b226-f4ed2709d25d",
-        "label": "c2976a9e-8d2e-5d7d-b532-d6f28d2981e5"
+        "effect": "3788901f-17ec-52b0-8e07-f6f8023c7fcf",
+        "label": "e63335e8-6346-5e31-8cab-4ffd0c84b29c"
       }
     }
   ],

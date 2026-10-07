@@ -167,6 +167,9 @@ def resolve_evaluators(
         B.make_asset("evaluator_parser", sem.PARSER_OBJECT, "package"),
     ]
     for f in semantic:
+        sem.prompt_fields(
+            design, f
+        )  # guide and category exist for this intervention (§16)
         version = sem.evaluator_version(model, len(semantic_calls(model)))
         cal = sem.find_calibration(f["feature_id"], version, ev["provider"])
         out.append(

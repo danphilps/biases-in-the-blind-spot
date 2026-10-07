@@ -218,7 +218,8 @@ class FakeEvaluator:
 
     async def run(self, request: ModelRequest) -> ModelResponse:
         obs_id = str(request.extra.get("observation_id"))
-        text = self.verdict(obs_id)
+        # U₁ from the design-level observation key when the runner supplies one (semantic.py)
+        text = self.verdict(str(request.extra.get("seed_key") or obs_id))
         body = canonical(
             {
                 "messages": {"system": request.system, "user": request.user},

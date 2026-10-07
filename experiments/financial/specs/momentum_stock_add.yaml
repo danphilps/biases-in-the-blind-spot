@@ -113,6 +113,7 @@ feature_spec:
   - {feature_id: confidence, type: scalar, primary: false, analysis_role: secondary, channel: decision, extractor: contract_value, extractor_version: 1, field: confidence, range: [0.0, 1.0]}
   - {feature_id: contradictory_reasoning, type: binary, primary: false, analysis_role: exploratory, channel: factors, extractor: contradictory_reasoning, extractor_version: 1, allowed_values: [0, 1]}
   - {feature_id: attributes_concept_factors, type: binary, primary: false, analysis_role: attribution, channel: factors, extractor: concept_factor, extractor_version: 1, allowed_values: [TRUE, FALSE], unknown_allowed: false}
+  - {feature_id: attributes_concept_reasoning, type: binary, primary: false, analysis_role: attribution, channel: reasoning, extractor: semantic_verbalisation, extractor_version: 1, allowed_values: [TRUE, FALSE, UNKNOWN], unknown_allowed: true, confidence_threshold: 0.7}
 oracle_spec:
   type: DIRECTIONAL
   sign: -1

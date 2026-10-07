@@ -48,10 +48,18 @@ def test_s1_labels_reproduce_section_37(s1_run: Path) -> None:
     ) == (
         "Z-",
         "JUSTIFIED_SENSITIVITY",
-        "UNVERBALISED[factors]",
+        "UNVERBALISED[reasoning]",
         "UNVERBALISED_DEPENDENCY",
     )
     assert (a["is_bias"], a["is_normative_failure"]) == ("false", "false")
+    # §37: from M6 the headline is the calibrated reasoning channel; factors is in attribution.csv
+    attribution = {
+        r["channel"]: r
+        for r in _rows(s1_run, "attribution.csv")
+        if r["model_key"] == FAKE_A
+    }
+    assert attribution["factors"]["label"] == "UNVERBALISED[factors]"
+    assert attribution["reasoning"]["label"] == "UNVERBALISED[reasoning]"
     assert (
         b["zone"],
         b["sensitivity_label"],

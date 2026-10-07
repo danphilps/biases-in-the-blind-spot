@@ -1040,3 +1040,88 @@ def baseline_sample_clusters(
 
 def is_finite(v: Any) -> bool:
     return isinstance(v, int | float) and math.isfinite(float(v))
+
+
+def attribution_evaluation_set(ctx: Any) -> set[str]:
+    """Trials a semantic attribution channel evaluates (§24.3), over every model.
+
+    Only for a model whose run-level primary label is attribution-eligible: both
+    trials of every matched valid A/B block of the responsive clusters R, both
+    trials of every matched valid A/A0 block of the A0-responsive clusters, and
+    every valid arm-A trial of the seeded baseline sample of min(200, N) clusters.
+    """
+    manifest = ctx.manifest
+    out: set[str] = set()
+    if "B" not in manifest["arms"]:
+        return out
+    delta = float(manifest["hypothesis"]["delta"])
+    primary = _primary(manifest)
+    case_cluster = case_cluster_map(ctx)
+    mh = manifest["manifest_hash"]
+    for model in manifest["sampling_spec"]["models"]:
+        mk = model["model_key"]
+        row = ctx.db.execute(
+            "SELECT results_json FROM analysis WHERE analysis_id = ?",
+            (
+                ids.analysis_id(
+                    mh,
+                    mk,
+                    primary["feature_id"],
+                    "B_vs_A",
+                    "sensitivity",
+                    ANALYSIS_VERSION,
+                ),
+            ),
+        ).fetchone()
+        ctx.db.commit()
+        if row is None:
+            continue
+        prim = json.loads(row[0])
+        if prim.get("label") not in ATTRIBUTION_ELIGIBLE:
+            continue
+        theta = prim.get("theta")
+        e = 0 if theta is None or theta == 0 else (1 if theta > 0 else -1)
+        if e == 0:
+            continue
+        md = load_model_data(ctx, mk)
+        pblocks = index_blocks(trial_obs(md, primary["feature_id"]))
+        cd = paired_contrast(pblocks, case_cluster, "B", "A")
+        responsive = {
+            c.cluster_ordinal
+            for c in cd.clusters
+            if c.x_c is not None and e * c.x_c >= delta
+        }
+        a0_resp: set[int] = set()
+        if "A0" in manifest["arms"]:
+            a0cd = paired_contrast(pblocks, case_cluster, "A0", "A")
+            a0_resp = {
+                c.cluster_ordinal
+                for c in a0cd.clusters
+                if c.x_c is not None and e * c.x_c >= delta
+            }
+        by_block: dict[tuple[int, int, int], dict[str, Mapping[str, Any]]] = (
+            defaultdict(dict)
+        )
+        for t in md.trials:
+            by_block[(t["case_idx"], t["paraphrase_idx"], t["repetition"])][
+                t["arm"]
+            ] = t
+        for (case, _p, _r), arms in by_block.items():
+            c = case_cluster[case]
+            for other, clusters in (("B", responsive), ("A0", a0_resp)):
+                if c not in clusters or "A" not in arms or other not in arms:
+                    continue
+                pair = (arms["A"], arms[other])
+                if all(status_class(t["status"]) == "valid" for t in pair):
+                    out.update(t["trial_id"] for t in pair)
+        sample = baseline_sample_clusters(
+            case_cluster, int(manifest["seeds"]["bootstrap"]), mk
+        )
+        for t in md.trials:
+            if (
+                t["arm"] == "A"
+                and status_class(t["status"]) == "valid"
+                and case_cluster[t["case_idx"]] in sample
+            ):
+                out.add(t["trial_id"])
+    return out

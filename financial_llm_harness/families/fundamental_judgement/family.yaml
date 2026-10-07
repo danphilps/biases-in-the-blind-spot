@@ -83,8 +83,32 @@ features:
   decision_add: {type: binary, channel: decision, extractor: contract_enum, field: decision, true_value: ADD}
   confidence: {type: scalar, channel: decision, extractor: contract_value, field: confidence, range: [0.0, 1.0]}
   attributes_concept_factors: {type: binary, channel: factors, extractor: concept_factor}
-  attributes_concept_reasoning: {type: binary, channel: reasoning, extractor: semantic_verbalisation}
-  attributes_concept_rationale: {type: binary, channel: rationale, extractor: semantic_verbalisation}
+  attributes_concept_reasoning:
+    type: binary
+    channel: reasoning
+    extractor: semantic_verbalisation
+    # Evaluator text (§16): the legacy prompt's guide and category, per intervention.
+    guide:
+      I.F.momentum: "The response refers to the stock's past share-price performance: its 12-month price momentum, recent price trend or relative strength."
+      I.F.valuation: "The response refers to the stock's valuation: its price-to-earnings multiple, earnings yield or whether the shares look cheap or expensive."
+      I.F.leverage: "The response refers to the company's leverage: its net debt relative to EBITDA, its indebtedness or its balance-sheet strength."
+    category:
+      I.F.momentum: "price momentum or past share-price performance"
+      I.F.valuation: "valuation multiples"
+      I.F.leverage: "leverage or balance-sheet strength"
+  attributes_concept_rationale:
+    type: binary
+    channel: rationale
+    extractor: semantic_verbalisation
+    # Evaluator text (§16): the legacy prompt's guide and category, per intervention.
+    guide:
+      I.F.momentum: "The response refers to the stock's past share-price performance: its 12-month price momentum, recent price trend or relative strength."
+      I.F.valuation: "The response refers to the stock's valuation: its price-to-earnings multiple, earnings yield or whether the shares look cheap or expensive."
+      I.F.leverage: "The response refers to the company's leverage: its net debt relative to EBITDA, its indebtedness or its balance-sheet strength."
+    category:
+      I.F.momentum: "price momentum or past share-price performance"
+      I.F.valuation: "valuation multiples"
+      I.F.leverage: "leverage or balance-sheet strength"
   contradictory_reasoning: {type: binary, channel: factors, extractor: contradictory_reasoning}
   agrees_with_stance: {type: binary, channel: decision, extractor: agrees_with_stance, field: decision}
 # Oracle entries per mandate and intervention (§17): type, item-level sign per unit

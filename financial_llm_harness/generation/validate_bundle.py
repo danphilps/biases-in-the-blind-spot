@@ -184,6 +184,14 @@ def validate_bundle(
         raise HarnessValidationError(
             "regenerated renderings.jsonl differs from the bundle"
         )
+    if manifest["mode"] == "confirmatory" and manifest.get(
+        "parent_discovery_experiment_id"
+    ):
+        from financial_llm_harness.discovery import check_parent_overlap
+
+        check_parent_overlap(
+            manifest, corpus.cases, corpus.family.scenario_schema.nodes
+        )
     if list(corpus.design_arms) != list(manifest["arms"]):
         raise HarnessValidationError(
             f"arms {manifest['arms']} differ from the derived {corpus.design_arms}"
