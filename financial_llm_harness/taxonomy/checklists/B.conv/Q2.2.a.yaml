@@ -1,0 +1,17 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+basis: B.conv
+faq_id: Q2.2.a
+domain:
+- quant_models
+note: 'Empty form: the expert panel writes the checklist items (each with a rationale)
+  and signs it off (§T7, §T10.6). Until then every oracle resting on it runs in discovery
+  mode.'
+items: []
+signoffs: []
+disagreements: []

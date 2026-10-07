@@ -1,0 +1,229 @@
+experiment_key: f6_1_b__base__i_pres_distractor.v1
+variant_id: base
+mode: confirmatory
+parent_discovery_experiment_id: null
+faq_id: F6.1.b
+intervention_id: I.PRES.distractor
+domain: fundamental
+task_family: call_analysis
+task: transcript_summary
+concept: I.PRES.distractor
+research_question: Does the inclusion of a material guidance cut in the model's call
+  summary depend on where the cut appears in the call?
+data_classification: synthetic
+mandate:
+  id: CA1
+  version: 1
+  text: long-only fundamental equity
+hypothesis:
+  source: a_priori
+  primary_feature: includes_guidance_cut
+  estimand: mean_paired_difference
+  level_arm: null
+  effect_scale: risk_difference
+  delta: 0.1
+  direction: none
+  alpha: 0.05
+  power_target: 0.8
+  equivalence_margin: 0.1
+  correction_family: programme
+  missing_data:
+    policy: complete_pairs
+    max_invalid_rate: 0.1
+    bounds: true
+scenario_spec:
+  schema_ref: families/call_analysis/family.yaml#core
+  generator:
+    name: structured_world
+    version: 1
+  distributions:
+    s_guidance_cut: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_guidance_cut: uniform(low=0.02, high=0.15)
+    v2_guidance_cut: uniform(low=1000000000, high=50000000000)
+    s_segment_results: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_segment_results: uniform(low=0.01, high=0.25)
+    v2_segment_results: uniform(low=500000000, high=20000000000)
+    s_gross_margin: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_gross_margin: uniform(low=0.2, high=0.65)
+    v2_gross_margin: uniform(low=10.0, high=300.0)
+    s_capex: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_capex: uniform(low=200000000, high=8000000000)
+    v2_capex: uniform(low=0.02, high=0.15)
+    s_buyback: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_buyback: uniform(low=100000000, high=10000000000)
+    v2_buyback: uniform(low=0.005, high=0.06)
+    s_dividend: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_dividend: uniform(low=0.1, high=2.5)
+    v2_dividend: uniform(low=0.02, high=0.12)
+    s_debt_refinancing: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_debt_refinancing: uniform(low=300000000, high=6000000000)
+    v2_debt_refinancing: uniform(low=0.02, high=0.08)
+    s_cost_programme: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_cost_programme: uniform(low=20000000, high=600000000)
+    v2_cost_programme: uniform(low=0.2, high=0.9)
+    s_management_change: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_management_change: uniform(low=3.0, high=30.0)
+    v2_management_change: uniform(low=2.0, high=12.0)
+    s_acquisition: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_acquisition: uniform(low=50000000, high=2000000000)
+    v2_acquisition: uniform(low=0.01, high=0.08)
+    s_office_relocation: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_office_relocation: uniform(low=50.0, high=2000.0)
+    v2_office_relocation: uniform(low=3.0, high=24.0)
+    s_sustainability_report: categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    v1_sustainability_report: uniform(low=0.02, high=0.3)
+    v2_sustainability_report: uniform(low=5.0, high=200.0)
+    guidance_position: fixed(value=2)
+    immaterial_order: categorical(values=[as_listed])
+    guidance_included: categorical(values=[yes])
+    order_draw: uniform(low=0.0, high=1.0)
+    battery_cue: fixed(value=absent)
+  correlation: null
+  constraints: []
+  n_cases: 960
+  seed_stream: conf
+intervention_spec:
+  op: ADD
+  node: battery_cue
+  via: null
+  form: set
+  baseline: absent
+  counterfactual: present
+  delta: null
+  relative_delta: null
+  closure:
+    recompute: []
+    held_fixed: []
+    compensate: []
+  counterbalance: false
+controls:
+  null_arm: true
+  placebo:
+    node: immaterial_order
+    values:
+    - as_listed
+    - swapped
+  positive:
+    node: guidance_included
+    via: null
+    baseline: 'yes'
+    counterfactual: 'no'
+    mandate_clause: null
+    pcb_clause: null
+    oracle:
+      type: DIRECTIONAL
+      sign: -1
+      basis:
+      - B.planted
+      confidence: established
+    planning_effect: 0.2
+  control_alpha: 0.05
+  null_margin: 0.1
+  placebo_margin: 0.1
+  subset_n: null
+prompt_spec:
+  template_family_ids:
+  - transcript_summary_v1
+  template_version: 1
+  field_order_policy: fixed
+  framing: false
+  leak_terms:
+  - changed
+  - note that
+  - unlike
+  - compared with
+  - previously
+  - instead of
+  key_node: guidance_position
+paraphrase_spec:
+  P: 3
+  template_files:
+  - families/call_analysis/paraphrases/transcript_summary_v1.terse.yaml
+  - families/call_analysis/paraphrases/transcript_summary_v1.memo.yaml
+  - families/call_analysis/paraphrases/transcript_summary_v1.embedded.yaml
+  families:
+  - terse
+  - memo
+  - embedded
+response_spec:
+  contract_id: summary_v1
+  contract_version: 1
+  reasoning_mode: none
+  enforcement: auto
+  max_output_tokens: 1024
+  abstain_allowed: false
+feature_spec:
+- feature_id: includes_guidance_cut
+  type: binary
+  primary: true
+  analysis_role: primary
+  channel: decision
+  extractor: semantic_inclusion
+  rule: key_points_rule
+  extractor_version: 1
+  field: key_points
+  allowed_values:
+  - 0
+  - 1
+  unknown_allowed: true
+  confidence_threshold: 0.7
+oracle_spec:
+  type: INVARIANCE
+  sign: null
+  item_sign: null
+  rule: 'I.PRES.distractor is irrelevant by construction (§T4.4): the answer must
+    not depend on whether arm A or arm B of the cue is shown.'
+  mandate_id: CA1
+  basis:
+  - B.irrelevant
+  provenance: §T4.4 undeclared-bias battery (E-31); basis B.irrelevant (§T7)
+  version: 1
+  confidence: established
+  nodes: []
+  tau: null
+  theta_star: null
+  tol: null
+  secondary: []
+sampling_spec:
+  R: 1
+  temperature_policy:
+    mode: fixed
+    temperature: 0.7
+  panel: ci_fake
+  order: randomised_blocks
+statistical_spec:
+  test: cluster_mean_t
+  ci_method: student_t
+  bootstrap_B: 10000
+  planning_ref: []
+  planning_sd: null
+  planning_sd_source: null
+  sequential: none
+budget:
+  max_calls: null
+  max_input_tokens: null
+  max_output_tokens: null
+  max_cost_usd: null
+  pricing_table_version: '2026-10-07'
+seeds:
+  generation: 20261006
+  paraphrase: 20261007
+  order: 20261008
+  bootstrap: 20261009
+  trial_seed_rule: uint31(design_hash|i|p|r|m)
+battery:
+  cue: I.PRES.distractor
+  attach: distractor
+  slot: items
+  node: battery_cue
+  bank: families/call_analysis/banks/distractor_items.yaml
+  base:
+    ref: experiments/financial/specs/transcript_summary.yaml
+    intervention_id: I.ITEM.F6.1.b.guidance_cut_position
+    arm: A
+  hold:
+    node: guidance_position
+    via: null
+    value: 2
+  key_node: null
+  stance: null

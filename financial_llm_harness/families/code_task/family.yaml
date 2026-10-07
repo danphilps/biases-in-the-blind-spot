@@ -10,6 +10,7 @@ faq_ids: [K.M.1]
 battery_slots:
   preamble: preamble
   label:method_label: method_label
+  code_comment: code_comment
 scenario_schema:
   nodes:
     n_assets: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
@@ -44,4 +45,4 @@ features:
   leak_free: {type: binary, channel: decision, extractor: code_outcome, test: leak_free}
 oracles:
   CT1:
-    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.lookahead], confidence: established}
+    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.identity], confidence: established}

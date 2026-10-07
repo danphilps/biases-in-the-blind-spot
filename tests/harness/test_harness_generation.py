@@ -451,3 +451,48 @@ def test_property_counterbalance_share(n: int) -> None:
         flips.append(flipped)
     share = sum(flips) / len(flips)
     assert 0.45 <= share <= 0.55
+
+
+# ---------------------------------------------------------------------------
+# Regression fixtures: three cases per V1 canonical spec (§7, §35)
+# ---------------------------------------------------------------------------
+
+CANONICAL_FIXTURES = sorted(
+    (Path(__file__).resolve().parent / "fixtures" / "canonical").glob("*.json")
+)
+
+
+@pytest.mark.parametrize("path", CANONICAL_FIXTURES, ids=lambda p: p.stem)
+def test_canonical_specs_regenerate_their_regression_cases(path: Path) -> None:
+    """The generator still produces the stored first three cases of each canonical spec."""
+    import importlib.util
+
+    from financial_llm_harness.core import yaml_io
+    from financial_llm_harness.core.paths import repo_root
+
+    fx = json.loads(path.read_text(encoding="utf-8"))
+    script = (
+        repo_root()
+        / "experiments/financial/taxonomy_build/extract_canonical_fixtures.py"
+    )
+    mod_spec = importlib.util.spec_from_file_location(
+        "extract_canonical_fixtures", script
+    )
+    assert mod_spec is not None and mod_spec.loader is not None
+    mod = importlib.util.module_from_spec(mod_spec)
+    mod_spec.loader.exec_module(mod)
+    spec = next(
+        s
+        for s in (
+            yaml_io.load(p)
+            for p in (repo_root() / "experiments/financial/specs").glob("*.yaml")
+        )
+        if s["experiment_key"] == fx["experiment_key"]
+    )
+    again = json.loads(json.dumps(mod.fixture(spec), sort_keys=True))
+    assert again == fx
+    assert len(fx["cases"]) >= 3 and fx["source"] == "generator_regression"
+
+
+def test_every_v1_canonical_spec_has_regression_cases() -> None:
+    assert len(CANONICAL_FIXTURES) == 6

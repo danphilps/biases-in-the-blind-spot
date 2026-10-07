@@ -1,0 +1,14 @@
+# Expert panel (spec §T10.1, §T10.6). Members, their roles and conflict declarations are
+# named by the user (D-13); until then no checklist is signed off, and every item whose
+# oracle rests on a conventional basis runs in discovery mode (§32B.2 step 5).
+# Member: {id, name, role (a §T10.1 code), conflicts: [faq_id or basis_id, ...]}.
+# Checklist files (taxonomy/checklists/<basis>.yaml, B.conv per item under
+# checklists/B.conv/<faq_id>.yaml) carry {basis, faq_id, domain, items: [{id, text,
+# rationale}], signoffs: [{member, date}], disagreements: [...]}.
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+seats: [quant_analyst, quant_pm, fundamental_analyst, fundamental_pm, curriculum_author, pension_cio, ml_architect, ml_developer]
+members: []
+signoff_log: []

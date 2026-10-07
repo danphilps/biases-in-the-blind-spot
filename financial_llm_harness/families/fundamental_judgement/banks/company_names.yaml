@@ -3,7 +3,7 @@ provenance:
   approved_by: []
   approved_on: null
 id: company_names
-description: "Synthetic company names, screened against the deny-list (spec \u00a77)."
+description: "Synthetic company names (agent placeholders). Not yet screened: `validate` screens them against the user-supplied deny-list of real listed-company names and tickers (spec \u00a77) and refuses a live run without it."
 entries:
   - "Arbor Ridge Holdings"
   - "Northgate Industrial"

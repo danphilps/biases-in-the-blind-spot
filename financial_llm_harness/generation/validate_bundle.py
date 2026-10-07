@@ -388,9 +388,11 @@ def _basis_rule(manifest: Mapping[str, Any]) -> None:
         if conf == "established":
             continue
         if conf == "conventional":
-            from financial_llm_harness.taxonomy.registry import checklist_signed_off
+            from financial_llm_harness.taxonomy.expert_panel import (
+                checklist_signed_off,
+            )
 
-            if checklist_signed_off(entry):
+            if checklist_signed_off(entry, manifest["faq_id"]):
                 continue
         raise HarnessValidationError(
             f"confirmatory a_priori hypothesis cites basis {b!r} ({conf}) without a signed-off checklist (§27)"

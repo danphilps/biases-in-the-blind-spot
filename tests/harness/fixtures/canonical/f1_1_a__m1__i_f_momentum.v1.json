@@ -1,0 +1,210 @@
+{
+ "cases": [
+  {
+   "arms": {
+    "A": {
+     "ceo_name": "Stephen Hollis",
+     "company_name": "Glenrock Steel",
+     "ebit_margin": 0.212,
+     "eps_growth": 0.291,
+     "eps_ttm": 3.34,
+     "ev_ebitda": 14.232371691673643,
+     "hq_city": "Syracuse, New York",
+     "market_cap": 5971000000.0,
+     "momentum_12m": 0.25005107252298253,
+     "momentum_draw": -0.25052366707425144,
+     "net_debt_ebitda": 0.5,
+     "pe": 18.320359281437124,
+     "price_12m_ago": 48.95,
+     "price_now": 61.19,
+     "revenue": 2051000000.0,
+     "revenue_growth": 0.018,
+     "roic": 0.124,
+     "sector": "Consumer Staples"
+    },
+    "B": {
+     "ceo_name": "Stephen Hollis",
+     "company_name": "Glenrock Steel",
+     "ebit_margin": 0.212,
+     "eps_growth": 0.291,
+     "eps_ttm": 3.34,
+     "ev_ebitda": 14.232371691673643,
+     "hq_city": "Syracuse, New York",
+     "market_cap": 5971000000.0,
+     "momentum_12m": -0.2500306410099278,
+     "momentum_draw": -0.25052366707425144,
+     "net_debt_ebitda": 0.5,
+     "pe": 18.320359281437124,
+     "price_12m_ago": 81.59,
+     "price_now": 61.19,
+     "revenue": 2051000000.0,
+     "revenue_growth": 0.018,
+     "roic": 0.124,
+     "sector": "Consumer Staples"
+    }
+   },
+   "sampled": {
+    "ceo_name": "Stephen Hollis",
+    "company_name": "Glenrock Steel",
+    "ebit_margin": 0.212,
+    "eps_growth": 0.291,
+    "eps_ttm": 3.34,
+    "ev_ebitda": 14.232371691673643,
+    "hq_city": "Syracuse, New York",
+    "market_cap": 5971000000.0,
+    "momentum_12m": -0.2504899559039687,
+    "momentum_draw": -0.25052366707425144,
+    "net_debt_ebitda": 0.5,
+    "pe": 18.320359281437124,
+    "price_12m_ago": 81.64,
+    "price_now": 61.19,
+    "revenue": 2051000000.0,
+    "revenue_growth": 0.018,
+    "roic": 0.124,
+    "sector": "Consumer Staples"
+   },
+   "user": {
+    "A": "Mandate: multi-factor: value, quality, 12-month price momentum\n\n- Sector: Consumer Staples\n- Enterprise value to EBITDA: 14.2×\n- Share price: $61.19\n- Revenue growth, year on year: 1.8%\n- Share price change over the past 12 months: 25.0%\n- Net debt to EBITDA: 0.5×\n- Return on invested capital: 12.4%\n- Market capitalisation: $5,971m\n- Earnings per share growth, year on year: 29.1%\n- Revenue, trailing twelve months: $2,051m\n- Price to earnings: 18.3×\n- Chief executive: Stephen Hollis\n- EBIT margin: 21.2%\n- Headquarters: Syracuse, New York\n- Company: Glenrock Steel\n- Earnings per share, trailing twelve months: $3.34\n\nAdd this stock to the portfolio under the mandate?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"reasoning\": your reasoning, as a string;\n\"decision\": \"ADD\" or \"DO_NOT_ADD\";\n\"confidence\": your confidence in the decision, a number from 0 to 1;\n\"material_factors\": a list of the factors that mattered to the decision, each an object {\"factor\": one of \"valuation\", \"growth\", \"quality\", \"leverage\", \"momentum\", \"size\", \"sector\", \"other\"; \"stance\": \"supports\" or \"opposes\"}.",
+    "B": "Mandate: multi-factor: value, quality, 12-month price momentum\n\n- Sector: Consumer Staples\n- Enterprise value to EBITDA: 14.2×\n- Share price: $61.19\n- Revenue growth, year on year: 1.8%\n- Share price change over the past 12 months: -25.0%\n- Net debt to EBITDA: 0.5×\n- Return on invested capital: 12.4%\n- Market capitalisation: $5,971m\n- Earnings per share growth, year on year: 29.1%\n- Revenue, trailing twelve months: $2,051m\n- Price to earnings: 18.3×\n- Chief executive: Stephen Hollis\n- EBIT margin: 21.2%\n- Headquarters: Syracuse, New York\n- Company: Glenrock Steel\n- Earnings per share, trailing twelve months: $3.34\n\nAdd this stock to the portfolio under the mandate?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"reasoning\": your reasoning, as a string;\n\"decision\": \"ADD\" or \"DO_NOT_ADD\";\n\"confidence\": your confidence in the decision, a number from 0 to 1;\n\"material_factors\": a list of the factors that mattered to the decision, each an object {\"factor\": one of \"valuation\", \"growth\", \"quality\", \"leverage\", \"momentum\", \"size\", \"sector\", \"other\"; \"stance\": \"supports\" or \"opposes\"}."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "ceo_name": "Gregory Pell",
+     "company_name": "Ambler Electric",
+     "ebit_margin": 0.1,
+     "eps_growth": 0.054,
+     "eps_ttm": 1.63,
+     "ev_ebitda": 29.045581962218158,
+     "hq_city": "Wichita, Kansas",
+     "market_cap": 46351000000.0,
+     "momentum_12m": 0.24989172802078818,
+     "momentum_draw": 0.09669853016869731,
+     "net_debt_ebitda": 0.8,
+     "pe": 17.70552147239264,
+     "price_12m_ago": 23.09,
+     "price_now": 28.86,
+     "revenue": 16410000000.0,
+     "revenue_growth": -0.001,
+     "roic": 0.049,
+     "sector": "Materials"
+    },
+    "B": {
+     "ceo_name": "Gregory Pell",
+     "company_name": "Ambler Electric",
+     "ebit_margin": 0.1,
+     "eps_growth": 0.054,
+     "eps_ttm": 1.63,
+     "ev_ebitda": 29.045581962218158,
+     "hq_city": "Wichita, Kansas",
+     "market_cap": 46351000000.0,
+     "momentum_12m": -0.25,
+     "momentum_draw": 0.09669853016869731,
+     "net_debt_ebitda": 0.8,
+     "pe": 17.70552147239264,
+     "price_12m_ago": 38.48,
+     "price_now": 28.86,
+     "revenue": 16410000000.0,
+     "revenue_growth": -0.001,
+     "roic": 0.049,
+     "sector": "Materials"
+    }
+   },
+   "sampled": {
+    "ceo_name": "Gregory Pell",
+    "company_name": "Ambler Electric",
+    "ebit_margin": 0.1,
+    "eps_growth": 0.054,
+    "eps_ttm": 1.63,
+    "ev_ebitda": 29.045581962218158,
+    "hq_city": "Wichita, Kansas",
+    "market_cap": 46351000000.0,
+    "momentum_12m": 0.09650455927051671,
+    "momentum_draw": 0.09669853016869731,
+    "net_debt_ebitda": 0.8,
+    "pe": 17.70552147239264,
+    "price_12m_ago": 26.32,
+    "price_now": 28.86,
+    "revenue": 16410000000.0,
+    "revenue_growth": -0.001,
+    "roic": 0.049,
+    "sector": "Materials"
+   },
+   "user": {
+    "A": "Mandate: multi-factor: value, quality, 12-month price momentum\n\n- Revenue growth, year on year: -0.1%\n- Revenue, trailing twelve months: $16,410m\n- Sector: Materials\n- Earnings per share, trailing twelve months: $1.63\n- Market capitalisation: $46,351m\n- Enterprise value to EBITDA: 29.0×\n- Company: Ambler Electric\n- EBIT margin: 10.0%\n- Price to earnings: 17.7×\n- Earnings per share growth, year on year: 5.4%\n- Headquarters: Wichita, Kansas\n- Return on invested capital: 4.9%\n- Share price: $28.86\n- Share price change over the past 12 months: 25.0%\n- Chief executive: Gregory Pell\n- Net debt to EBITDA: 0.8×\n\nAdd this stock to the portfolio under the mandate?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"reasoning\": your reasoning, as a string;\n\"decision\": \"ADD\" or \"DO_NOT_ADD\";\n\"confidence\": your confidence in the decision, a number from 0 to 1;\n\"material_factors\": a list of the factors that mattered to the decision, each an object {\"factor\": one of \"valuation\", \"growth\", \"quality\", \"leverage\", \"momentum\", \"size\", \"sector\", \"other\"; \"stance\": \"supports\" or \"opposes\"}.",
+    "B": "Mandate: multi-factor: value, quality, 12-month price momentum\n\n- Revenue growth, year on year: -0.1%\n- Revenue, trailing twelve months: $16,410m\n- Sector: Materials\n- Earnings per share, trailing twelve months: $1.63\n- Market capitalisation: $46,351m\n- Enterprise value to EBITDA: 29.0×\n- Company: Ambler Electric\n- EBIT margin: 10.0%\n- Price to earnings: 17.7×\n- Earnings per share growth, year on year: 5.4%\n- Headquarters: Wichita, Kansas\n- Return on invested capital: 4.9%\n- Share price: $28.86\n- Share price change over the past 12 months: -25.0%\n- Chief executive: Gregory Pell\n- Net debt to EBITDA: 0.8×\n\nAdd this stock to the portfolio under the mandate?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"reasoning\": your reasoning, as a string;\n\"decision\": \"ADD\" or \"DO_NOT_ADD\";\n\"confidence\": your confidence in the decision, a number from 0 to 1;\n\"material_factors\": a list of the factors that mattered to the decision, each an object {\"factor\": one of \"valuation\", \"growth\", \"quality\", \"leverage\", \"momentum\", \"size\", \"sector\", \"other\"; \"stance\": \"supports\" or \"opposes\"}."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "ceo_name": "Fatima Haddad",
+     "company_name": "Novaline Semiconductors",
+     "ebit_margin": 0.045,
+     "eps_growth": -0.16,
+     "eps_ttm": 0.86,
+     "ev_ebitda": 36.264527237425355,
+     "hq_city": "Greensboro, North Carolina",
+     "market_cap": 4622000000.0,
+     "momentum_12m": 0.2496644295302013,
+     "momentum_draw": 0.1331438726708919,
+     "net_debt_ebitda": 2.4,
+     "pe": 21.651162790697676,
+     "price_12m_ago": 14.9,
+     "price_now": 18.62,
+     "revenue": 3033000000.0,
+     "revenue_growth": -0.065,
+     "roic": 0.153,
+     "sector": "Materials"
+    },
+    "B": {
+     "ceo_name": "Fatima Haddad",
+     "company_name": "Novaline Semiconductors",
+     "ebit_margin": 0.045,
+     "eps_growth": -0.16,
+     "eps_ttm": 0.86,
+     "ev_ebitda": 36.264527237425355,
+     "hq_city": "Greensboro, North Carolina",
+     "market_cap": 4622000000.0,
+     "momentum_12m": -0.2501006846556584,
+     "momentum_draw": 0.1331438726708919,
+     "net_debt_ebitda": 2.4,
+     "pe": 21.651162790697676,
+     "price_12m_ago": 24.83,
+     "price_now": 18.62,
+     "revenue": 3033000000.0,
+     "revenue_growth": -0.065,
+     "roic": 0.153,
+     "sector": "Materials"
+    }
+   },
+   "sampled": {
+    "ceo_name": "Fatima Haddad",
+    "company_name": "Novaline Semiconductors",
+    "ebit_margin": 0.045,
+    "eps_growth": -0.16,
+    "eps_ttm": 0.86,
+    "ev_ebitda": 36.264527237425355,
+    "hq_city": "Greensboro, North Carolina",
+    "market_cap": 4622000000.0,
+    "momentum_12m": 0.1332927571515521,
+    "momentum_draw": 0.1331438726708919,
+    "net_debt_ebitda": 2.4,
+    "pe": 21.651162790697676,
+    "price_12m_ago": 16.43,
+    "price_now": 18.62,
+    "revenue": 3033000000.0,
+    "revenue_growth": -0.065,
+    "roic": 0.153,
+    "sector": "Materials"
+   },
+   "user": {
+    "A": "Mandate: multi-factor: value, quality, 12-month price momentum\n\n- Share price: $18.62\n- Company: Novaline Semiconductors\n- Chief executive: Fatima Haddad\n- Sector: Materials\n- Earnings per share growth, year on year: -16.0%\n- Revenue growth, year on year: -6.5%\n- Return on invested capital: 15.3%\n- Price to earnings: 21.7×\n- Market capitalisation: $4,622m\n- Earnings per share, trailing twelve months: $0.86\n- Net debt to EBITDA: 2.4×\n- EBIT margin: 4.5%\n- Enterprise value to EBITDA: 36.3×\n- Share price change over the past 12 months: 25.0%\n- Revenue, trailing twelve months: $3,033m\n- Headquarters: Greensboro, North Carolina\n\nAdd this stock to the portfolio under the mandate?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"reasoning\": your reasoning, as a string;\n\"decision\": \"ADD\" or \"DO_NOT_ADD\";\n\"confidence\": your confidence in the decision, a number from 0 to 1;\n\"material_factors\": a list of the factors that mattered to the decision, each an object {\"factor\": one of \"valuation\", \"growth\", \"quality\", \"leverage\", \"momentum\", \"size\", \"sector\", \"other\"; \"stance\": \"supports\" or \"opposes\"}.",
+    "B": "Mandate: multi-factor: value, quality, 12-month price momentum\n\n- Share price: $18.62\n- Company: Novaline Semiconductors\n- Chief executive: Fatima Haddad\n- Sector: Materials\n- Earnings per share growth, year on year: -16.0%\n- Revenue growth, year on year: -6.5%\n- Return on invested capital: 15.3%\n- Price to earnings: 21.7×\n- Market capitalisation: $4,622m\n- Earnings per share, trailing twelve months: $0.86\n- Net debt to EBITDA: 2.4×\n- EBIT margin: 4.5%\n- Enterprise value to EBITDA: 36.3×\n- Share price change over the past 12 months: -25.0%\n- Revenue, trailing twelve months: $3,033m\n- Headquarters: Greensboro, North Carolina\n\nAdd this stock to the portfolio under the mandate?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"reasoning\": your reasoning, as a string;\n\"decision\": \"ADD\" or \"DO_NOT_ADD\";\n\"confidence\": your confidence in the decision, a number from 0 to 1;\n\"material_factors\": a list of the factors that mattered to the decision, each an object {\"factor\": one of \"valuation\", \"growth\", \"quality\", \"leverage\", \"momentum\", \"size\", \"sector\", \"other\"; \"stance\": \"supports\" or \"opposes\"}."
+   }
+  }
+ ],
+ "experiment_key": "f1_1_a__m1__i_f_momentum.v1",
+ "source": "generator_regression"
+}

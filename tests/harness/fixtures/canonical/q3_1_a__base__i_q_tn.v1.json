@@ -1,0 +1,138 @@
+{
+ "cases": [
+  {
+   "arms": {
+    "A": {
+     "avg_pairwise_corr": 0.43,
+     "frequency": "weekly",
+     "mean_vol_ann": 0.179,
+     "method_label": "the allocation strategy",
+     "n_assets": 172,
+     "n_obs": 860.0,
+     "t_over_n": 5.0,
+     "turnover_limit": 0.214,
+     "universe_label": "UK large caps",
+     "use": "mean-variance optimisation with a turnover limit"
+    },
+    "B": {
+     "avg_pairwise_corr": 0.43,
+     "frequency": "weekly",
+     "mean_vol_ann": 0.179,
+     "method_label": "the allocation strategy",
+     "n_assets": 172,
+     "n_obs": 86.0,
+     "t_over_n": 0.5,
+     "turnover_limit": 0.214,
+     "universe_label": "UK large caps",
+     "use": "mean-variance optimisation with a turnover limit"
+    }
+   },
+   "sampled": {
+    "avg_pairwise_corr": 0.43,
+    "frequency": "weekly",
+    "mean_vol_ann": 0.179,
+    "method_label": "the allocation strategy",
+    "n_assets": 172,
+    "n_obs": 860.0,
+    "t_over_n": 5.0,
+    "turnover_limit": 0.214,
+    "universe_label": "UK large caps",
+    "use": "mean-variance optimisation with a turnover limit"
+   },
+   "user": {
+    "A": "Mandate: long-only institutional equity portfolio construction\n\nTask: choose the covariance estimator for the allocation strategy.\n\n- Average pairwise correlation: 0.43\n- Number of assets: 172\n- Return observations per asset: 860\n- Turnover limit per rebalance, one-way: 21.4%\n- Return frequency: weekly\n- Average annualised volatility: 17.9%\n- Universe: UK large caps\n- Intended use: mean-variance optimisation with a turnover limit\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"estimator\": one of \"sample\", \"ledoit_wolf_linear\", \"nonlinear_shrinkage\", \"factor_model\", \"ewma\", \"other\";\n\"justification\": a short explanation of the choice, as a string.",
+    "B": "Mandate: long-only institutional equity portfolio construction\n\nTask: choose the covariance estimator for the allocation strategy.\n\n- Average pairwise correlation: 0.43\n- Number of assets: 172\n- Return observations per asset: 86\n- Turnover limit per rebalance, one-way: 21.4%\n- Return frequency: weekly\n- Average annualised volatility: 17.9%\n- Universe: UK large caps\n- Intended use: mean-variance optimisation with a turnover limit\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"estimator\": one of \"sample\", \"ledoit_wolf_linear\", \"nonlinear_shrinkage\", \"factor_model\", \"ewma\", \"other\";\n\"justification\": a short explanation of the choice, as a string."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "avg_pairwise_corr": 0.25,
+     "frequency": "daily",
+     "mean_vol_ann": 0.364,
+     "method_label": "the allocation strategy",
+     "n_assets": 371,
+     "n_obs": 1855.0,
+     "t_over_n": 5.0,
+     "turnover_limit": 0.101,
+     "universe_label": "Japanese large caps",
+     "use": "tracking-error-constrained optimisation"
+    },
+    "B": {
+     "avg_pairwise_corr": 0.25,
+     "frequency": "daily",
+     "mean_vol_ann": 0.364,
+     "method_label": "the allocation strategy",
+     "n_assets": 371,
+     "n_obs": 186.0,
+     "t_over_n": 0.5,
+     "turnover_limit": 0.101,
+     "universe_label": "Japanese large caps",
+     "use": "tracking-error-constrained optimisation"
+    }
+   },
+   "sampled": {
+    "avg_pairwise_corr": 0.25,
+    "frequency": "daily",
+    "mean_vol_ann": 0.364,
+    "method_label": "the allocation strategy",
+    "n_assets": 371,
+    "n_obs": 1855.0,
+    "t_over_n": 5.0,
+    "turnover_limit": 0.101,
+    "universe_label": "Japanese large caps",
+    "use": "tracking-error-constrained optimisation"
+   },
+   "user": {
+    "A": "Mandate: long-only institutional equity portfolio construction\n\nTask: choose the covariance estimator for the allocation strategy.\n\n- Average pairwise correlation: 0.25\n- Turnover limit per rebalance, one-way: 10.1%\n- Intended use: tracking-error-constrained optimisation\n- Number of assets: 371\n- Return frequency: daily\n- Return observations per asset: 1,855\n- Average annualised volatility: 36.4%\n- Universe: Japanese large caps\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"estimator\": one of \"sample\", \"ledoit_wolf_linear\", \"nonlinear_shrinkage\", \"factor_model\", \"ewma\", \"other\";\n\"justification\": a short explanation of the choice, as a string.",
+    "B": "Mandate: long-only institutional equity portfolio construction\n\nTask: choose the covariance estimator for the allocation strategy.\n\n- Average pairwise correlation: 0.25\n- Turnover limit per rebalance, one-way: 10.1%\n- Intended use: tracking-error-constrained optimisation\n- Number of assets: 371\n- Return frequency: daily\n- Return observations per asset: 186\n- Average annualised volatility: 36.4%\n- Universe: Japanese large caps\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"estimator\": one of \"sample\", \"ledoit_wolf_linear\", \"nonlinear_shrinkage\", \"factor_model\", \"ewma\", \"other\";\n\"justification\": a short explanation of the choice, as a string."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "avg_pairwise_corr": 0.2,
+     "frequency": "weekly",
+     "mean_vol_ann": 0.381,
+     "method_label": "the allocation strategy",
+     "n_assets": 466,
+     "n_obs": 2330.0,
+     "t_over_n": 5.0,
+     "turnover_limit": 0.09,
+     "universe_label": "European large caps",
+     "use": "mean-variance optimisation with a turnover limit"
+    },
+    "B": {
+     "avg_pairwise_corr": 0.2,
+     "frequency": "weekly",
+     "mean_vol_ann": 0.381,
+     "method_label": "the allocation strategy",
+     "n_assets": 466,
+     "n_obs": 233.0,
+     "t_over_n": 0.5,
+     "turnover_limit": 0.09,
+     "universe_label": "European large caps",
+     "use": "mean-variance optimisation with a turnover limit"
+    }
+   },
+   "sampled": {
+    "avg_pairwise_corr": 0.2,
+    "frequency": "weekly",
+    "mean_vol_ann": 0.381,
+    "method_label": "the allocation strategy",
+    "n_assets": 466,
+    "n_obs": 2330.0,
+    "t_over_n": 5.0,
+    "turnover_limit": 0.09,
+    "universe_label": "European large caps",
+    "use": "mean-variance optimisation with a turnover limit"
+   },
+   "user": {
+    "A": "Mandate: long-only institutional equity portfolio construction\n\nTask: choose the covariance estimator for the allocation strategy.\n\n- Return frequency: weekly\n- Average annualised volatility: 38.1%\n- Turnover limit per rebalance, one-way: 9.0%\n- Number of assets: 466\n- Average pairwise correlation: 0.20\n- Intended use: mean-variance optimisation with a turnover limit\n- Return observations per asset: 2,330\n- Universe: European large caps\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"estimator\": one of \"sample\", \"ledoit_wolf_linear\", \"nonlinear_shrinkage\", \"factor_model\", \"ewma\", \"other\";\n\"justification\": a short explanation of the choice, as a string.",
+    "B": "Mandate: long-only institutional equity portfolio construction\n\nTask: choose the covariance estimator for the allocation strategy.\n\n- Return frequency: weekly\n- Average annualised volatility: 38.1%\n- Turnover limit per rebalance, one-way: 9.0%\n- Number of assets: 466\n- Average pairwise correlation: 0.20\n- Intended use: mean-variance optimisation with a turnover limit\n- Return observations per asset: 233\n- Universe: European large caps\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"estimator\": one of \"sample\", \"ledoit_wolf_linear\", \"nonlinear_shrinkage\", \"factor_model\", \"ewma\", \"other\";\n\"justification\": a short explanation of the choice, as a string."
+   }
+  }
+ ],
+ "experiment_key": "q3_1_a__base__i_q_tn.v1",
+ "source": "generator_regression"
+}

@@ -1,0 +1,11 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+entries:
+  Q3.1.a:
+    mandate: QM1
+    base_design: experiments/financial/specs/covariance_choice.yaml

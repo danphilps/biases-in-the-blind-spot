@@ -1,0 +1,7 @@
+unregistered:
+- id: Q2.3.a
+  reason: 'testability (§T1): no relevant intervention and no correctness check'
+- id: Q5.2.a
+  reason: 'testability (§T1): no relevant intervention and no correctness check'
+- id: M2.2.b
+  reason: 'testability (§T1): no relevant intervention and no correctness check'

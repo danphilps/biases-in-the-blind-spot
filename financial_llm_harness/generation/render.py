@@ -249,8 +249,8 @@ def render(base: BaseTemplate, para: Paraphrase, ctx: RenderContext) -> Rendered
         b.lit(para.user[pos : m.start()])
         name = m.group(1)
         if name == "preamble":
-            if ctx.preamble:
-                b.slot(ctx.preamble, "preamble", "preamble", None)
+            # always a span, possibly empty, so arms with and without a preamble mask alike
+            b.slot(ctx.preamble, "preamble", "preamble", None)
         elif name == "mandate":
             b.slot(ctx.mandate, "mandate", "mandate", None)
         elif name == "contract":
@@ -270,6 +270,10 @@ def render(base: BaseTemplate, para: Paraphrase, ctx: RenderContext) -> Rendered
                 b.slot(_slot_text(slot, ctx), slot, "state", slot)
                 b.lit(post_line.replace("{label}", labels[slot]))
         elif name in ctx.blocks:
+            if not ctx.blocks[name]:
+                b.slot(
+                    "", name, "block", None
+                )  # an empty block still masks like a full one
             for text, node in ctx.blocks[name]:
                 if node is None:
                     b.lit(text)

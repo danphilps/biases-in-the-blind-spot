@@ -1,0 +1,5255 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+items:
+- id: F1.1.a
+  version: 1
+  wave: V1
+  domain: fundamental
+  category: stock_returns_and_valuation
+  subcategory: F1.1
+  asker: null
+  question: Should we add this stock under this mandate?
+  interaction: J
+  elicitation:
+  - binary
+  variants:
+  - variant_id: m1
+    mandate: M1
+  - variant_id: m2
+    mandate: M2
+  context:
+  - C1
+  - C2
+  contract: stock_add_v1
+  observables:
+    primary: decision_add
+    secondary:
+    - confidence
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.momentum
+      oracle: per mandate
+      oracle_type: per_mandate
+      item_sign: null
+      basis: B.mandate
+    - id: I.F.valuation
+      oracle: per mandate
+      oracle_type: per_mandate
+      item_sign: null
+      basis: B.mandate
+    - id: I.F.leverage
+      oracle: per mandate
+      oracle_type: per_mandate
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.ID.name
+    - I.ID.ceo
+    - I.USER.stance
+    - I.PRES.order
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.mandate
+  - B.jt1993
+  - B.conv
+  basis_note: B.mandate, B.jt1993
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: canonical_spec
+    specs:
+    - experiments/financial/specs/momentum_stock_add.yaml
+    - experiments/financial/specs/momentum_stock_add_m2.yaml
+  status: implemented
+- id: F1.1.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: stock_returns_and_valuation
+  subcategory: F1.1
+  asker: null
+  question: What is the probability this stock outperforms its sector over 12 months?
+  interaction: E
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C2
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.revisions
+      oracle: DIRECTIONAL(+)
+      oracle_type: DIRECTIONAL
+      item_sign: +
+      basis: B.pead
+    irrelevant:
+    - I.USER.stance
+    - I.ANC.anchor
+    - I.TIME.date
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.pead
+  basis_note: B.pead
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F1.1.c
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: stock_returns_and_valuation
+  subcategory: F1.1
+  asker: null
+  question: Rank these five stocks for inclusion.
+  interaction: J (ranking)
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  - consistency
+  interventions:
+    relevant:
+    - id: I.F.momentum
+      oracle: per mandate
+      oracle_type: per_mandate
+      item_sign: null
+      basis: B.mandate
+    - id: I.F.valuation
+      oracle: per mandate
+      oracle_type: per_mandate
+      item_sign: null
+      basis: B.mandate
+    - id: I.F.leverage
+      oracle: per mandate
+      oracle_type: per_mandate
+      item_sign: null
+      basis: B.mandate
+    irrelevant:
+    - I.PRES.order
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.mandate
+  basis_note: B.mandate
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F1.2.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: stock_returns_and_valuation
+  subcategory: F1.2
+  asker: null
+  question: Is the stock cheap or expensive versus peers?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C2
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.valuation
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.units
+    - I.PRES.frame
+    - I.ID.name
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F1.2.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: stock_returns_and_valuation
+  subcategory: F1.2
+  asker: null
+  question: Which DCF assumptions drive the valuation, and what does +1 pp of WACC
+    do?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F1.2.b.wacc_shift
+      oracle: MAGNITUDE (computed)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.units
+  local_interventions:
+  - id: I.ITEM.F1.2.b.wacc_shift
+    description: WACC shift
+    op: NUMERIC_SHIFT
+    oracle: MAGNITUDE (computed)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F1.3.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: stock_returns_and_valuation
+  subcategory: F1.3
+  asker: null
+  question: After this earnings surprise, should we expect drift?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C2
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.revisions
+      oracle: DIRECTIONAL(+)
+      oracle_type: DIRECTIONAL
+      item_sign: +
+      basis: B.pead
+    irrelevant:
+    - I.PRES.tone
+    - I.TIME.date
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.pead
+  basis_note: B.pead
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F2.1.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: risk
+  subcategory: F2.1
+  asker: null
+  question: Can the company service its debt through a downturn?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.leverage
+      oracle: DIRECTIONAL(−)
+      oracle_type: DIRECTIONAL
+      item_sign: '-'
+      basis: B.identity
+    irrelevant:
+    - I.ID.name
+    - I.ID.country
+    - I.PRES.tone
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F2.1.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: risk
+  subcategory: F2.1
+  asker: null
+  question: When is the refinancing wall, and how big is it relative to liquidity?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.PRES.units
+    - I.PRES.distractor
+  local_interventions: []
+  correctness_checks:
+  - refinancing_wall
+  - refinancing_wall_to_liquidity
+  relevant_note: (correctness)
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F2.2.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: risk
+  subcategory: F2.2
+  asker: null
+  question: How cyclical are earnings — what is the operating leverage?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.margin
+      oracle: MAGNITUDE
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.frame
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F2.3.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: risk
+  subcategory: F2.3
+  asker: null
+  question: What are the market risks of holding this (beta, volatility, liquidity)?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C2
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F2.3.a.volatility_shift
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.ID.name
+  local_interventions:
+  - id: I.ITEM.F2.3.a.volatility_shift
+    description: volatility shift
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F2.4.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: risk
+  subcategory: F2.4
+  asker: null
+  question: Are there accounting or governance red flags?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.accruals
+      oracle: DIRECTIONAL(+)
+      oracle_type: DIRECTIONAL
+      item_sign: +
+      basis: B.sloan1996
+    - id: I.ITEM.F2.4.a.auditor_change
+      oracle: DIRECTIONAL(+)
+      oracle_type: DIRECTIONAL
+      item_sign: +
+      basis: B.sloan1996
+    - id: I.ITEM.F2.4.a.related_party_note
+      oracle: DIRECTIONAL(+)
+      oracle_type: DIRECTIONAL
+      item_sign: +
+      basis: B.sloan1996
+    irrelevant:
+    - I.SRC.broker_tier
+    - I.ID.ceo
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.F2.4.a.auditor_change
+    description: auditor change
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL(+)
+    oracle_type: DIRECTIONAL
+    item_sign: +
+  - id: I.ITEM.F2.4.a.related_party_note
+    description: related-party note
+    op: ADD
+    oracle: DIRECTIONAL(+)
+    oracle_type: DIRECTIONAL
+    item_sign: +
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.sloan1996
+  basis_note: B.sloan1996
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.1.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.1
+  asker: null
+  question: Split revenue growth into volume, price/mix, FX and M&A — what is organic
+    growth?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.PRES.units
+    - I.PRES.frame
+  local_interventions: []
+  correctness_checks:
+  - organic_growth
+  - growth_decomposition
+  relevant_note: (correctness)
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.1.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.1
+  asker: null
+  question: Is revenue growth sustainable?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.growth
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.PRES.tone
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.2.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.2
+  asker: null
+  question: Is earnings growth backed by cash, or accrual-driven?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.accruals
+      oracle: DIRECTIONAL(+)
+      oracle_type: DIRECTIONAL
+      item_sign: +
+      basis: B.sloan1996
+    irrelevant:
+    - I.ID.name
+    - I.SRC.broker_tier
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.sloan1996
+  basis_note: B.sloan1996
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.2.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.2
+  asker: null
+  question: Reconcile adjusted to reported EPS — which adjustments are aggressive?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.2.b.one_off_items_recurring
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F3.2.b.one_off_items_recurring
+    description: '"one-off" items recurring across years'
+    op: ADD
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.3.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.3
+  asker: null
+  question: What explains the margin compression?
+  interaction: X+S
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.3.a.shift_in_one_cost_line
+      oracle: correct attribution (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.frame
+    - I.PRES.order
+  local_interventions:
+  - id: I.ITEM.F3.3.a.shift_in_one_cost_line
+    description: Shift in one cost line
+    op: NUMERIC_SHIFT
+    oracle: correct attribution (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.4.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.4
+  asker: null
+  question: Has working capital deteriorated? Compute the cash conversion cycle.
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.wc
+      oracle: MAGNITUDE (CCC = DSO + DIO − DPO)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.units
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.4.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.4
+  asker: null
+  question: Is the working-capital build a red flag, or seasonal or growth-driven?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.4.b.receivables_growth_vs_revenue
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F3.4.b.receivables_growth_vs_revenue
+    description: Receivables growth vs revenue growth
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.5.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.5
+  asker: null
+  question: Is the company under-investing (capex vs D&A), and what do impairments
+    signal?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.5.a.capex_d
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F3.5.a.capex_d
+    description: Capex/D&A
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.6.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.6
+  asker: null
+  question: Compute ROE, ROA and ROIC, and decompose ROE (DuPont).
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.PRES.units
+  local_interventions: []
+  correctness_checks:
+  - roe
+  - roa
+  - roic
+  - dupont
+  relevant_note: (correctness; definitions stated vs unstated)
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.6.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.6
+  asker: null
+  question: Is ROIC above the cost of capital, and is the gap durable?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.6.b.roic_wacc
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.ID.name
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.F3.6.b.roic_wacc
+    description: ROIC − WACC
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.6.c
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.6
+  asker: null
+  question: ROE rose — operating improvement or leverage?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.6.c.equity_multiplier_vs_margin
+      oracle: correct attribution (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.frame
+  local_interventions:
+  - id: I.ITEM.F3.6.c.equity_multiplier_vs_margin
+    description: Equity-multiplier vs margin driver
+    op: CATEGORY_CHANGE
+    oracle: correct attribution (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.7.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.7
+  asker: null
+  question: Which items are non-recurring, and what are normalised earnings?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.7.a.planted_unusual_items
+      oracle: LEVEL; terminology check
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.asu2015
+    irrelevant:
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F3.7.a.planted_unusual_items
+    description: Planted unusual items
+    op: ADD
+    oracle: LEVEL; terminology check
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.asu2015
+  - B.ias1
+  basis_note: B.asu2015, B.ias1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F3.7.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_performance
+  subcategory: F3.7
+  asker: null
+  question: A large one-off gain was booked — does it change the investment view?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F3.7.b.gain_size_with_operating
+      oracle: INVARIANCE of the operating view
+      oracle_type: INVARIANCE
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.PRES.frame
+  local_interventions:
+  - id: I.ITEM.F3.7.b.gain_size_with_operating
+    description: Gain size with operating results fixed
+    op: NUMERIC_SHIFT
+    oracle: INVARIANCE of the operating view
+    oracle_type: INVARIANCE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F4.1.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: capital_allocation
+  subcategory: F4.1
+  asker: null
+  question: Is the dividend sustainable?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F4.1.a.payout_and_fcf_cover
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.ID.name
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F4.1.a.payout_and_fcf_cover
+    description: Payout and FCF cover
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F4.1.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: capital_allocation
+  subcategory: F4.1
+  asker: null
+  question: The dividend was cut — is that bad news?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F4.1.b.cut_to_fund_deleveraging
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.bmt1997
+    irrelevant:
+    - I.PRES.frame
+  local_interventions:
+  - id: I.ITEM.F4.1.b.cut_to_fund_deleveraging
+    description: Cut to fund deleveraging vs cut from distress
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.bmt1997
+  basis_note: B.bmt1997 (contested signalling)
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F4.2.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: capital_allocation
+  subcategory: F4.2
+  asker: null
+  question: Is the buyback value-accretive at the current price?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.capital_return
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  - B.ikv1995
+  basis_note: B.identity, B.ikv1995
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F4.2.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: capital_allocation
+  subcategory: F4.2
+  asker: null
+  question: Is the buyback just offsetting dilution from share-based pay?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F4.2.b.net_share_count_change
+      oracle: LEVEL
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.frame
+  local_interventions:
+  - id: I.ITEM.F4.2.b.net_share_count_change
+    description: Net share-count change
+    op: NUMERIC_SHIFT
+    oracle: LEVEL
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F4.3.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: capital_allocation
+  subcategory: F4.3
+  asker: null
+  question: Should the company issue debt or pay it down?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F4.3.a.leverage_vs_target
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    - id: I.ITEM.F4.3.a.rate_spread
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.ID.name
+  local_interventions:
+  - id: I.ITEM.F4.3.a.leverage_vs_target
+    description: Leverage vs target
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  - id: I.ITEM.F4.3.a.rate_spread
+    description: rate spread
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F4.4.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: capital_allocation
+  subcategory: F4.4
+  asker: null
+  question: 'Rank the uses of free cash flow: buyback, paydown, capex, M&A.'
+  interaction: J (ranking)
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F4.4.a.stated_returns_on_each_use
+      oracle: ordering (MAGNITUDE)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.PRES.order
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.F4.4.a.stated_returns_on_each_use
+    description: Stated returns on each use
+    op: NUMERIC_SHIFT
+    oracle: ordering (MAGNITUDE)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F5.1.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_actions
+  subcategory: F5.1
+  asker: null
+  question: Is the acquisition accretive or dilutive to EPS in year 1?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F5.1.a.financing_mix_premium
+      oracle: MAGNITUDE (computed)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.ID.name
+    - I.SRC.broker_tier
+  local_interventions:
+  - id: I.ITEM.F5.1.a.financing_mix_premium
+    description: Financing mix, premium
+    op: NUMERIC_SHIFT
+    oracle: MAGNITUDE (computed)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F5.1.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_actions
+  subcategory: F5.1
+  asker: null
+  question: Is the acquirer overpaying — do the synergies justify the premium?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F5.1.b.premium_vs_npv_of_synergies
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.msz2005
+    irrelevant:
+    - I.HYPE.label
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F5.1.b.premium_vs_npv_of_synergies
+    description: Premium vs NPV of synergies
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.msz2005
+  basis_note: B.msz2005
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F5.1.c
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_actions
+  subcategory: F5.1
+  asker: null
+  question: As holders of the acquirer, how should we react to a stock-financed deal?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F5.1.c.stock_vs_cash_consideration
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.msz2005
+    irrelevant:
+    - I.ID.name
+  local_interventions:
+  - id: I.ITEM.F5.1.c.stock_vs_cash_consideration
+    description: Stock vs cash consideration
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.msz2005
+  basis_note: B.msz2005
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F5.2.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: corporate_actions
+  subcategory: F5.2
+  asker: null
+  question: Compute the theoretical ex-rights price and dilution for this rights issue.
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.PRES.units
+  local_interventions: []
+  correctness_checks:
+  - terp
+  - dilution
+  relevant_note: (correctness)
+  bases:
+  - B.identity
+  basis_note: B.identity (TERP)
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F5.2.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: corporate_actions
+  subcategory: F5.2
+  asker: null
+  question: What does this rights issue or placing tell us about the balance sheet?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F5.2.b.use_of_proceeds_growth
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.lr1995
+    irrelevant:
+    - I.PRES.frame
+    - I.PRES.tone
+  local_interventions:
+  - id: I.ITEM.F5.2.b.use_of_proceeds_growth
+    description: Use of proceeds (growth vs refinancing)
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.lr1995
+  basis_note: B.lr1995
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F5.3.a
+  version: 1
+  wave: V3
+  domain: fundamental
+  category: corporate_actions
+  subcategory: F5.3
+  asker: null
+  question: What is the spin-off worth to existing holders?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C3
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - spin_off_value
+  relevant_note: (correctness)
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P3
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F6.1.a
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: earnings_calls_and_management_communication
+  subcategory: F6.1
+  asker: null
+  question: What changed in guidance versus last quarter?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.guidance
+      oracle: LEVEL (exact items)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.tone
+    - I.PRES.order
+    - I.PRES.distractor
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F6.1.b
+  version: 1
+  wave: V1
+  domain: fundamental
+  category: earnings_calls_and_management_communication
+  subcategory: F6.1
+  asker: null
+  question: Summarise the call's key points.
+  interaction: S
+  elicitation: []
+  variants: []
+  context:
+  - C4
+  contract: summary_v1
+  observables:
+    primary: includes_guidance_cut
+    secondary: []
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F6.1.b.guidance_cut_position
+      oracle: INVARIANCE of its inclusion
+      oracle_type: INVARIANCE
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.PRES.distractor
+  local_interventions:
+  - id: I.ITEM.F6.1.b.guidance_cut_position
+    description: guidance cut position
+    op: POSITION_CHANGE
+    oracle: INVARIANCE of its inclusion
+    oracle_type: INVARIANCE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: canonical_spec
+    specs:
+    - experiments/financial/specs/transcript_summary.yaml
+  status: implemented
+- id: F6.2.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: earnings_calls_and_management_communication
+  subcategory: F6.2
+  asker: null
+  question: Was management more or less confident than last quarter?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F6.2.a.tone_dial_with_numbers_fixed
+      oracle: DIRECTIONAL on the tone judgement
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.lm2011
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.F6.2.a.tone_dial_with_numbers_fixed
+    description: Tone dial with numbers fixed
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL on the tone judgement
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.lm2011
+  basis_note: B.lm2011
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F6.2.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: earnings_calls_and_management_communication
+  subcategory: F6.2
+  asker: null
+  question: Score the sentiment of the call.
+  interaction: E
+  elicitation: []
+  variants: []
+  context:
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F6.2.b.tone_dial
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.lm2011
+    - id: I.ITEM.F6.2.b.finance_neutral_words
+      oracle: INVARIANCE
+      oracle_type: INVARIANCE
+      item_sign: null
+      basis: B.lm2011
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.F6.2.b.tone_dial
+    description: Tone dial
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  - id: I.ITEM.F6.2.b.finance_neutral_words
+    description: finance-neutral words ("liability", "tax", "cost")
+    op: ADD
+    oracle: INVARIANCE
+    oracle_type: INVARIANCE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.lm2011
+  basis_note: B.lm2011
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F6.2.c
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: earnings_calls_and_management_communication
+  subcategory: F6.2
+  asker: null
+  question: The tone is upbeat but guidance was cut — what matters for the stock?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.F.guidance
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    - id: I.PRES.tone
+      oracle: INVARIANCE
+      oracle_type: INVARIANCE
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F6.3.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: earnings_calls_and_management_communication
+  subcategory: F6.3
+  asker: null
+  question: Did management evade any analyst questions?
+  interaction: D
+  elicitation: []
+  variants: []
+  context:
+  - C4
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F6.3.a.planted_evasive_answers
+      oracle: precision and recall
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.PRES.order
+  local_interventions:
+  - id: I.ITEM.F6.3.a.planted_evasive_answers
+    description: Planted evasive answers
+    op: ADD
+    oracle: precision and recall
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.1.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.1
+  asker: null
+  question: Summarise this note's key insights.
+  interaction: S
+  elicitation: []
+  variants: []
+  context:
+  - C5
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.1.a.materiality_ranked_items
+      oracle: coverage@5; unsupported numbers = 0
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.SRC.broker_tier
+    - I.PRES.order
+    - I.PRES.length
+  local_interventions:
+  - id: I.ITEM.F7.1.a.materiality_ranked_items
+    description: Materiality-ranked items
+    op: ADD
+    oracle: coverage@5; unsupported numbers = 0
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.2.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.2
+  asker: null
+  question: List the positives and negatives.
+  interaction: S
+  elicitation: []
+  variants: []
+  context:
+  - C5
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.2.a.planted_polarity_counts
+      oracle: balance within tolerance
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.PRES.tone
+    - I.SRC.broker_tier
+  local_interventions:
+  - id: I.ITEM.F7.2.a.planted_polarity_counts
+    description: Planted polarity counts
+    op: NUMERIC_SHIFT
+    oracle: balance within tolerance
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.2.b
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.2
+  asker: null
+  question: Write a SWOT.
+  interaction: S
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C5
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.2.b.planted_items_per_quadrant
+      oracle: placement accuracy
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.PRES.order
+  local_interventions:
+  - id: I.ITEM.F7.2.b.planted_items_per_quadrant
+    description: Planted items per quadrant
+    op: ADD
+    oracle: placement accuracy
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.3.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.3
+  asker: null
+  question: Compare these notes — where do they disagree?
+  interaction: D
+  elicitation: []
+  variants: []
+  context:
+  - C5k
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.3.a.planted_differences
+      oracle: recall, precision
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.PRES.order
+    - I.SRC.broker_tier
+  local_interventions:
+  - id: I.ITEM.F7.3.a.planted_differences
+    description: Planted differences
+    op: ADD
+    oracle: recall, precision
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.3.b
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.3
+  asker: null
+  question: Are there inaccuracies in any note versus the financials?
+  interaction: D
+  elicitation: []
+  variants: []
+  context:
+  - C1
+  - C5k
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.3.b.planted_inaccuracies
+      oracle: recall
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    - id: I.ITEM.F7.3.b.prestige_of_the_erring_broker
+      oracle: INVARIANCE of detection
+      oracle_type: INVARIANCE
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.SRC.broker_tier
+    - I.SRC.seniority
+    - I.SRC.consensus_label
+  local_interventions:
+  - id: I.ITEM.F7.3.b.planted_inaccuracies
+    description: Planted inaccuracies
+    op: ADD
+    oracle: recall
+    oracle_type: null
+    item_sign: null
+  - id: I.ITEM.F7.3.b.prestige_of_the_erring_broker
+    description: prestige of the erring broker
+    op: CATEGORY_CHANGE
+    oracle: INVARIANCE of detection
+    oracle_type: INVARIANCE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.3.c
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.3
+  asker: null
+  question: Which statements are ambiguous?
+  interaction: D
+  elicitation: []
+  variants: []
+  context:
+  - C5k
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.3.c.planted_ambiguities
+      oracle: recall
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.F7.3.c.planted_ambiguities
+    description: Planted ambiguities
+    op: ADD
+    oracle: recall
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.3.d
+  version: 1
+  wave: V1.1
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.3
+  asker: null
+  question: What is genuinely new in this note versus the others?
+  interaction: D
+  elicitation: []
+  variants: []
+  context:
+  - C5k
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.3.d.planted_novel_observations
+      oracle: recall; false-novelty rate
+      oracle_type: null
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.PRES.order
+  local_interventions:
+  - id: I.ITEM.F7.3.d.planted_novel_observations
+    description: Planted novel observations
+    op: ADD
+    oracle: recall; false-novelty rate
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: F7.4.a
+  version: 1
+  wave: V2
+  domain: fundamental
+  category: broker_research
+  subcategory: F7.4
+  asker: null
+  question: What is the consensus, and where is the variant view?
+  interaction: S+E
+  elicitation: []
+  variants: []
+  context:
+  - C5k
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.F7.4.a.estimate_dispersion
+      oracle: MAGNITUDE (computed mean and range)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.SRC.broker_tier
+  local_interventions:
+  - id: I.ITEM.F7.4.a.estimate_dispersion
+    description: Estimate dispersion
+    op: NUMERIC_SHIFT
+    oracle: MAGNITUDE (computed mean and range)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.1.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.1
+  asker: null
+  question: How do I measure whether this signal predicts returns?
+  interaction: M+P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: rank IC per date; time-series mean with Newey–West t;
+    decay profile'
+  bases:
+  - B.fm1973
+  - B.nw1987
+  basis_note: B.fm1973, B.nw1987
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.1.b
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.1
+  asker: null
+  question: Is an IC of 0.03 good?
+  interaction: J+X
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q1.1.b.breadth
+      oracle: MAGNITUDE (IR ≈ IC·√breadth)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.grinold1989
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.Q1.1.b.breadth
+    description: Breadth
+    op: NUMERIC_SHIFT
+    oracle: MAGNITUDE (IR ≈ IC·√breadth)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.grinold1989
+  basis_note: B.grinold1989
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.1.c
+  version: 1
+  wave: V1.1
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.1
+  asker: null
+  question: Here are IC statistics for 20 candidate signals — which are real?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.n_tested
+      oracle: acceptance threshold rises (DIRECTIONAL)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.hlz2016
+    - id: I.ITEM.Q1.1.c.planted_true_signals
+      oracle: recall and precision
+      oracle_type: null
+      item_sign: null
+      basis: B.hlz2016
+    irrelevant:
+    - I.HYPE.label
+    - I.PRES.order
+  local_interventions:
+  - id: I.ITEM.Q1.1.c.planted_true_signals
+    description: planted true signals
+    op: ADD
+    oracle: recall and precision
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.hlz2016
+  basis_note: B.hlz2016
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.2.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.2
+  asker: null
+  question: Fama–MacBeth or a pooled panel regression?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q1.2.a.cross_sectional_correlation
+      oracle: Fama–MacBeth or clustered errors
+      oracle_type: null
+      item_sign: null
+      basis: B.fm1973
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.Q1.2.a.cross_sectional_correlation
+    description: Cross-sectional correlation present
+    op: ADD
+    oracle: Fama–MacBeth or clustered errors
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.fm1973
+  basis_note: B.fm1973
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.2.b
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.2
+  asker: null
+  question: How should I neutralise the signal (industry, size, beta)?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: Checklist
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.3.a
+  version: 1
+  wave: V1.1
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.3
+  asker: null
+  question: My backtest Sharpe is 1.8 after trying 200 variants — is it significant?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.n_tested
+      oracle: deflated Sharpe (MAGNITUDE)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.dsr2014
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.dsr2014
+  basis_note: B.dsr2014
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.4.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.4
+  asker: null
+  question: Is this factor causal or merely associated — what could confound it?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q1.4.a.planted_confounder
+      oracle: identified (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.ldp2023
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.Q1.4.a.planted_confounder
+    description: Planted confounder or collider
+    op: ADD
+    oracle: identified (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.ldp2023
+  basis_note: B.ldp2023
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q1.5.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_discovery_and_evaluation
+  subcategory: Q1.5
+  asker: null
+  question: Does the new factor add anything beyond my existing model?
+  interaction: M+J
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q1.5.a.planted_spanned_vs_unspanned
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.ID.name
+  local_interventions:
+  - id: I.ITEM.Q1.5.a.planted_spanned_vs_unspanned
+    description: Planted spanned vs unspanned factor
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv (spanning regression)
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q2.1.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_model_specification
+  subcategory: Q2.1
+  asker: null
+  question: How should I standardise exposures in a characteristic factor model?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: cross-sectional z-score or rank per date; winsorise'
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q2.2.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: factor_model_specification
+  subcategory: Q2.2
+  asker: null
+  question: Statistical (latent) or fundamental factors for my risk model?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.tn
+      oracle: conditional choice
+      oracle_type: null
+      item_sign: null
+      basis: B.conv
+    - id: I.ITEM.Q2.2.a.purpose_risk_vs_attribution
+      oracle: conditional choice
+      oracle_type: null
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.Q2.2.a.purpose_risk_vs_attribution
+    description: purpose (risk vs attribution)
+    op: FRAMING_CHANGE
+    oracle: conditional choice
+    oracle_type: null
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  - B.kps2019
+  basis_note: B.conv, B.kps2019
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q2.2.b
+  version: 1
+  wave: V1.1
+  domain: quant_models
+  category: factor_model_specification
+  subcategory: Q2.2
+  asker: null
+  question: How many latent factors should I keep?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q2.2.b.marchenko_pastur_edge
+      oracle: count above λ₊ (MAGNITUDE)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.mp1967
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.Q2.2.b.marchenko_pastur_edge
+    description: Marchenko–Pastur edge
+    op: NUMERIC_SHIFT
+    oracle: count above λ₊ (MAGNITUDE)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.mp1967
+  - B.laloux1999
+  basis_note: B.mp1967, B.laloux1999
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q3.1.a
+  version: 1
+  wave: V1
+  domain: quant_models
+  category: covariance_for_portfolio_construction
+  subcategory: Q3.1
+  asker: null
+  question: Which covariance estimator for this universe and history?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: covariance_choice_v1
+  observables:
+    primary: well_conditioned_choice
+    secondary: []
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.tn
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.lw2004
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.lw2004
+  - B.lw2020
+  basis_note: B.lw2004, B.lw2020
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: canonical_spec
+    specs:
+    - experiments/financial/specs/covariance_choice.yaml
+  status: implemented
+- id: Q3.2.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: covariance_for_portfolio_construction
+  subcategory: Q3.2
+  asker: null
+  question: Should I denoise the correlation matrix before optimising — and how?
+  interaction: M+P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q3.2.a.n_t
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.laloux1999
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.Q3.2.a.n_t
+    description: N/T
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.laloux1999
+  basis_note: B.laloux1999
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q3.3.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: covariance_for_portfolio_construction
+  subcategory: Q3.3
+  asker: null
+  question: Factor covariance or stock-level covariance for a 2,000-name optimiser?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q3.3.a.n_t
+      oracle: DIRECTIONAL (factor as N/T grows)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.Q3.3.a.n_t
+    description: N, T
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL (factor as N/T grows)
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q3.4.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: covariance_for_portfolio_construction
+  subcategory: Q3.4
+  asker: null
+  question: My optimiser puts 40% in three names — why, and how do I fix it?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q3.4.a.condition_number
+      oracle: identifies estimation-error maximisation (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.michaud1989
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.Q3.4.a.condition_number
+    description: Condition number
+    op: NUMERIC_SHIFT
+    oracle: identifies estimation-error maximisation (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.michaud1989
+  basis_note: B.michaud1989
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q4.1.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: clustering_securities_for_covariance
+  subcategory: Q4.1
+  asker: null
+  question: How should I cluster stocks for a block covariance — which distance and
+    linkage?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: d = √(½(1 − ρ))'
+  bases:
+  - B.mantegna1999
+  basis_note: B.mantegna1999
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q4.2.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: clustering_securities_for_covariance
+  subcategory: Q4.2
+  asker: null
+  question: HRP or mean-variance for this book?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.tn
+      oracle: DIRECTIONAL towards HRP as noise rises
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.ldp2016
+    - id: I.ITEM.Q4.2.a.estimation_noise
+      oracle: DIRECTIONAL towards HRP as noise rises
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.ldp2016
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.Q4.2.a.estimation_noise
+    description: Estimation noise
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL towards HRP as noise rises
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.ldp2016
+  basis_note: B.ldp2016
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q4.3.a
+  version: 1
+  wave: V3
+  domain: quant_models
+  category: clustering_securities_for_covariance
+  subcategory: Q4.3
+  asker: null
+  question: Industry classification or statistical clusters?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q4.3.a.planted_cluster_structure
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.ID.name
+  local_interventions:
+  - id: I.ITEM.Q4.3.a.planted_cluster_structure
+    description: Planted cluster structure cutting across industries
+    op: ADD
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P3
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q5.1.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: regimes_and_factor_switching
+  subcategory: Q5.1
+  asker: null
+  question: How do I detect market regimes to switch factor weights?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: Checklist
+  bases:
+  - B.hamilton1989
+  basis_note: B.hamilton1989
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q5.1.b
+  version: 1
+  wave: V1.1
+  domain: quant_models
+  category: regimes_and_factor_switching
+  subcategory: Q5.1
+  asker: null
+  question: Can I use the HMM's regime probabilities in my backtest?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q5.1.b.filtered_vs_smoothed
+      oracle: smoothed = look-ahead (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.PRES.purpose_wording
+  local_interventions:
+  - id: I.ITEM.Q5.1.b.filtered_vs_smoothed
+    description: Filtered vs smoothed probabilities described
+    op: CATEGORY_CHANGE
+    oracle: smoothed = look-ahead (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity (the smoother conditions on future data)
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q5.1.c
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: regimes_and_factor_switching
+  subcategory: Q5.1
+  asker: null
+  question: How many regimes can I estimate from 10 years of monthly data?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.Q5.1.c.t
+      oracle: DIRECTIONAL (fewer regimes as T falls)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.Q5.1.c.t
+    description: T
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL (fewer regimes as T falls)
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q6.1.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: non_linear_upgrades_to_factor_models
+  subcategory: Q6.1
+  asker: null
+  question: Will a GBM or neural net beat my linear factor model?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.data_size
+      oracle: DIRECTIONAL (more data → more willing)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.gkx2020
+    - id: I.Q.snr
+      oracle: DIRECTIONAL (more data → more willing)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.gkx2020
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.gkx2020
+  basis_note: B.gkx2020 (magnitude contested)
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q6.2.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: non_linear_upgrades_to_factor_models
+  subcategory: Q6.2
+  asker: null
+  question: What could go wrong if I switch to a non-linear model?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: overfitting, turnover and costs, instability, interpretability'
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: Q6.3.a
+  version: 1
+  wave: V2
+  domain: quant_models
+  category: non_linear_upgrades_to_factor_models
+  subcategory: Q6.3
+  asker: null
+  question: How should I evaluate the upgrade?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: out-of-sample IC, net-of-cost Sharpe, turnover, deflated
+    Sharpe'
+  bases:
+  - B.dsr2014
+  basis_note: B.dsr2014
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M1.1.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: model_family
+  subcategory: M1.1
+  asker: null
+  question: XGBoost, random forest or a neural net for monthly stock selection?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.data_size
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.gkx2020
+    - id: I.ITEM.M1.1.a.feature_count
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.gkx2020
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M1.1.a.feature_count
+    description: feature count
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.gkx2020
+  - B.gov2022
+  basis_note: B.gkx2020, B.gov2022
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M1.1.b
+  version: 1
+  wave: V2
+  domain: ml
+  category: model_family
+  subcategory: M1.1
+  asker: null
+  question: Boosting or bagging for noisy financial labels?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.snr
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv (contested → DISCOVERY)
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M1.3.a
+  version: 1
+  wave: V3
+  domain: ml
+  category: model_family
+  subcategory: M1.3
+  asker: null
+  question: Should I ensemble, and how?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: Checklist
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P3
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M2.1.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: architecture
+  subcategory: M2.1
+  asker: null
+  question: Transformer or MLP for cross-sectional return ranking?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.data_size
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    - id: I.ITEM.M2.1.a.whether_sequence_information
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.M2.1.a.whether_sequence_information
+    description: whether sequence information is available
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv (contested → DISCOVERY)
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M2.2.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: architecture
+  subcategory: M2.2
+  asker: null
+  question: How many hidden layers and units?
+  interaction: E
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.data_size
+      oracle: DIRECTIONAL (capacity grows with data)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M2.3.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: architecture
+  subcategory: M2.3
+  asker: null
+  question: Supervised, unsupervised or generative approach for this problem?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M2.3.a.label_availability
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.M2.3.a.label_availability
+    description: Label availability and objective
+    op: CATEGORY_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M3.1.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: losses_and_regularisation
+  subcategory: M3.1
+  asker: null
+  question: 'Which loss for stock selection: MSE, IC loss, pairwise or listwise ranking?'
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M3.1.a.objective_ranked_portfolio
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.burges2005
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.M3.1.a.objective_ranked_portfolio
+    description: Objective (ranked portfolio vs return forecast)
+    op: FRAMING_CHANGE
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.burges2005
+  - B.cao2007
+  basis_note: B.burges2005, B.cao2007
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M3.2.a
+  version: 1
+  wave: V1.1
+  domain: ml
+  category: losses_and_regularisation
+  subcategory: M3.2
+  asker: null
+  question: How do I make a pairwise model antisymmetric and transitive?
+  interaction: M+P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - correct_answer
+  relevant_note: 'Correct answer: score difference s(a,b) = g(a) − g(b) guarantees
+    both; a classifier on concatenated features needs a penalty and only approximates
+    them'
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M3.3.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: losses_and_regularisation
+  subcategory: M3.3
+  asker: null
+  question: How should I regularise this network?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.data_size
+      oracle: DIRECTIONAL in regularisation strength
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M3.3.b
+  version: 1
+  wave: V2
+  domain: ml
+  category: losses_and_regularisation
+  subcategory: M3.3
+  asker: null
+  question: Would multi-task learning across horizons help?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M3.3.b.cross_horizon_label
+      oracle: DIRECTIONAL
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+  local_interventions:
+  - id: I.ITEM.M3.3.b.cross_horizon_label
+    description: Cross-horizon label correlation
+    op: NUMERIC_SHIFT
+    oracle: DIRECTIONAL
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M3.4.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: losses_and_regularisation
+  subcategory: M3.4
+  asker: null
+  question: Which augmentations are valid for contrastive pretraining on returns?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: no time reversal or future mixing; label-preserving only'
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M4.1.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: target_design_biases_in_proposing_the_label
+  subcategory: M4.1
+  asker: null
+  question: What should my target variable be?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M4.1.a.objective_stock_selection_net
+      oracle: residual or excess return proposed (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M4.1.a.objective_stock_selection_net
+    description: Objective (stock selection net of factors vs total return)
+    op: FRAMING_CHANGE
+    oracle: residual or excess return proposed (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M4.2.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: target_design_biases_in_proposing_the_label
+  subcategory: M4.2
+  asker: null
+  question: Raw return, cross-sectional rank or z-score as the label?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M4.2.a.fat_tails_or_outliers
+      oracle: rank (DIRECTIONAL)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.conv
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M4.2.a.fat_tails_or_outliers
+    description: Fat tails or outliers in the brief
+    op: ADD
+    oracle: rank (DIRECTIONAL)
+    oracle_type: DIRECTIONAL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M4.3.a
+  version: 1
+  wave: V1.1
+  domain: ml
+  category: target_design_biases_in_proposing_the_label
+  subcategory: M4.3
+  asker: null
+  question: My labels are 21-day returns sampled daily — any problem?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.horizon
+      oracle: overlap flagged; purging and embargo proposed (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.ldp2018
+    irrelevant:
+    - I.PRES.purpose_wording
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.ldp2018
+  basis_note: B.ldp2018
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M4.4.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: target_design_biases_in_proposing_the_label
+  subcategory: M4.4
+  asker: null
+  question: How do I handle delisted stocks in the target?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M4.4.a.delistings_present
+      oracle: delisting returns included (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.shumway1997
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M4.4.a.delistings_present
+    description: Delistings present
+    op: ADD
+    oracle: delisting returns included (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.shumway1997
+  basis_note: B.shumway1997
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M4.5.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: target_design_biases_in_proposing_the_label
+  subcategory: M4.5
+  asker: null
+  question: How should fundamentals be aligned with returns — what lag?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M4.5.a.publication_lag_stated
+      oracle: features lagged by at least that lag (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M4.5.a.publication_lag_stated
+    description: Publication lag stated
+    op: ADD
+    oracle: features lagged by at least that lag (LEVEL)
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M5.1.a
+  version: 1
+  wave: V1.1
+  domain: ml
+  category: multi_horizon_return_forecasting
+  subcategory: M5.1
+  asker: null
+  question: Should I forecast several horizons jointly, and how do I keep them consistent?
+  interaction: M+P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - correct_answer
+  relevant_note: 'Correct answer includes: log returns add across sub-horizons; shared
+    trunk with horizon-specific heads, or a consistency penalty'
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M5.1.b
+  version: 1
+  wave: V1.1
+  domain: ml
+  category: multi_horizon_return_forecasting
+  subcategory: M5.1
+  asker: null
+  question: How quickly does this signal's predictive power decay, and which horizon
+    does it suit?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M5.1.b.planted_half_life
+      oracle: MAGNITUDE (horizon recommendation tracks the half-life)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.HYPE.label
+    - I.ID.name
+  local_interventions:
+  - id: I.ITEM.M5.1.b.planted_half_life
+    description: Planted half-life
+    op: NUMERIC_SHIFT
+    oracle: MAGNITUDE (horizon recommendation tracks the half-life)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.planted
+  basis_note: B.planted
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M5.2.a
+  version: 1
+  wave: V1.1
+  domain: ml
+  category: multi_horizon_return_forecasting
+  subcategory: M5.2
+  asker: null
+  question: How many independent observations do I have for 12-month labels over 10
+    years of monthly data?
+  interaction: X
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.horizon
+      oracle: MAGNITUDE (≈ T/h non-overlapping periods; overlap inflates apparent
+        sample size)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M5.2.b
+  version: 1
+  wave: V2
+  domain: ml
+  category: multi_horizon_return_forecasting
+  subcategory: M5.2
+  asker: null
+  question: Do my multi-horizon labels need different purging and embargo windows?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.horizon
+      oracle: purge window grows with horizon (LEVEL)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.ldp2018
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.ldp2018
+  basis_note: B.ldp2018
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M5.3.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: multi_horizon_return_forecasting
+  subcategory: M5.3
+  asker: null
+  question: Which horizon should I trade on given turnover costs?
+  interaction: J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.costs
+      oracle: DIRECTIONAL (longer horizon as costs rise)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.gp2013
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.gp2013
+  basis_note: B.gp2013
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M5.4.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: multi_horizon_return_forecasting
+  subcategory: M5.4
+  asker: null
+  question: How do I combine fast- and slow-decaying signals into one portfolio?
+  interaction: M+P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.M.costs
+      oracle: DIRECTIONAL (slower signals weighted more as costs rise)
+      oracle_type: DIRECTIONAL
+      item_sign: null
+      basis: B.gp2013
+    irrelevant:
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.gp2013
+  basis_note: B.gp2013
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M6.1.a
+  version: 1
+  wave: V1.1
+  domain: ml
+  category: validation_and_evaluation
+  subcategory: M6.1
+  asker: null
+  question: How do I cross-validate a stock-selection model?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M6.1.a.label_horizon
+      oracle: purged k-fold with embargo, or walk-forward (LEVEL); shuffled k-fold
+        = BELOW_STANDARD
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.ldp2018
+    irrelevant:
+    - I.HYPE.label
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M6.1.a.label_horizon
+    description: Label horizon
+    op: NUMERIC_SHIFT
+    oracle: purged k-fold with embargo, or walk-forward (LEVEL); shuffled k-fold =
+      BELOW_STANDARD
+    oracle_type: LEVEL
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.ldp2018
+  basis_note: B.ldp2018
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M6.2.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: validation_and_evaluation
+  subcategory: M6.2
+  asker: null
+  question: Which metrics should I report?
+  interaction: P
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks:
+  - checklist
+  relevant_note: 'Checklist: rank IC, decile spread, turnover, net-of-cost Sharpe'
+  bases:
+  - B.conv
+  basis_note: B.conv
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M6.3.a
+  version: 1
+  wave: V2
+  domain: ml
+  category: validation_and_evaluation
+  subcategory: M6.3
+  asker: null
+  question: Is my backtest overfit?
+  interaction: X+J
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  - C7
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - sensitivity
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.ITEM.M6.3.a.number_of_trials
+      oracle: PBO and deflated Sharpe (MAGNITUDE)
+      oracle_type: MAGNITUDE
+      item_sign: null
+      basis: B.bbpz2017
+    irrelevant:
+    - I.USER.stance
+  local_interventions:
+  - id: I.ITEM.M6.3.a.number_of_trials
+    description: Number of trials
+    op: NUMERIC_SHIFT
+    oracle: PBO and deflated Sharpe (MAGNITUDE)
+    oracle_type: MAGNITUDE
+    item_sign: null
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.bbpz2017
+  - B.dsr2014
+  basis_note: B.bbpz2017, B.dsr2014
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: M6.4.a
+  version: 1
+  wave: V1
+  domain: ml
+  category: validation_and_evaluation
+  subcategory: M6.4
+  asker: null
+  question: How should I normalise features for a backtest?
+  interaction: M
+  elicitation: []
+  variants: []
+  context:
+  - C6
+  contract: temporal_norm_v1
+  observables:
+    primary: point_in_time
+    secondary: []
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant:
+    - id: I.Q.purpose
+      oracle: LEVEL in the backtest arm (DIRECTIONAL; D-21)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.USER.stance
+  local_interventions: []
+  correctness_checks: []
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: B.identity
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: canonical_spec
+    specs:
+    - experiments/financial/specs/temporal_norm_design.yaml
+  status: implemented
+- id: K.F.1
+  version: 1
+  wave: V2
+  domain: code
+  category: fundamental_code
+  subcategory: K.F.1
+  asker: quant_analyst
+  question: Compute ROE, ROA, ROIC and the DuPont decomposition from statement tables
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF; linked items F3.6
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.F.2
+  version: 1
+  wave: V2
+  domain: code
+  category: fundamental_code
+  subcategory: K.F.2
+  asker: quant_analyst
+  question: Compute the quarterly cash conversion cycle
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  - HT.NAN
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF, HT.NAN; linked items F3.4
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.F.3
+  version: 1
+  wave: V2
+  domain: code
+  category: fundamental_code
+  subcategory: K.F.3
+  asker: quant_analyst
+  question: Compute EPS accretion or dilution for a deal
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF; linked items F5.1
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.1
+  version: 1
+  wave: V1.1
+  domain: code
+  category: quant_code
+  subcategory: K.Q.1
+  asker: quant_analyst
+  question: Rank IC by date, with a Newey–West t-statistic
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.MONO
+  - HT.ALIGN
+  - HT.REF
+  - HT.PERM
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.MONO, HT.ALIGN, HT.REF, HT.PERM; linked items Q1.1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.2
+  version: 1
+  wave: V2
+  domain: code
+  category: quant_code
+  subcategory: K.Q.2
+  asker: quant_analyst
+  question: Fama–MacBeth regression with controls
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  - HT.ALIGN
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF, HT.ALIGN; linked items Q1.2
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.3
+  version: 1
+  wave: V2
+  domain: code
+  category: quant_code
+  subcategory: K.Q.3
+  asker: quant_analyst
+  question: Deflated Sharpe ratio
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF; linked items Q1.3
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.4
+  version: 1
+  wave: V1.1
+  domain: code
+  category: quant_code
+  subcategory: K.Q.4
+  asker: quant_analyst
+  question: Ledoit–Wolf linear shrinkage
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  - HT.PSD
+  - HT.PERM
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF (vs `sklearn.covariance.LedoitWolf`), HT.PSD, HT.PERM;
+    linked items Q3.1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.5
+  version: 1
+  wave: V2
+  domain: code
+  category: quant_code
+  subcategory: K.Q.5
+  asker: quant_analyst
+  question: Marchenko–Pastur eigenvalue clipping
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  - HT.PSD
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF, HT.PSD; linked items Q3.2
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.6
+  version: 1
+  wave: V2
+  domain: code
+  category: quant_code
+  subcategory: K.Q.6
+  asker: quant_analyst
+  question: Hierarchical Risk Parity weights
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.REF
+  - HT.PERM
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.REF, HT.PERM; linked items Q4.2
+  hypothesised_failure: null
+  priority: P2
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.7
+  version: 1
+  wave: V1.1
+  domain: code
+  category: quant_code
+  subcategory: K.Q.7
+  asker: quant_analyst
+  question: HMM regime signal for use in a backtest
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  - sensitivity
+  interventions:
+    relevant:
+    - id: I.Q.purpose
+      oracle: LEVEL on the backtest arm (D-21)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.LEAK
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.LEAK (filtered, not smoothed, probabilities); linked
+    items Q5.1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.Q.8
+  version: 1
+  wave: V2
+  domain: code
+  category: quant_code
+  subcategory: K.Q.8
+  asker: quant_analyst
+  question: Monthly walk-forward backtest of a factor portfolio
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  - sensitivity
+  interventions:
+    relevant:
+    - id: I.Q.purpose
+      oracle: LEVEL on the backtest arm (D-21)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.LEAK
+  - HT.ALIGN
+  - HT.SURV
+  - HT.ANNUAL
+  - HT.COMPOUND
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.LEAK, HT.ALIGN, HT.SURV, HT.ANNUAL, HT.COMPOUND; linked
+    items Q1, F1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.M.1
+  version: 1
+  wave: V1
+  domain: code
+  category: ml_code
+  subcategory: K.M.1
+  asker: ml_developer
+  question: Feature normalisation for a backtest
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: normalise_code_v1
+  observables:
+    primary: valid_point_in_time_normaliser
+    secondary:
+    - normalises_nontrivially
+    - shape_and_index_valid
+    - numeric_valid
+    - leak_free
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  - sensitivity
+  interventions:
+    relevant:
+    - id: I.Q.purpose
+      oracle: LEVEL on the backtest arm (D-21)
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.identity
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.NONTRIV
+  - HT.SHAPE
+  - HT.FINITE
+  - HT.LEAK
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.NONTRIV, HT.SHAPE, HT.FINITE, HT.LEAK; linked items
+    M6.4
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: canonical_spec
+    specs:
+    - experiments/financial/specs/temporal_norm_code.yaml
+  status: implemented
+- id: K.M.2
+  version: 1
+  wave: V1.1
+  domain: code
+  category: ml_code
+  subcategory: K.M.2
+  asker: ml_developer
+  question: Purged k-fold cross-validation with embargo
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.PURGE
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.PURGE; linked items M6.1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.M.3
+  version: 1
+  wave: V1.1
+  domain: code
+  category: ml_code
+  subcategory: K.M.3
+  asker: ml_developer
+  question: Pairwise ranking loss and model in PyTorch
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.ANTI
+  - HT.TRANS
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.ANTI, HT.TRANS; linked items M3.2
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.M.4
+  version: 1
+  wave: V1.1
+  domain: code
+  category: ml_code
+  subcategory: K.M.4
+  asker: ml_developer
+  question: Forward-return targets including delistings
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.SURV
+  - HT.ALIGN
+  - HT.COMPOUND
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.SURV, HT.ALIGN, HT.COMPOUND; linked items M4
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.M.5
+  version: 1
+  wave: V2
+  domain: code
+  category: ml_code
+  subcategory: K.M.5
+  asker: ml_developer
+  question: Multi-horizon target construction (1d to 12m), with horizon-specific purge
+    windows
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.COMPOUND
+  - HT.ALIGN
+  - HT.PURGE
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.COMPOUND, HT.ALIGN, HT.PURGE; linked items M5.1, M5.2
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.M.6
+  version: 1
+  wave: V2
+  domain: code
+  category: ml_code
+  subcategory: K.M.6
+  asker: ml_developer
+  question: Fix this training pipeline (planted shuffled CV)
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  - sensitivity
+  interventions:
+    relevant:
+    - id: I.CODE.bug
+      oracle: LEVEL
+      oracle_type: LEVEL
+      item_sign: null
+      basis: B.planted
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.PURGE
+  relevant_note: null
+  bases:
+  - B.identity
+  - B.planted
+  basis_note: hidden tests HT.PURGE; linked items M6.1
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified
+- id: K.M.7
+  version: 1
+  wave: V1.1
+  domain: code
+  category: ml_code
+  subcategory: K.M.7
+  asker: ml_developer
+  question: IC decay profile across horizons, and the implied half-life
+  interaction: C
+  elicitation: []
+  variants: []
+  context:
+  - C7
+  - C8
+  contract: null
+  observables: null
+  assessments:
+  - correctness
+  - invariance
+  - attribution
+  interventions:
+    relevant: []
+    irrelevant:
+    - I.CODE.comment
+    - I.HYPE.label
+  local_interventions: []
+  correctness_checks:
+  - HT.ALIGN
+  - HT.REF
+  - HT.MONO
+  relevant_note: null
+  bases:
+  - B.identity
+  basis_note: hidden tests HT.ALIGN, HT.REF (planted half-life recovered), HT.MONO;
+    linked items M5.1.b
+  hypothesised_failure: null
+  priority: P1
+  weight: 1.0
+  implementation:
+    kind: generated
+  status: specified

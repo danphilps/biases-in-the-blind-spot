@@ -25,6 +25,8 @@ from financial_llm_harness.generation.render import format_value
 FAMILY_ID = "call_analysis"
 BLOCK = "items"
 KEY_ITEM = "guidance_cut"
+# the block node of the most material planted item: distractors go only after it (§T4.4)
+KEY_ITEM_NODE = "s_guidance_cut"
 
 
 def item_bank() -> list[dict[str, Any]]:

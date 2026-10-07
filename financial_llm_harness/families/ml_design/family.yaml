@@ -39,4 +39,4 @@ features:
   point_in_time: {type: binary, channel: decision, extractor: enum_in_set, field: normalisation_window, values: [expanding, rolling, cross_sectional_at_t]}
 oracles:
   MLD1:
-    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.lookahead], confidence: established}
+    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.identity], confidence: established}

@@ -4,11 +4,12 @@ provenance:
   approved_on: null
 family_id: call_analysis
 description: F6 items (spec §34); slice S2 transcript_summary (§35).
-contexts: [C3]
+contexts: [C4]
 faq_ids: [F6.1.b]
 # Attach points the templates support (§T4.4): attach point → template slot that renders it.
 battery_slots:
   preamble: preamble
+  distractor: items
 scenario_schema:
   nodes:
     # the twelve call items: sentence choice s_<type> (bank index) and numeric slots v1/v2

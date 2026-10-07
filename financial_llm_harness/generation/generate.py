@@ -356,7 +356,7 @@ def collect_assets(
                 "oracle",
             )
         )
-    for checklist in _checklists_for(bases):
+    for checklist in _checklists_for(bases, design["faq_id"]):
         provs.append(
             parse_provenance(
                 provenance_of(yaml_io.load(checklist)),
@@ -368,15 +368,18 @@ def collect_assets(
     return B.sorted_assets(rows), provs
 
 
-def _checklists_for(bases: list[str]) -> list[Path]:
+def _checklists_for(bases: list[str], faq_id: str) -> list[Path]:
+    """Checklists of the conventional bases cited (§T7); B.conv's is per item."""
+    from financial_llm_harness.taxonomy.expert_panel import checklist_path
+
     out = []
     path = _registry_file("taxonomy/bases.yaml")
     if not path.exists():
         return out
     data = yaml_io.load(path)
     for b in data.get("bases") or []:
-        if b.get("id") in bases and b.get("checklist"):
-            p = _registry_file(str(b["checklist"]))
+        if b.get("id") in bases and b.get("confidence") == "conventional":
+            p = checklist_path(str(b["id"]), faq_id)
             if p.exists():
                 out.append(p)
     return sorted(set(out))
