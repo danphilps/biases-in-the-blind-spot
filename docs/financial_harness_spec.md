@@ -112,10 +112,21 @@ It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file star
 
 ### 0.9 What is committed **[D-16]**
 
-- **Committed:** per run, `README.md`, `ARCHIVE.sha256`, `manifest/`, `results/`, `report/` and `models/`; `runs/INDEX.md` and `runs/index.json`; `comparisons/`; programme directories (§32B.4); `probes/`.
+The commit policy below applies only to runs whose manifest has `data_classification: synthetic` (§4, §30.1).
+
+- **Committed:** per run, `README.md`, `run.json`, `ARCHIVE.sha256`, `manifest/`, `results/`, `report/` and `models/`; `runs/INDEX.md` and `runs/index.json`; `comparisons/` and programme directories (§32B.4) that include no non-synthetic run; `probes/`.
 - **Not committed:** per run, `db/`, `artifacts/`, `logs/` and `run_archive.tar.gz`; per programme, `logs/`.
-- `financial-harness archive RUN_ID` writes `<run_dir>/run_archive.tar.gz` and `<run_dir>/ARCHIVE.sha256`. Members are `db/` and `artifacts/` in sorted order, with mtime 0, uid and gid 0, and gzip mtime 0, so equal inputs give equal bytes. The operator stores the archive outside git.
-- `render`, `replay` and `programme report` on a run whose `db/` is absent first extract `run_archive.tar.gz` after checking it against `ARCHIVE.sha256`. A missing archive or a hash mismatch exits 1.
+- **Licensed and confidential runs.** Nothing in the run directory is committable by default: `manifest/` holds the case corpus and every rendered prompt, `models/` holds response excerpts, and `db/` and `artifacts/` hold raw prompts and responses. At L6 (§31A) the runner writes `<run_dir>/.gitignore` containing the single line `*`, which ignores every file in the directory, itself included, and takes precedence over the repository `.gitignore`. It is written whatever the output policy (§30.1). `README.md` states, under its status line, the data classification, that the outputs are not publishable unless §30.1 permits, and that the directory is git-ignored for that reason. If `git -C <run_dir> rev-parse --is-inside-work-tree` prints `true`, the runner prints a warning to stderr at L6 and at every resume, naming the run directory and its classification, and writes an `event` of kind `non_synthetic_in_git_work_tree`. A programme or comparison directory that includes a non-synthetic run gets the same `.gitignore` when it is created, because a programme's `manifests/` holds case corpora (§32B.4).
+- **`financial-harness archive RUN_ID`** writes `<run_dir>/run_archive.tar.gz` and `<run_dir>/ARCHIVE.sha256`, in this order:
+  1. stop all writers: take the exclusive `db/LOCK` (§32), exiting 1 if another process holds it;
+  2. open `db/run.sqlite` and commit, so no transaction is open;
+  3. execute `PRAGMA wal_checkpoint(TRUNCATE)`, exiting 1 unless it reports `busy = 0`;
+  4. close the connection;
+  5. reopen it, verify that `PRAGMA integrity_check` returns the single row `ok`, and close it, exiting 1 otherwise; `archive` then exits 1 if `run.sqlite-wal` exists with non-zero length;
+  6. archive `db/run.sqlite` and every file under `artifacts/` (never `db/LOCK`, a `-wal` or a `-shm` file), as regular files and directories only, in sorted path order, with mtime 0, uid and gid 0, empty user and group names, mode 0644 for files and 0755 for directories, and gzip mtime 0, so equal inputs give equal bytes.
+
+  `archive` writes no database row, so archiving the same run twice gives byte-identical archives. The operator stores the archive outside git.
+- **Extraction.** `render`, `replay` and `programme report` on a run whose `db/` is absent first check `run_archive.tar.gz` against `ARCHIVE.sha256`; a missing archive or a hash mismatch exits 1. Every member is then validated before anything is written, and the archive is rejected (exit 1, nothing written) if any member: has an absolute name; has a `..` component; lies outside `db/` and `artifacts/`; is a symbolic or hard link, a device, a FIFO or any type other than a regular file or directory, so no link can escape the target; repeats a member path; or exceeds an extraction limit (constants in `storage/archive.py`: 1 GiB per member, 64 GiB in total, 5,000,000 members). `render` and `replay` extract into the run directory. `programme report` extracts each archived run into a temporary directory, which it deletes afterwards, and leaves the run directory as it was.
 - Append to `.gitignore`:
 
 ```
@@ -156,11 +167,11 @@ manifest/
 - **`assets.json`** is a JSON array with one row for every consumed asset, sorted by (`role`, `logical_name`):
 
   ```json
-  {"role": "template|paraphrase|bank|mandate|oracle|contract|family_config|hidden_tests|sandbox_recipe|evaluator_prompt|evaluator_parser|panel|probe",
+  {"role": "template|paraphrase|bank|mandate|oracle|contract|family_config|hidden_tests|sandbox_recipe|evaluator_prompt|evaluator_parser|panel|probe|request_profile",
    "logical_name": "...", "sha256": "...", "source": "package|repository|generated"}
   ```
 
-  Every prompt-visible file, oracle-bearing file, response schema, family configuration, code-fixture manifest, hidden-test tree, evaluator prompt and parser, sandbox recipe, panel and probe used by the experiment MUST appear. For a code case (§13.1), `task.md`, `starter/` and any shown public tests have role `template`, the fixture manifest (`allowed_files`, `expected_invariants`) has role `family_config`, and `tests_hidden/` has role `hidden_tests`. `logical_name` is the POSIX path relative to the package directory (`source: package`), the repository root (`repository`) or the bundle directory (`generated`, e.g. `probes/<model_key>.json`); for a Python object (the legacy evaluator prompt and parser, §16) it is the dotted import path, with `source: package`. `sha256` is taken over the file's bytes; for a directory asset, by the tree rule below over every file in it; for a string object, over its UTF-8 bytes; for a function, over the UTF-8 bytes of `inspect.getsource`. Roles `template`, `paraphrase`, `bank`, `mandate`, `oracle`, `contract`, `family_config`, `hidden_tests` and `sandbox_recipe` are **scientific** and enter `design_hash`; the other roles enter only `manifest_hash` (§4).
+  Every prompt-visible file, oracle-bearing file, response schema, family configuration, code-fixture manifest, hidden-test tree, evaluator prompt and parser, sandbox recipe, panel, probe and request profile (§20.2) used by the experiment MUST appear. A request profile has `logical_name` `models/providers.yaml#<profile_id>`, `source: package`, and `sha256` over the canonical JSON (§4) of its mapping in `providers.yaml`, so editing a used profile is FROZEN_INPUT_DRIFT while editing provider limits is not. For a code case (§13.1), `task.md`, `starter/` and any shown public tests have role `template`, the fixture manifest (`allowed_files`, `expected_invariants`) has role `family_config`, and `tests_hidden/` has role `hidden_tests`. `logical_name` is the POSIX path relative to the package directory (`source: package`), the repository root (`repository`) or the bundle directory (`generated`, e.g. `probes/<model_key>.json`); for a Python object (the legacy evaluator prompt and parser, §16) it is the dotted import path, with `source: package`. `sha256` is taken over the file's bytes; for a directory asset, by the tree rule below over every file in it; for a string object, over its UTF-8 bytes; for a function, over the UTF-8 bytes of `inspect.getsource`. Roles `template`, `paraphrase`, `bank`, `mandate`, `oracle`, `contract`, `family_config`, `hidden_tests` and `sandbox_recipe` are **scientific** and enter `design_hash`; the other roles, `request_profile` included, enter only `manifest_hash` (§4).
 - **Executable source.** The manifest records the code identity (manifest only):
 
   ```yaml
@@ -562,7 +573,7 @@ Datasets are generated from the state with `numpy.random.default_rng(uint64("dat
 
 ## 13. Code experiments
 
-13.1 A case contains: `task.md`, `starter/`, `tests_public/`, `tests_hidden/`, `data/`, `sandbox_image` (`base` or `torch`, §13.4), `allowed_files`, `expected_invariants`, `intervention`. V1 supports a single module only.
+13.1 A case contains: `task.md`, `starter/`, `tests_public/`, `tests_hidden/`, `data/`, `sandbox_image` (`base` or `torch`, §13.4), `allowed_files`, `expected_invariants`, `intervention`. V1 supports a single module only. For each sandbox execution the runner builds two fresh host directories, never mounting package files directly: `case_ro/`, holding `starter/` with the single allowed file replaced by the response's code (§13.2) and `data/`; and `tests_hidden/`, a copy of the case's hidden-test tree. Hidden tests are never prompt-visible and never enter the writable work directory (§13.4).
 
 13.2 **Response → code protocol (`code_v1`):**
 - The response MUST contain exactly one fenced block with info string `python`. Zero blocks, or more than one, is PARSE_FAILURE.
@@ -578,27 +589,43 @@ Datasets are generated from the state with `numpy.random.default_rng(uint64("dat
 
 Research conclusions SHOULD rest on L3/L4.
 
-13.4 **Sandbox.** The backend is the Docker or Podman CLI, and the sandbox fails closed:
+13.4 **Sandbox [E-29].** The backend is the Docker or Podman CLI, and the sandbox fails closed. Hidden tests are never copied into the writable work directory. The container sees:
+
+| Path | Mount | Contents |
+|---|---|---|
+| `/work` | writable tmpfs | the generated solution and working data, copied from `/case_ro` inside the container |
+| `/tests_hidden` | read-only bind mount of the per-execution `tests_hidden/` copy (§13.1) | the hidden tests |
+| `/case_ro` | read-only bind mount of the per-execution `case_ro/` (§13.1) | `starter/` with the solution, `data/` |
+| `/tmp` | writable tmpfs | scratch |
+
+The runner calls `subprocess.run(argv, shell=False)`; it never interpolates into a host shell. `argv` is, one element per token below except the final script, which is a single constant element with no interpolated value:
 
 ```
-docker run --rm --name harness-<attempt_id[:12]> --network=none --read-only \
-  --mount type=tmpfs,destination=/work,tmpfs-size=67108864,tmpfs-mode=1777 \
-  --mount type=tmpfs,destination=/tmp,tmpfs-size=67108864,tmpfs-mode=1777 \
-  -v <case_copy>:/case:ro --memory=512m --memory-swap=512m --cpus=1 \
-  --pids-limit=64 --ulimit nofile=256 --user=65534:65534 --cap-drop=ALL \
-  --security-opt=no-new-privileges -e PYTHONDONTWRITEBYTECODE=1 -e HOME=/work \
-  <image_id> sh -c 'cp -r /case/. /work && cd /work && python -m pytest -q -p no:cacheprovider tests_hidden'
+docker run --rm --name harness-<attempt_id[:12]> --network=none --read-only
+  --mount type=tmpfs,destination=/work,tmpfs-size=67108864,tmpfs-mode=1777
+  --mount type=tmpfs,destination=/tmp,tmpfs-size=67108864,tmpfs-mode=1777
+  --mount type=bind,source=<case_ro_dir>,destination=/case_ro,readonly
+  --mount type=bind,source=<tests_hidden_dir>,destination=/tests_hidden,readonly
+  --memory=512m --memory-swap=512m --cpus=1 --pids-limit=64 --ulimit nofile=256
+  --user=65534:65534 --cap-drop=ALL --security-opt=no-new-privileges
+  -e PYTHONDONTWRITEBYTECODE=1 -e HOME=/work -e PYTHONPATH=/work
+  <image_id> sh -c "cp -R /case_ro/starter/. /case_ro/data /work && cd /work && exec python -m pytest -q -rA -p no:cacheprovider /tests_hidden"
 ```
 
+- `PYTHONPATH=/work` lets the hidden tests import the solution module; `--mount type=bind` fails, rather than creating an empty directory, when a source is missing.
+- **Per-test outcomes.** Each hidden test function is one check; its outcome is read from the `-rA` short test summary (`PASSED`/`FAILED`/`ERROR` with the node ID). A test absent from the summary, or a pytest exit code other than 0 or 1, counts as failed. Features are computed from these outcomes (§16, §35 S5).
+- **Hidden-test integrity.** Before starting the container the runner computes the §0.10 tree hash of the `tests_hidden/` copy and compares it with the case's `hidden_tests` row in `assets.json`; after the container exits it recomputes it. If either differs, the trial is SANDBOX_FAILURE and an `event` of kind `hidden_tests_hash_mismatch` records which check failed.
+- **Threat model.** V1's sandbox protects the host and prevents test mutation. It does not keep the hidden-test source secret from adversarial Python code, which can read `/tests_hidden`. Hidden tests are never prompt-visible. Stronger anti-cheating isolation is V2.
+- **Size caps, before acceptance.** The allowed file is at most 262,144 bytes of UTF-8; a larger code block is PARSE_FAILURE and never runs. stdout and stderr are read through a 1 MiB cap each, and only the capped bytes are stored as artefacts (and so archived, §0.9); truncation is recorded and never itself changes the status.
 - Wall timeout is 60 s. On timeout, `docker kill` then `docker rm -f` the named container, and the status is TEST_FAILURE with `timeout: true` recorded (the model's code ran too long; this is behaviour, not infrastructure).
-- Read stdout and stderr with a 1 MiB cap each; truncation is recorded.
 - The container gets no host environment variables (Docker passes none unless asked).
-- **Images [E-22].** Two images are built from recipes in the package: `families/code_task/sandbox/base/` (`Dockerfile`, `requirements.in`, `requirements.txt`) with numpy, pandas, scipy, scikit-learn and pytest, and `families/code_task/sandbox/torch/` adding CPU PyTorch for K.M.3 (§T6.2). Each `Dockerfile` starts `FROM python:3.12-slim@sha256:<digest>`; the digest is filled at M5 from `docker pull python:3.12-slim` and committed. `requirements.txt` is generated by `uv pip compile --generate-hashes requirements.in` and installed with `pip install --require-hashes --no-deps`. `recipe_sha256` = sha256 over the recipe directory's files in sorted path order. `financial-harness sandbox build` builds both images and tags them `financial-harness-sandbox-<name>:<recipe_sha256[:12]>`; the runner builds a missing image before the first code trial. The manifest records `recipe_sha256` per image; every code trial records the local image ID it ran on (`sandbox_image_id`). Image IDs differ across machines; the recipe hash is the reproducibility contract.
+- **Images [E-22].** Two images are built from recipes in the package: `families/code_task/sandbox/base/` (`Dockerfile`, `requirements.in`, `requirements.txt`) with numpy, pandas, scipy, scikit-learn and pytest, and `families/code_task/sandbox/torch/` adding CPU PyTorch for K.M.3 (§T6.2). Each `Dockerfile` starts `FROM python:3.12-slim@sha256:<digest>`; the digest is filled at M5 from `docker pull python:3.12-slim` and committed. `requirements.txt` is generated by `uv pip compile --generate-hashes requirements.in` and installed with `pip install --require-hashes --no-deps`. `recipe_sha256` is the §0.10 tree hash of the recipe directory: the `sha256` of its `sandbox_recipe` asset row (logical name `families/code_task/sandbox/<name>`). `financial-harness sandbox build` builds both images and tags them `financial-harness-sandbox-<name>:<recipe_sha256[:12]>`; the runner builds a missing image before the first code trial. `assets.json` holds that row for every image the experiment uses, so the recipe enters `design_hash` and is re-checked before execution (§4); every code trial records the local image ID it ran on (`sandbox_image_id`). Image IDs differ across machines; the recipe hash is the reproducibility contract.
 - With no backend, or a failed image build, the status is SANDBOX_FAILURE. Sandbox tests skip locally but MUST run in CI (ubuntu-latest has Docker).
 
 13.5 **Leakage oracle (L4) for temporal tasks:**
-- For 5 seeded cut points t, perturb every input row with timestamp > t (seeded noise and row shuffle).
-- `leakage = 1` if any output at a timestamp ≤ t changes by more than relative tolerance 1e-9.
+- **Cut points.** Let u_1 < … < u_n be the sorted unique timestamps of the test's input fixture, the file that the fixture manifest names as `expected_invariants.leakage_fixture`. The five cut points are t_k = u_{⌊k·n/6⌋}, k = 1, …, 5 (1-based positions). Each cut point MUST have at least one input row with timestamp ≤ t_k and at least one with timestamp > t_k; `validate` reads the fixture and exits 2 where that fails, or where n < 6.
+- For each cut point, perturb every input row with timestamp > t_k (noise and a row shuffle, each from a seed fixed in the hidden test, so it is part of the `hidden_tests` asset) and run the function on the original and on the perturbed input.
+- `leakage = 1` if, for any cut point, the outputs at timestamps ≤ t_k, aligned on the index, are not `numpy.allclose(before, after, rtol=1e-9, atol=1e-12, equal_nan=True)`, or their index differs. `leak_free` = 1 − `leakage`.
 - This check is deterministic and independent of the model.
 
 ---
@@ -633,11 +660,13 @@ Example contract `stock_add_v1` with `reasoning_before`:
 
 | Event | Class | Action |
 |---|---|---|
-| Connection error, HTTP 5xx or 408, timeout before any response body | Transport | Retry the identical request with the same seed. Backoff 2^k s, at most 5 tries. Record each Attempt. |
+| Connection error, HTTP 5xx or 408, transport timeout before a complete model response | Transport | Retry the identical request with the same seed. Backoff 2^k s, at most 5 tries. Record each Attempt. |
 | HTTP 429 | Transport | Honour `retry-after` (default 60 s if absent). Does not count toward the 5-try limit; a separate bound applies: after 20 consecutive 429s, or 30 minutes of cumulative 429 waiting, on one trial, the trial ends RATE_LIMIT. |
 | A batch item errored or expired | Transport | Resubmit that item only, in the next batch to the same provider, model, region and transport. At most 2 resubmissions per item; then the trial ends API_ERROR (errored) or TIMEOUT (expired). A batch not ended 25 hours after creation is cancelled, and its unfinished items count as expired. |
 | Any other HTTP 4xx | API_ERROR | No retry. |
 | Empty text, refusal, content filter, `finish_reason = length`, invalid JSON | Model behaviour | No retry. The status is terminal. |
+
+An HTTP body is not automatically a model response. Every request is an Attempt (§29), and the body of a transport-class attempt (any HTTP status ≥ 400, a connection failure, an errored or expired batch item, a timeout before a complete response) is stored as provenance only: it is never parsed into model fields and never becomes the trial's selected response (`used_attempt_id`, §29). A trial that ends RATE_LIMIT, API_ERROR or TIMEOUT has no selected response.
 
 Any new prompt that asks the model to repair or reformat is an experimental intervention. It is forbidden unless pre-registered as a separate arm.
 
@@ -731,7 +760,7 @@ category: "<concept_category text>"            # semantic features only
 
 ### 20.1 Adapters
 
-There are exactly four adapter classes. Provider differences are **data** in `providers.yaml`, not subclasses.
+There are exactly four adapter classes. Provider differences are **data** in `providers.yaml`, not subclasses: every request and response mapping is a named, versioned request profile (§20.2) that the adapter interprets. Adapters branch on the profile's `protocol`; provider names MUST NOT appear in behavioural `if provider == …` logic, except where a protocol genuinely requires it (§20.10). The frozen capability probe (§20.4), not the profile or §20.3, is the authority for what the exact model accepts.
 
 | Adapter | Transport | Providers |
 |---|---|---|
@@ -744,7 +773,7 @@ Gemini defaults to the native transport because it exposes the generation config
 
 ### 20.2 Provider registry (`financial_llm_harness/models/providers.yaml`)
 
-The registry is versioned and dated. The values below were checked on 2026-10-06 via search results, because the primary documentation sites were unreachable from the build container. `probe` (§20.4) re-verifies them before any manifest is frozen.
+The registry is versioned and dated. The endpoint values below were checked on 2026-10-06 via search results, because the primary documentation sites were unreachable from the build container. `probe` (§20.4) re-verifies them before any manifest is frozen.
 
 ```yaml
 registry_version: 2026-10-06
@@ -756,6 +785,7 @@ providers:
     docs: https://platform.openai.com/docs/api-reference
     batch: openai_batch
     serving: first_party
+    default_profile: openai/chat_completions
   anthropic:
     adapter: anthropic
     base_url: https://api.anthropic.com
@@ -763,6 +793,7 @@ providers:
     docs: https://docs.claude.com/en/api/overview
     batch: anthropic_message_batches
     serving: first_party
+    default_profile: anthropic/adaptive_thinking
   google:                                  # Gemini
     adapter: gemini_native
     base_url: https://generativelanguage.googleapis.com/v1beta
@@ -772,8 +803,10 @@ providers:
       openai_compat:
         base_url: https://generativelanguage.googleapis.com/v1beta/openai/
         docs: https://ai.google.dev/gemini-api/docs/openai
-    batch: gemini_batch                    # enable only after probe confirms
+        default_profile: google/openai_compat
+    batch: none                            # native Gemini Batch is V2 (§20.10)
     serving: first_party
+    default_profile: google/generate_content
   deepseek:
     adapter: openai_compatible
     base_url: https://api.deepseek.com
@@ -781,6 +814,7 @@ providers:
     docs: https://api-docs.deepseek.com/
     batch: none
     serving: first_party
+    default_profile: deepseek/chat_completions
   qwen:                                    # Alibaba Cloud Model Studio (DashScope)
     adapter: openai_compatible
     base_url: https://dashscope-intl.aliyuncs.com/compatible-mode/v1   # Singapore (default)
@@ -790,8 +824,9 @@ providers:
       cn-beijing:  https://dashscope.aliyuncs.com/compatible-mode/v1
     key_env: DASHSCOPE_API_KEY
     docs: https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope
-    batch: openai_batch_compatible
+    batch: none                            # an OpenAI-compatible batch flow is V2 (§20.10)
     serving: first_party
+    default_profile: qwen/reasoning_effort
   moonshot:                                # Kimi
     adapter: openai_compatible
     base_url: https://api.moonshot.ai/v1   # international (default)
@@ -801,39 +836,83 @@ providers:
     docs: https://platform.kimi.ai/docs/api/overview
     batch: none
     serving: first_party
+    default_profile: moonshot/chat_completions
   openrouter:
     adapter: openai_compatible
     base_url: https://openrouter.ai/api/v1
     key_env: OPENROUTER_API_KEY
     docs: https://openrouter.ai/docs
     batch: none
-    serving: aggregator                    # upstream provider and quantisation pinned per model
+    serving: aggregator                    # upstream provider and quantisation hard-pinned per model (§20.8)
+    default_profile: openrouter/chat_completions
   local:
     adapter: openai_compatible
     base_url: http://localhost:8000/v1     # vLLM / SGLang serving open weights
     key_env: null
+    batch: none
     serving: self_hosted                   # weights hash and engine version recorded
+    default_profile: local/chat_completions
 ```
 
 - Every provider entry also carries `limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}` and, where `batch` is not `none`, `batch_poll_seconds: 180` (the legacy values) **[E-13]**. Operators edit them here. They are not part of the manifest hash; the values a run used are written to its `event` table at start.
-- The registry also holds `fake: {adapter: fake, base_url: null, key_env: null, batch: none, serving: in_process}`.
-- API keys are read only from the environment or `.env`. They are never written to the manifest, the DB, artefacts or reports.
+- `batch` names a flow that §20.10 implements (`openai_batch`, `anthropic_message_batches`) or is `none`. The registry never advertises any other value.
+- The registry also holds `fake: {adapter: fake, base_url: null, key_env: null, batch: none, serving: in_process, default_profile: fake/in_process}`.
+- API keys are read only from the environment or `.env`. They are never written to the manifest, the DB, artefacts (request-body artefacts hold no header, §20.10), logs or reports.
 - Model IDs are never hard-coded in harness code. `financial-harness models list --provider P` lists them from the provider's models endpoint, and the manifest pins the exact ID.
 
-### 20.3 Expected provider behaviour
+**Request profiles.** Each provider entry holds `request_profiles`, a map from profile ID (`<provider>/<name>`) to a versioned mapping that fixes how a frozen message object (§0.10) and the panel entry become a request body, and how a response body becomes a `ModelResponse` (§20.7):
 
-This table records provider behaviour as documented and known on 2026-10-06 (the Anthropic row was rechecked against Anthropic's API reference dated 2026-09-25). The adapter MUST NOT rely on it at run time: run-time capabilities come only from the frozen probe result (§20.4). The adapter MUST, however, know how to *request* each feature in the table, so that the probe can detect it.
+```yaml
+request_profiles:
+  <provider>/<name>:
+    profile_version: <int>                 # bumped on any change to the mapping
+    protocol: chat_completions | anthropic_messages | gemini_generate_content | in_process
+    max_output_field: <request field path>
+    structured_output: {kind: json_schema | json_object | native_schema | none, field: <request field path | null>}
+    thinking: {kind: reasoning_effort | adaptive | enable_thinking | thinking_config | model_variant | none, fields: [<request field path>, ...]}
+    seed_field: <request field path | null>          # null: the protocol has no seed (seed_parameter: unavailable, §20.4)
+    routing_fields: {allowlist, order, allow_fallbacks, quantizations} | null   # request field paths; OpenRouter pinning only (§20.8)
+    trace_paths: [<response field path>, ...]
+    finish_reason_map: {<raw value>: stop | length | content_filter | refusal | tool | other}
+    request_id_headers: [<header name>, ...]
+    fingerprint_paths: {provider_model_id, model_revision, upstream_provider, quantization, region}   # response field paths or header names; null where not exposed (§20.7)
+```
+
+- Field paths are dotted paths into the request body or the response JSON. `structured_output.kind`: `json_schema` is a schema in the protocol's OpenAI-style response-format field; `json_object` is JSON mode without a schema; `native_schema` is the protocol's own schema field. `thinking.kind` says how the panel's `thinking` (§20.3) is expressed: an effort level (`reasoning_effort`), an adaptive mode with an effort (`adaptive`), an on/off switch with an optional budget (`enable_thinking`), a configuration object with a budget (`thinking_config`), the choice of model ID (`model_variant`, which sends no field), or nothing (`none`).
+- Profiles are data, edited only with a `profile_version` bump. A panel entry names its profile (`request_profile`, §20.9); null means the provider's `default_profile` for the entry's transport. `generate` writes the resolved `request_profile: {id, profile_version, sha256}` into each manifest `models` entry, with `sha256` over the canonical JSON (§4) of the mapping, and lists the profile in `assets.json` with role `request_profile` (§0.10). So the request mapping is frozen per model, and editing a used profile after freeze is FROZEN_INPUT_DRIFT (§4).
+- The exact request and response field names are profile data, filled at M3 from each provider's current documentation and confirmed by cassettes and the probe; this document does not fix them. V1 profiles:
+
+| Profile ID | Protocol | Structured output | Thinking | Use |
+|---|---|---|---|---|
+| `openai/chat_completions` | `chat_completions` | `json_schema` | `reasoning_effort` | OpenAI (default) |
+| `anthropic/adaptive_thinking` | `anthropic_messages` | `native_schema` | `adaptive` | Anthropic models with adaptive thinking (default) |
+| `anthropic/extended_thinking` | `anthropic_messages` | `native_schema` | `thinking_config` | Anthropic models with budgeted extended thinking |
+| `google/generate_content` | `gemini_generate_content` | `native_schema` | `thinking_config` | Gemini, native transport (default) |
+| `google/openai_compat` | `chat_completions` | `json_schema` | `reasoning_effort` | Gemini, `transport: openai_compat` (default) |
+| `deepseek/chat_completions` | `chat_completions` | `json_object` | `model_variant` | DeepSeek (default) |
+| `qwen/reasoning_effort` | `chat_completions` | `json_object` | `reasoning_effort` | Qwen (default) |
+| `qwen/enable_thinking` | `chat_completions` | `json_object` | `enable_thinking` | Qwen models documented only with the switch |
+| `moonshot/chat_completions` | `chat_completions` | `json_object` | `model_variant` | Kimi (default) |
+| `openrouter/chat_completions` | `chat_completions` | `json_schema` | `reasoning_effort` | OpenRouter (default); declares `routing_fields` and a `fingerprint_paths.upstream_provider` |
+| `local/chat_completions` | `chat_completions` | `json_schema` | `none` | vLLM / SGLang |
+| `fake/in_process` | `in_process` | `none` | `none` | The fake adapter (§20.11) |
+
+A provider whose current controls the table does not capture (§20.3) gets a new profile ID, never an edit that changes the meaning of an existing one.
+
+### 20.3 Provider behaviour (informative)
+
+This table is informative only. It records provider behaviour as documented and known on 2026-10-06 (the Anthropic row was rechecked against Anthropic's API reference dated 2026-09-25). Entries marked † come from the user's review of current provider documentation, 2026-10-06, and were not re-verified from the build container. Nothing in it is read at run time: requests and response extraction follow the model's frozen request profile (§20.2), and run-time capabilities come only from the frozen probe result (§20.4). The V1 profiles MUST be able to express each control in the table, so that the probe can detect it.
 
 | Provider | Thinking control (manifest `thinking` → native) | Reasoning trace returned | Structured output | Known traps |
 |---|---|---|---|---|
-| OpenAI | `effort` → `reasoning_effort` | None via Chat Completions | `response_format` JSON schema (strict) | Some reasoning models reject `temperature` |
-| Anthropic | `effort` → `output_config.effort` with `thinking: {type: adaptive}`; `budget_tokens` → `thinking: {type: enabled, budget_tokens}` on older models only (current models reject it with HTTP 400); some current models cannot disable thinking | `thinking` blocks: empty text by default, a summary with `thinking.display: summarized`; the raw chain of thought is not returned by current models (`trace_visibility: none` or `summary`) | JSON schema via `output_config.format` (sent in `extra_body` if the locked SDK lacks the parameter) | No `seed` parameter (`seed_effective: false`). Current models reject non-default `temperature` / `top_p` / `top_k` with HTTP 400. Refusals arrive as `stop_reason: refusal` with `stop_details` |
-| Gemini, native | `effort` / `budget_tokens` → `thinkingConfig` | Thought summaries only when `includeThoughts` is set (`trace_visibility: summary`) | `responseMimeType: application/json` + `responseSchema` | Some models cannot switch thinking off |
+| OpenAI | `effort` → `reasoning_effort` | None via Chat Completions | `response_format` JSON schema (strict); still available on current Chat Completions †, so the schema probe is kept | Some reasoning models reject `temperature` |
+| Anthropic | Model-dependent †: adaptive thinking (`effort` → `output_config.effort` with `thinking: {type: adaptive}`; profile `anthropic/adaptive_thinking`) and extended thinking (`budget_tokens` → `thinking: {type: enabled, budget_tokens}`; profile `anthropic/extended_thinking`) coexist, and which one a model accepts, and whether it can disable thinking, is per model: probe | `thinking` blocks: empty text by default, a summary with `thinking.display: summarized`; the raw chain of thought is not returned by current models (`trace_visibility: none` or `summary`) | JSON schema via `output_config.format` (sent in `extra_body` if the locked SDK lacks the parameter) | No `seed` parameter (`seed_parameter: unavailable`). Current models reject non-default `temperature` / `top_p` / `top_k` with HTTP 400. Refusals arrive as `stop_reason: refusal` with `stop_details` |
+| Gemini, native | `effort` / `budget_tokens` → `thinkingConfig` | Thought summaries only when `includeThoughts` is set (`trace_visibility: summary`) | `responseMimeType: application/json` + `responseSchema` | Some models cannot switch thinking off. A native `generateContent` Batch API exists †; V1 does not use it (`batch: none`) |
 | Gemini, compatibility mode | `effort` → `reasoning_effort` (mapped to thinking budgets) | Probe | `response_format` | Separate stratum |
-| DeepSeek | Model choice (e.g. `deepseek-chat` = off, `deepseek-reasoner` = on) | `reasoning_content`, full | `response_format: json_object` | The reasoner is documented as silently ignoring `temperature` / `top_p`, so they record as `effective: false` |
-| Qwen | `on`/`off` → `enable_thinking` (extra body); budget → `thinking_budget` | `reasoning_content`, full | `response_format: json_object` (availability in thinking mode: probe) | Some thinking modes need streaming; the adapter accumulates the stream and records `stream: true` |
+| DeepSeek | Model choice (e.g. `deepseek-chat` = off, `deepseek-reasoner` = on); current thinking controls are richer than this † (per the request profile) | `reasoning_content`, full | `response_format: json_object` | The reasoner is documented as silently ignoring `temperature` / `top_p`, so they record as `effective: false` |
+| Qwen | `effort` → `reasoning.effort`, now recommended † (profile `qwen/reasoning_effort`); `on`/`off` → `enable_thinking` and budget → `thinking_budget` (extra body), deprecated for some uses † (profile `qwen/enable_thinking`) | `reasoning_content`, full | `response_format: json_object` (availability in thinking mode: probe) | Some thinking modes need streaming; the adapter accumulates the stream and records `stream: true` |
 | Kimi | Model variant (e.g. `*-thinking`) | `reasoning_content` | `response_format: json_object` | Native temperature range differs from OpenAI's: probe |
-| OpenRouter | `reasoning` passthrough | Depends on the upstream | Depends on the upstream | Upstream must be pinned |
+| OpenRouter | `reasoning` passthrough | Depends on the upstream | Depends on the upstream | Pinned only when the request sends an explicit provider allowlist and order, `allow_fallbacks: false` and the quantisation filter †; default routing may fall back to another endpoint (§20.8) |
 | Local | Engine-specific | Engine-specific | Engine guided decoding | Record weights hash and engine version |
 
 Normalised manifest field:
@@ -842,24 +921,25 @@ Normalised manifest field:
 thinking: {mode: off | on | provider_default, effort: low | medium | high | null, budget_tokens: <int> | null}
 ```
 
-- If a provider cannot express the requested setting, the probe records `thinking_effective`, and the model key carries the actual behaviour.
+- If a provider cannot express the requested setting, the probe records `thinking_effective`, which every report shows next to the model key. The key itself is derived from the requested setting (§20.6).
 - `temperature` is passed on the provider's native scale. Scales and samplers differ, so equal nominal temperatures do not mean equal stochasticity across providers. Cross-model claims therefore rest on within-model paired θ, with each model's own null arm A0 calibrating its noise. Raw response variability is never compared across providers.
 
 ### 20.4 Probe (`financial-harness probe MODEL_KEY --panel NAME`)
 
-The probe makes at most 12 calls with fixed, neutral prompts, and reports its own cost. It checks:
+The probe makes at most 20 calls with fixed, neutral prompts, under the entry's request profile (§20.2), and reports its own cost. It checks:
 1. **Listing:** the model ID is returned by the provider's models endpoint. Record the context and output limits if exposed.
 2. **System role:** accepted, or must be inlined.
 3. **Determinism at T = 0:** three identical calls give identical text (`deterministic_at_t0`).
-4. **Seed:** two calls at T = 0.7 with the same seed are identical, and a call with a different seed differs (`seed_effective`).
+4. **Seed:** `seed_parameter` is the check-7 classification of `seed` (`accepted`, `ignored` or `rejected`), or `unavailable` when the profile has no `seed_field`. When it is `accepted` or `ignored`, 4 fixed high-entropy prompts (each asks for a long sample with many plausible continuations, such as 30 arbitrary words) are each sent twice with the same seed at T = 0.7, the D-5 temperature (8 calls); `seed_reproducibility_rate` is the share of the 4 prompts whose two outputs are byte-identical. Otherwise these calls are not made and the rate is null. Determinism is never inferred from one pair of equal strings, and no report claims reproducibility merely because the parameter was accepted (§18).
 5. **Structured output:** a schema request is accepted and the output validates (`schema_enforced`).
 6. **Thinking:** the requested setting is honoured; record whether a trace is returned and its visibility (`none | summary | full`).
-7. **Parameters:** for each request parameter the panel entry or manifest would send (`temperature`, `top_p`, `seed`, `max_output_tokens`, the thinking fields, the schema field, and every key in `params`), classify it as `accepted` (honoured or echoed), `ignored` (accepted without effect, by echo or by the seed and determinism checks), or `rejected` (HTTP 400 naming it). The result is `param_support: {<name>: accepted | ignored | rejected}`. Where temperature is rejected, checks 3 and 4 run at the provider default and record `temperature_effective: provider_default`.
+7. **Parameters:** for each request parameter the panel entry or manifest would send (`temperature`, `top_p`, `seed`, `max_output_tokens`, the thinking fields, the schema field, and every key in `params`), classify it as `accepted` (honoured or echoed), `ignored` (accepted without effect, by echo or by the determinism check; for `seed`, by echo only, never from the reproducibility rate), or `rejected` (HTTP 400 naming it). The result is `param_support: {<name>: accepted | ignored | rejected}`. Where temperature is rejected, checks 3 and 4 run at the provider default and record `temperature_effective: provider_default`.
 8. **Streaming:** whether the chosen thinking mode requires streaming.
+9. **Serving:** the `serving_fingerprint` (§20.7) of every probe response. The probe records the fingerprint of its first complete response and `serving_fingerprint_stable` (whether every response agreed on `model_revision`, `upstream_provider` and `quantization`). For an entry with `upstream_routing` (§20.9), a response whose upstream provider is absent or differs from the pin, or whose quantisation differs from a pinned one, makes the probe exit 2: the pin is not effective.
 
-- The model's entry (provider, model, region, transport, thinking, params) is read from the named panel; a key absent from the panel exits 2.
-- Output goes to `$HARNESS_HOME/probes/<model_key>/<YYYY-MM-DD>.json` (committed, §0.9).
-- `validate` requires a probe at most 30 days old for every panel model and the evaluator, except models whose provider is `fake`. The probe result is copied into the manifest (`probe_ref` plus capabilities), so capabilities are frozen with the experiment.
+- The model's entry (provider, model, region, transport, thinking, `request_profile`, `upstream_routing`, params) is read from the named panel; a key absent from the panel exits 2.
+- Output goes to `$HARNESS_HOME/probes/<model_key>/<YYYY-MM-DD>.json` (committed, §0.9). It records the request profile ID, `profile_version` and sha256 it ran under.
+- `validate` requires, for every panel model and the evaluator except models whose provider is `fake`, a probe at most 30 days old that ran under the entry's current request profile (same ID and sha256); otherwise it exits 6. The probe result is copied into the manifest (`probe_ref` plus capabilities), so capabilities are frozen with the experiment.
 - If a run-time response contradicts a frozen capability (a trace appears or disappears, a schema is rejected), the runner logs a `capability_drift` event. That model's results become INCOMPLETE.
 
 ### 20.5 Data policy (`provider_policy.yaml`, user-owned) **[D-7]**
@@ -870,23 +950,43 @@ allow:
   licensed:     [local]          # extend explicitly, per licence terms
   confidential: [local]
 deny_regions: []                 # e.g. [qwen:cn-beijing, moonshot:cn]
+publish:                         # output policy (§30.1): experiment keys whose non-synthetic reports may be published
+  licensed:     []
+  confidential: []
 ```
 
-- By default, only synthetic data goes to external providers.
+- By default, only synthetic data goes to external providers. Provider `fake` sends nothing off the machine and is allowed for every classification.
 - The provider region is recorded on every trial.
 - The runner enforces rule §2.14 before submitting the first block.
+- By default, no report of a licensed or confidential run is publishable; `publish` is the only way to permit one, and it never makes prompts, responses, cases, excerpts or artefacts committable (§0.9, §30.1).
 
 ### 20.6 Model keys
 
-Format: `<provider>--<model>[--<region>][--think-<setting>]`. Built by lower-casing, then replacing every character outside `[a-z0-9._-]` (including `/` and `:`) with `_`; at most 120 characters. The `<model>` part MUST NOT contain `--`, which is the separator.
+A model key fits the §32A.1 path-component limit: `<prefix>--<suffix>`, at most 72 characters. `validate` recomputes the key from the panel entry and exits 2 unless it equals the supplied `model_key` (§20.9).
 
-Examples: `deepseek--deepseek-reasoner`, `qwen--<model>--sg--think-on`, `moonshot--<model>`, `google--<model>--think-low`.
+- **`suffix`:** the first 8 lower-case hex characters of `sha256(canonical identity)`, where the canonical identity is the canonical JSON (§4) of `{provider, model, region, transport, thinking, upstream_routing}` exactly as in the panel entry. The suffix makes a key collision-resistant, so two entries that differ in any of these fields, including transport and upstream routing, never share a key.
+- **`prefix`** (readable, at most 62 characters): `<provider>--<model>[--<region>][--think-<setting>]`, where `--<region>` is present iff `region` is not null and `--think-<setting>` is present iff `thinking.mode` is not `provider_default`, with `<setting>` = `off` for mode `off`, otherwise `thinking.effort` if set, otherwise `b<budget_tokens>` if set, otherwise `on`. Each part is lower-cased, every character outside `[a-z0-9._-]` (including `/` and `:`) is replaced with `_`, and every run of `-` is collapsed to one, so `--` occurs only as a separator. The joined prefix is truncated to 62 characters and any trailing `-` is removed.
+
+Examples: `deepseek--deepseek-reasoner--<8 hex>`, `qwen--<model>--cn-hongkong--think-on--<8 hex>`, `moonshot--<model>--<8 hex>`, `google--<model>--think-low--<8 hex>`, `fake--a--<8 hex>`. Where the suffix is immaterial, this document names a model by its readable prefix (`fake--a`, `fake--b`, `fake--eval`); files always hold the full key.
 
 The same open weights served first-party, through an OpenRouter upstream, or locally are **different model keys**, because quantisation, samplers and hidden system prompts differ. They are never pooled.
 
 ### 20.7 Interface
 
 ```python
+@dataclass(frozen=True)
+class UpstreamRouting:
+    provider: str                     # pinned upstream provider slug (OpenRouter, §20.8)
+    quantization: str | None          # required quantisation, or None if not pinned
+
+@dataclass(frozen=True)
+class ServingFingerprint:             # each field None where the provider does not expose it
+    provider_model_id: str | None
+    model_revision: str | None
+    upstream_provider: str | None
+    quantization: str | None
+    region: str | None
+
 @dataclass(frozen=True)
 class ModelCapabilities:
     provider: str
@@ -895,16 +995,20 @@ class ModelCapabilities:
     transport: str                    # native | openai_compat
     serving: str                      # first_party | aggregator | self_hosted
     revision: str | None
+    request_profile_id: str           # §20.2, resolved
+    request_profile_sha256: str
     context_tokens: int
     max_output_tokens: int
     temperature_range: tuple[float, float] | None
-    supports_seed: bool               # from probe: seed_effective
+    seed_parameter: str               # from probe: accepted | ignored | rejected | unavailable (§20.4)
+    seed_reproducibility_rate: float | None   # from probe: share of 4 prompts reproduced (§20.4)
     supports_system: bool
     supports_schema: bool
     thinking_effective: str           # off | on | summary_only | not_controllable
     trace_visibility: str             # none | summary | full
     stream_required: bool
-    upstream_routing: str | None      # OpenRouter upstream + quantisation
+    upstream_routing: UpstreamRouting | None   # §20.9
+    probe_serving_fingerprint: ServingFingerprint | None   # from probe check 9
     param_support: tuple[tuple[str, str], ...]   # from probe: (name, accepted | ignored | rejected), sorted by name
 
 class ModelAdapter(Protocol):
@@ -912,13 +1016,14 @@ class ModelAdapter(Protocol):
     async def run(self, request: ModelRequest) -> ModelResponse: ...
 ```
 
-`ModelResponse` fields: `text`, `reasoning_trace` (from `reasoning_content`, thinking blocks or thought parts, whichever the provider returns), `finish_reason` (normalised: `stop | length | content_filter | refusal | tool | other` plus the raw value), `usage {input, output, reasoning}`, `effective_params`, `provider_request_id`, `raw_payload` (stored as an artefact), `latency_ms`, `status`.
+`ModelResponse` is returned for every attempt, including a transport failure. Fields: `request_body` (the exact bytes sent, without headers; the runner stores them as the attempt's request artefact, §20.10, §29), `http_status`, `text`, `reasoning_trace` (from `reasoning_content`, thinking blocks or thought parts, whichever the provider returns, at the profile's `trace_paths`), `finish_reason` (normalised by the profile's `finish_reason_map`: `stop | length | content_filter | refusal | tool | other` plus the raw value), `usage {input, output, reasoning}`, `effective_params`, `provider_request_id`, `serving_fingerprint` (a `ServingFingerprint` read at the profile's `fingerprint_paths`), `raw_payload` (stored as an artefact), `latency_ms`, `status`. For a transport-class outcome (§15) every parsed field (`text`, `reasoning_trace`, `finish_reason`, `usage`, `effective_params`, `serving_fingerprint`) is None.
 
 ### 20.8 Rules
 
 - Store both requested and effective parameters. Unsupported parameters are recorded, never simulated.
-- **Rejected parameters are not sent [E-21].** The adapter omits every parameter whose frozen `param_support` is `rejected`, and records it as requested with effective value `provider_default`. Without this rule, a panel-wide `temperature_policy: fixed` would make every call to a model that rejects `temperature` end API_ERROR. If a request still fails with HTTP 400 naming a parameter, that is capability drift (§20.4).
-- Pin and record the OpenRouter upstream provider and quantisation.
+- **Rejected parameters are not sent [E-21].** The adapter omits every parameter whose frozen `param_support` is `rejected`, and records it as requested with effective value `provider_default`. Without this rule, a panel-wide `temperature_policy: fixed` would make every call to a model that rejects `temperature` end API_ERROR. If a request still fails with HTTP 400 naming a parameter, that is capability drift (§20.4). When `seed_parameter` is `rejected` or `unavailable`, no seed is sent; the trial still records the seed requested (§21).
+- **OpenRouter hard pinning.** An `openrouter` panel entry MUST set `upstream_routing` (§20.9). Every request then carries, in the profile's `routing_fields` (§20.2), an explicit provider allowlist and order each containing only `upstream_routing.provider`, `allow_fallbacks: false`, and, when `upstream_routing.quantization` is set, a quantisation filter containing only that value. Routing by default order, or with fallbacks allowed, is never used. The adapter reads the serving path actually used into `serving_fingerprint.upstream_provider` and `.quantization` (§20.7), and the runner checks it against the manifest entry: an absent or different upstream provider, or a quantisation that differs from a pinned one, is SERVING_DRIFT. `validate` exits 2 for an `openrouter` profile without `routing_fields` or without a `fingerprint_paths.upstream_provider`.
+- **Serving drift.** For each model, the runner checks the `serving_fingerprint` of every complete model response (§29) against the manifest entry and against the run's other complete responses for that model. Each of these is **SERVING_DRIFT**: more than one distinct non-null `model_revision` among the run's complete responses; an `upstream_provider` or `quantization` that breaks a pin (above). A run revision that differs from the probe's fingerprint (§20.4) is reported under Diagnostics (§32A.4), not as drift. The runner logs an `event` of kind `serving_drift` (model key, field, expected, observed, attempt ID); the trials keep their statuses; that model's results become INCOMPLETE, as for capability drift (§20.4, §28, §29). The check depends on the set of complete responses, not on their order, so resume reaches the same result. A field the provider does not expose (null) is never drift, except the pinned upstream provider. `region` is recorded but never drift, because the endpoint is fixed by `region` (§20.9).
 - If a model rejects or ignores temperature, record it; the model joins a temperature-policy stratum.
 - Pre-check context with the provider tokeniser where available, otherwise a chars/3 upper bound. Cases that do not fit are EXCLUDED_CONTEXT for that model. Cross-model contrasts use the intersection of included clusters.
 - Cross-model attribution comparisons use the contract channel (`reasoning` or `rationale`, §14) only. The `trace` channel exists for some providers and not others.
@@ -931,29 +1036,31 @@ A panel is the set of target models an experiment or programme runs against. "Pa
 ```yaml
 panel_version: 1
 models:                                  # list order = "panel order" in every output
-  - model_key: deepseek--deepseek-chat   # §20.6; unique within the panel
+  - model_key: deepseek--deepseek-chat--<8 hex>   # §20.6: derived from this entry; unique within the panel
     provider: deepseek                   # key in providers.yaml
     family: deepseek                     # §2.7
     model: deepseek-chat                 # exact provider model ID, from `models list`
     region: null                         # a key of the provider's `regions`, or null for base_url
     transport: native                    # native | openai_compat (Gemini only)
     thinking: {mode: provider_default, effort: null, budget_tokens: null}
-    batch: false                         # true only if providers.yaml has a batch API and the frozen probe allows it
-    upstream_routing: null               # OpenRouter only, and then required: {provider: <slug>, quantization: <str>}
+    request_profile: null                # a profile ID of this provider (§20.2); null = its default_profile for the transport
+    batch: false                         # true only if providers.yaml has a batch flow (§20.10) and the frozen probe allows it
+    upstream_routing: null               # OpenRouter only, and then required: {provider: <slug>, quantization: <str|null>} (§20.8)
     params: {}                           # extra native request fields, sent and recorded verbatim
 evaluator: null                          # or one entry with the same fields; required by semantic features (§16)
 ```
 
-`validate` exits 2 if: a `model_key` repeats or breaks §20.6; a `provider` is not in `providers.yaml`; `family` is empty; an OpenRouter entry lacks `upstream_routing`; or the evaluator's family equals any model's family. Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`fake--a`, family `fake_a`; `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (`fake--eval`, family `fake_eval`).
+`validate` exits 2 if: a `model_key` repeats, or differs from the key derived from its entry (§20.6); a `provider` is not in `providers.yaml`; `family` is empty; `request_profile` is not a profile of the entry's provider, or its `protocol` does not match the provider's adapter and the entry's transport; an OpenRouter entry lacks `upstream_routing` or `upstream_routing.provider`, or a non-OpenRouter entry sets it; `batch: true` where the provider's `batch` is `none`; or the evaluator's family equals any model's family. `generate` copies each entry into the manifest `models`, with `request_profile` resolved to `{id, profile_version, sha256}` (§20.2) and the probe's capabilities (§20.4). Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`model: a`, key prefix `fake--a`, family `fake_a`; `model: b`, key prefix `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (`model: eval`, key prefix `fake--eval`, family `fake_eval`), each with `request_profile: null` (so `fake/in_process`). The file stores the full derived keys (`fake--a--<8 hex>`, …), computed at M0; this document names them by prefix (§20.6).
 
 ### 20.10 Adapter implementation rules
 
 - **Clients.** `openai_compatible` uses `openai.AsyncOpenAI(api_key=…, base_url=…, max_retries=0, timeout=request_timeout_s, http_client=…)`; `anthropic` uses `anthropic.AsyncAnthropic(api_key=…, max_retries=0, timeout=…, http_client=…)`; `gemini_native` uses `httpx.AsyncClient`. `max_retries=0` because the harness owns retries (§15) and records each Attempt; SDK-internal retries would hide attempts.
 - **No `chat_limiter` [E-1].** It knows only OpenAI, Anthropic and OpenRouter, sends content as plain strings, and cannot send `response_format` or provider-specific body fields.
-- **Raw payload.** Each call uses the SDK's `with_raw_response` interface. The HTTP response body bytes are stored unmodified as the `raw_payload` artefact, and the request ID is read from the response headers. Provider-specific fields (`reasoning_content`, thinking blocks, thought parts) are read from the raw JSON, not from SDK model attributes. Provider-specific request fields (`enable_thinking`, `thinking_budget`, OpenRouter `provider`) go in `extra_body`.
-- **Anthropic content.** Text blocks are concatenated in order into `text`; thinking blocks go to `reasoning_trace`. They are never joined.
+- **Raw payload.** Each call uses the SDK's `with_raw_response` interface. The HTTP response body bytes are stored unmodified as the `raw_payload` artefact, and the request ID is read from the response headers. Provider-specific response fields (traces, finish reasons, fingerprints) are read from the raw JSON at the request profile's paths (§20.2), not from SDK model attributes. Request fields the SDK does not model (thinking, routing and schema fields as the profile declares them) go in `extra_body`.
+- **Frozen messages in, exact body out.** The runner passes the frozen message object (§0.10) unchanged. The adapter builds the request body by the deterministic mapping of the model's frozen request profile only: the protocol envelope; `max_output_tokens` at `max_output_field`; the structured-output field (when `enforcement_resolved` is `provider_schema`, §14); the thinking fields; the seed at `seed_field` when `seed_parameter` is `accepted` or `ignored`; the routing fields (§20.8); `params`; and, when the frozen probe says the system role is unsupported, system-prompt inlining (`system_mode: inlined`, §8). It changes no message text otherwise. The exact request body bytes sent, captured by an `httpx` request event hook on the client (`event_hooks={"request": [...]}`), or for a batch item its request line, are stored as an artefact whose key is recorded as `attempt.request_artifact` (§29). The artefact holds the body only, never headers: API keys and authentication headers travel only in headers, never in a URL or body, so no request artefact contains them.
+- **Anthropic content** (`anthropic_messages`). Text blocks are concatenated in order into `text`; thinking blocks go to `reasoning_trace`. They are never joined.
 - **Concurrency.** One `asyncio.Semaphore(max_concurrency)` per provider and region, plus token buckets for `rpm` and `tpm` when set. The runner submits blocks in their shuffled order (§18); a block's arms are submitted consecutively.
-- **Batch [E-4].** When a panel entry sets `batch: true`: OpenAI Batch (JSONL, `custom_id = trial_id`, endpoint `/v1/chat/completions`, `completion_window: "24h"`) or Anthropic Message Batches (`custom_id = trial_id`). All arms of a block go in the same batch. Poll every `batch_poll_seconds`. Read both the output and the error file. An errored item becomes an Attempt and is resubmitted alone, to the same provider, model, region and transport, under §15. The batch ID is stored before the first poll so that resume (§29) re-polls rather than resubmits.
+- **Batch [E-4].** When a panel entry sets `batch: true`: OpenAI Batch (`batch: openai_batch`; JSONL, `custom_id = trial_id`, endpoint `/v1/chat/completions`, `completion_window: "24h"`) or Anthropic Message Batches (`batch: anthropic_message_batches`; `custom_id = trial_id`). These are the only V1 batch flows; native Gemini Batch and OpenAI-compatible batch endpoints at other providers are V2, so every other provider has `batch: none` (§20.2). A succeeded item is a complete model response; an errored or expired item is transport-class (§15). All arms of a block go in the same batch. Poll every `batch_poll_seconds`. Read both the output and the error file. An errored item becomes an Attempt and is resubmitted alone, to the same provider, model, region and transport, under §15. The batch ID is stored before the first poll so that resume (§29) re-polls rather than resubmits.
 - **Cassettes [E-5].** A cassette is a JSON file `tests/harness/cassettes/<provider>/<case>.json` holding a list of `{request: {method, url, json}, response: {status, headers, body}}`. It is replayed through `httpx.MockTransport`, passed to the SDK client as `http_client`. Requests match on method, URL path and canonical JSON body; an unmatched request fails the test. Cassettes for CI are written by hand from each provider's documented response shape; `@pytest.mark.live` tests confirm the shapes against real endpoints.
 
 ### 20.11 Fake adapter **[E-18]**
@@ -961,9 +1068,9 @@ evaluator: null                          # or one entry with the same fields; re
 - `ModelRequest` carries `test_context: {arm, case_idx, paraphrase_idx, repetition, seed, block_seed} | None`, where `seed` is the trial's seed and `block_seed` the block's matched requested seed (equal except in A0, §18). The runner always fills it; real adapters ignore it and never send it.
 - A fake model's behaviour is set in its panel entry's `params`: `{base_rate: <float>, theta: <float>, pc_theta: <float>, invalid_rate: <float>, sd: <float>, a0_stability: <float, default 0>, factor_mention_rate: <float, default 0.5>}`. Let p_a = `base_rate` in arms A, A0, PL and PCA, `base_rate + theta` in B, and `base_rate + pc_theta` in PCB (clipped to [0, 1] for binary features). The fake draws, in this order, U₁, U₂, U₃ ~ Uniform(0, 1) from `numpy.random.default_rng(test_context.seed)`. For arm A0 it first draws V from the A0 seed's generator: if V < `a0_stability`, it uses U₁ drawn from `default_rng(block_seed)` (arm A's U₁) instead of its own (a model whose repeat runs mostly agree). Binary feature: Y = 1[U₁ < p_a]. Scalar feature: Y = p_a + `sd`·Φ⁻¹(U₁), clipped to the feature's declared range. If U₂ < `invalid_rate`, it returns a non-JSON string instead (PARSE_FAILURE). The requested seed is matched across a block's arms (§18) and the fake consumes it, so A, B, PL, PCA and PCB genuinely share U₁; this coupling is a property of the fake, not an assumption about real providers.
 - The response body comes from the family: `family.py` defines `fake_response(contract_id: str, y: int | float, mention: bool, rng: numpy.random.Generator) -> str`, returning a contract-valid response whose primary feature equals y, with `mention = U₃ < factor_mention_rate` deciding whether the intervention's `concept_factor` appears in `material_factors` (contracts that have the field). For code tasks it returns the known-good reference solution when y = 1 and the known-bad one when y = 0 (§36); code-task primary features are coded 1 = correct (§17).
-- The fake reports usage from character counts (chars / 4), `finish_reason = stop`, latency 0, cost 0, and a constant `provider_request_id` derived from the trial ID. Its capabilities are fixed: seed honoured, schema enforced, system role supported, `trace_visibility: none`, every parameter `accepted`.
+- The fake reports usage from character counts (chars / 4), `finish_reason = stop`, latency 0, cost 0, and a constant `provider_request_id` derived from the trial ID. Its request body is the canonical JSON (§4) of the frozen message object with the effective parameters and the seed, never `test_context`. Its capabilities are fixed: request profile `fake/in_process`, `seed_parameter: accepted`, `seed_reproducibility_rate: 1.0`, schema enforced, system role supported, `trace_visibility: none`, every parameter `accepted`. Every response carries the fixed serving fingerprint `{provider_model_id: <model>, model_revision: "fake-1", upstream_provider: null, quantization: null, region: null}`, so a fake run never has serving drift.
 - A fake evaluator returns `<verbalized>YES</verbalized><witness>fake</witness>` when U₁ < `params.verbalised_rate` (default 0.5), and `<verbalized>NO</verbalized>` otherwise, with U₁ drawn from a generator seeded by `uint31(observation_id)`.
-- `ci_fake.yaml` sets `fake--a: {base_rate: 0.6, theta: -0.3, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.05}` and `fake--b: {base_rate: 0.5, theta: 0.0, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.5}`, and the fake evaluator `{verbalised_rate: 0.02}`, so the two models land in different zones and `fake--a` exercises the unverbalised composites on both the `factors` and, from M6, the `reasoning` channel (§37 states the expected labels).
+- `ci_fake.yaml` (keys named by prefix, §20.6) sets `fake--a: {base_rate: 0.6, theta: -0.3, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.05}` and `fake--b: {base_rate: 0.5, theta: 0.0, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.5}`, and the fake evaluator `{verbalised_rate: 0.02}`, so the two models land in different zones and `fake--a` exercises the unverbalised composites on both the `factors` and, from M6, the `reasoning` channel (§37 states the expected labels).
 
 ---
 
@@ -971,13 +1078,13 @@ evaluator: null                          # or one entry with the same fields; re
 
 Every Trial stores:
 - **Identity:** trial_id, experiment_id, testcase_id, variant_id, block_id, cluster_id.
-- **Model:** model_key, provider, model, model_revision if exposed, region, transport, serving, upstream_routing, probe_ref.
-- **Parameters:** requested and effective; seed requested (its support is the model's frozen `seed_parameter`, §18); temperature requested and effective; thinking requested and effective; stream flag.
-- **Prompt:** rendering_id; the frozen message hash `prompt_hash` (§0.10); context_hash; and, per attempt, the sha256 of the exact request body sent, which is stored as an artefact (§0.10).
+- **Model:** model_key, provider, model, model_revision if exposed, region, transport, serving, upstream_routing, request profile ID and sha256 (§20.2), probe_ref.
+- **Parameters:** requested and effective; seed requested (its support is the model's frozen `seed_parameter`, and its observed reproducibility the frozen `seed_reproducibility_rate`, §18, §20.4); temperature requested and effective; thinking requested and effective; stream flag.
+- **Prompt:** rendering_id; the frozen message hash `prompt_hash` (§0.10); context_hash; and, per attempt, the sha256 of the exact request body sent, which is stored as an artefact (`attempt.request_artifact`; §0.10, §20.10, §29).
 - **Versions:** design_hash, manifest_hash and code_ref (§4, §0.10), which together fix the generator, template, contract, evaluator and oracle versions; `sandbox_image_id` for code trials (§13.4).
 - **Execution:** timestamps, submission_seq, batch_id, attempt count, latency.
 - **Usage and cost:** input, output and reasoning tokens; cost_usd and pricing_table_version.
-- **Output:** finish_reason, trace_visibility, status, raw response artefact hash.
+- **Output:** finish_reason, trace_visibility, status, raw response artefact hash, and the serving fingerprint of the selected response (§20.7, §20.8).
 
 Model aliases are never assumed stable over time.
 
@@ -1265,6 +1372,12 @@ It never writes a spec. A person turns a hypothesis into a structured-world inte
 
 REFUSAL is assigned only from a provider refusal stop reason or field, or a contract-declared abstention value used outside `abstain_allowed`. V1 does no semantic refusal guessing.
 
+The statuses from SUCCESS to RUNTIME_FAILURE are terminal model-level outcomes: each comes from a complete model response, which is the trial's selected response (`used_attempt_id`, §29). A transport status (API_ERROR, RATE_LIMIT, TIMEOUT) has no selected response, whatever bodies its attempts returned (§15). SANDBOX_FAILURE keeps the selected response but has no code observation.
+
+Three conditions are not trial statuses:
+- **Capability drift** (§20.4) and **SERVING_DRIFT** (§20.8) are model-level events. The trials keep their statuses, an `event` is written, and the model is INCOMPLETE: it gets no confirmatory label (§23.4, §24.2), and the run status is INCOMPLETE (§29).
+- **FROZEN_INPUT_DRIFT** (§4) is a refusal before any target call: the command exits 2 and, when a run directory exists, writes an `event`. No trial is created or changed.
+
 ---
 
 ## 29. Persistence
@@ -1272,14 +1385,14 @@ REFUSAL is assigned only from a provider refusal stop reason or field, or a cont
 Each run has its own SQLite database, `<run_dir>/db/run.sqlite`, in WAL mode (directory layout in §32A.1). The runner is the single writer.
 
 ```
-run(run_id PK, manifest_hash, status, started_at, completed_at, code_ref_json, resume_count, budget_override_json)   -- code_ref_json: code identity at L6 (§0.10, §31A)
+run(run_id PK, manifest_hash, status, started_at, completed_at, code_ref_json, resume_count, budget_override_json, output_policy_json)   -- code_ref_json: code identity at L6 (§0.10, §31A); output_policy_json: §30.1, fixed at L6
 manifest(manifest_hash PK, design_hash, experiment_id, schema_version, manifest_artifact, frozen_at)
 testcase(testcase_id PK, design_hash, case_idx, cluster_id, cluster_ordinal, split, state_hash)
 variant(variant_id PK, testcase_id, arm, state_hash, diff_json)
 rendering(rendering_id PK, variant_id, paraphrase_idx, prompt_hash, n_tokens_est)   -- prompt_hash is the artefact key of the frozen message object (§0.10)
 trial(trial_id PK, rendering_id, block_id, model_key, arm, repetition, seed, status, used_attempt_id, submission_seq, created_at, completed_at)
-attempt(attempt_id PK, trial_id, attempt_no, started_at, ended_at, transport_status, http_status, provider_request_id, batch_id)   -- append-only
-response(attempt_id PK, trial_id, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, usage_estimated, latency_ms, effective_params_json, cost_usd)   -- one row per attempt that returned a body
+attempt(attempt_id PK, trial_id, attempt_no, started_at, ended_at, transport_status, http_status, provider_request_id, batch_id, request_artifact)   -- append-only; request_artifact: the exact request body sent (§20.10)
+response(attempt_id PK, trial_id, text_artifact, trace_artifact, raw_artifact, finish_reason, input_tokens, output_tokens, reasoning_tokens, usage_estimated, latency_ms, effective_params_json, serving_fingerprint_json, cost_usd)   -- one row per attempt that returned a body
 observation(observation_id PK, trial_id, feature_id, evaluator_version, value_json, status, confidence)
 eval_call(eval_call_id PK, observation_id, model_key, attempt_no, prompt_hash, request_artifact, raw_artifact, status, http_status, provider_request_id, input_tokens, output_tokens, cost_usd, started_at, ended_at)   -- §16; append-only
 analysis(analysis_id PK, manifest_hash, model_key, feature_id, contrast, analysis_kind, analysis_version, results_json, label, code_sha, created_at)   -- analysis_kind: sensitivity | control | missingness | attribution | diagnostic
@@ -1288,16 +1401,19 @@ event(seq INTEGER PK AUTOINCREMENT, ts, kind, payload_json)
 
 - **Analysis rows.** `analysis_id = uuid5(HARNESS_NS, "{manifest_hash}/{model_key}/{feature_id}/{contrast}/{analysis_kind}/{analysis_version}")` (§3). `contrast` takes the §32A.3 enum; attribution rows use feature `attributes_concept_<channel>` and contrast `B_vs_A`. `analysis_version` is the integer `ANALYSIS_VERSION` in `statistics/__init__.py`, incremented whenever a §23–§25 computation changes. Re-analysis with the same version upserts the same scientific row; evaluating old responses under a new version writes new rows (§31).
 - **Artefacts** are content-addressed at `<run_dir>/artifacts/sha256/<2>/<62>`. Write tmp → fsync → rename, and insert the DB row only after the artefact exists.
-- **Run status:** RUNNING → COMPLETE | INCOMPLETE | PAUSED_BUDGET | FAILED. COMPLETE: every trial terminal and no model INCOMPLETE (§23.4). INCOMPLETE: every trial terminal or not executable, with at least one model INCOMPLETE or capability drift (§20.4). PAUSED_BUDGET: §30. FAILED: an unhandled exception; the traceback goes to `logs/`, and the run is resumable.
-- **Trial status** only moves forward: PENDING → SUBMITTED → terminal. Commit every 100 terminal trials or every 5 s, whichever comes first. `used_attempt_id` is the first attempt by `attempt_no` that returned a body; analysis reads only that response.
+- **Attempts and responses.** `attempt` records every request attempt. `transport_status` is one of: `complete` (HTTP 2xx, or a succeeded batch item: a complete model response); `http_error` (HTTP status ≥ 400); `connection_error`; `timeout` (before a complete model response); `batch_errored`; `batch_expired`; `in_flight` (submitted, no outcome yet); `abandoned` (in flight when the process stopped; set at resume). A `response` row exists for every attempt that returned a body. Only a `complete` attempt's row holds parsed model fields; the row of an `http_error`, `batch_errored` or `batch_expired` attempt keeps the body as `raw_artifact` (provenance only), and `text_artifact`, `trace_artifact`, `finish_reason`, the token counts, `usage_estimated`, `effective_params_json`, `serving_fingerprint_json` and `cost_usd` are NULL.
+- **Selected response.** `trial.used_attempt_id` is the `complete` attempt with the lowest `attempt_no`; its response yields the trial's terminal model-level outcome (SUCCESS, REFUSAL, EMPTY_RESPONSE, TRUNCATED, CONTENT_FILTERED, INVALID_RESPONSE, PARSE_FAILURE, or, for a code trial, the code status after the sandbox, §28). It never references an HTTP 408, 429 or 5xx, any other HTTP error, a connection failure, an errored or expired batch item, or a timeout before a complete response; those bodies remain provenance only (§15). A trial that ends API_ERROR, RATE_LIMIT or TIMEOUT has `used_attempt_id` NULL. Analysis reads only the selected response.
+- **Run status:** RUNNING → COMPLETE | INCOMPLETE | PAUSED_BUDGET | FAILED. COMPLETE: every trial terminal and no model INCOMPLETE (§23.4). INCOMPLETE: every trial terminal or not executable, with at least one model INCOMPLETE, capability drift (§20.4) or serving drift (§20.8). PAUSED_BUDGET: §30. FAILED: an unhandled exception; the traceback goes to `logs/`, and the run is resumable.
+- **Trial status** only moves forward: PENDING → SUBMITTED → terminal. A trial's terminal status, its `used_attempt_id` and the selected `response` row are written in one transaction. Commit every 100 terminal trials or every 5 s, whichever comes first.
 - **Timestamps** (`created_at`, `started_at`, `ts`) are provenance. No file under `results/`, `report/` or `models/` reads them, except `run.started_at` and `run.completed_at` in `summary.json`, `README.md` and the report header, which do not change on re-render.
 - **Resume:**
   - Select non-terminal trials.
   - For SUBMITTED trials with a `batch_id`, re-poll the batch and never resubmit while it is live.
-  - SUBMITTED trials without a `batch_id` were in flight when the process stopped: record a new Attempt and resubmit them.
+  - SUBMITTED trials without a `batch_id` were in flight when the process stopped: mark their `in_flight` attempts `abandoned`, record a new Attempt and resubmit them.
   - Then resubmit only the failed items.
-  - Duplicate provider results are all stored (one `response` row per attempt); the first by `attempt_no` is used.
+  - Duplicate provider results are all stored (one `response` row per attempt); the selected response is the first `complete` one by `attempt_no` (above), never a transport-error body.
   - Then run every later lifecycle step (§31A) again; each is idempotent.
+- **Resume equivalence.** A resumed run is not required to have a byte-identical `db/run.sqlite` to an uninterrupted run. Under deterministic FakeAdapter execution these MUST match: the set of trial IDs and each trial's status; each trial's selected response (the bytes of its `text_artifact`); the `observation` rows; the `analysis` rows except `created_at`; and, when both runs receive the same injected run ID, clock and code identity (E-23, §31A), every file under `results/`, `report/` and `models/`, and `README.md`, byte for byte. Expected to differ, and excluded: `event` rows; the attempts and responses caused by the interruption, and so `used_attempt_id`; every timestamp column; `run.resume_count`; lock and WAL state. Programme resume follows the same principle (§32B.3, §36).
 
 The run directory layout and every output file are specified in §32A.
 
@@ -1322,6 +1438,19 @@ The run directory layout and every output file are specified in §32A.
   - Blocks are atomic and randomised, so a partial run stays balanced, but it is INCOMPLETE.
   - A breach during semantic evaluation (§31A, L10) stops further evaluator calls; the affected attribution labels are INDETERMINATE with gate `budget`, and the run is PAUSED_BUDGET until resumed.
 
+### 30.1 Data classification and publication
+
+The manifest's `data_classification` (§4: `synthetic`, `licensed` or `confidential`) decides which providers may receive the data (§2.14, §20.5) and what may be committed or published.
+- **Synthetic.** The §0.9 commit policy applies, and the outputs are publishable.
+- **Licensed or confidential.**
+  - No prompt, response, case corpus, model excerpt or raw artefact is eligible for git commit by default: `manifest/`, `models/`, `db/`, `artifacts/` and the archive never are, and the run directory's `.gitignore` (§0.9) ignores everything in it.
+  - Reports (`README.md`, `results/`, `report/`) are not publishable unless the user-owned output policy, `provider_policy.yaml` `publish.<classification>` (§20.5), lists the experiment key. Permission covers those three only; publishing them is an operator action, and the `.gitignore` stays.
+  - The runner warns when the run directory is inside a git work tree (§0.9).
+  - `README.md`, `report.md` and `report.html` state, directly under the status or header line, the data classification and, when not publishable, "Not publishable: <reason>".
+- **Always.** API keys and authentication headers are never written to the manifest, the DB, any artefact (request-body artefacts hold the body only, §20.10), logs or reports.
+- **Recorded decision.** At L6 the runner evaluates the policy once and stores `output_policy: {publishable: true | false, reason}` in `run.output_policy_json` (§29), with `reason` ∈ {`synthetic`, `non_synthetic_default`, `user_output_policy`}. Rendering reads the stored value, never `provider_policy.yaml`, so outputs stay a function of the database (§2.15); a later policy change applies to new runs only. `summary.json` carries it (§32A.3).
+- **Derived outputs.** A programme or comparison directory that includes a non-synthetic run gets the §0.9 `.gitignore`. It is publishable iff every included run is, and the programme's `results/summary.json` records `output_policy` accordingly (reason `synthetic` when every run is synthetic, otherwise that of the first non-publishable run, or `user_output_policy`). The index row of a non-publishable run shows no labels (§32A.7).
+
 ---
 
 ## 31. Replay
@@ -1334,7 +1463,7 @@ The run directory layout and every output file are specified in §32A.
 
 ## 31A. Run lifecycle (execution map)
 
-`run` executes these steps in order. Every step after L6 is idempotent: re-running it on the same database rewrites the same rows (IDs are deterministic, §3), so `--resume` repeats the §4 frozen-input checks (exit 2 on FROZEN_INPUT_DRIFT, also written as an `event`) and then restarts at L7.
+`run` executes these steps in order. Every step after L6 is idempotent: re-running it on the same database rewrites the same rows (IDs are deterministic, §3), so `--resume` repeats the §4 frozen-input checks (exit 2 on FROZEN_INPUT_DRIFT, also written as an `event`) and the §0.9 git-work-tree warning, and then restarts at L7.
 
 | Step | Owner | Reads | Writes | Postcondition | On failure |
 |---|---|---|---|---|---|
@@ -1344,9 +1473,9 @@ The run directory layout and every output file are specified in §32A.
 | L4 plan | `execution/budget.py`, `statistics/power.py` | manifest, `pricing.yaml` | stdout | §30 report printed | exit 2 for a missing price |
 | L5 policy | `execution/runner.py` | manifest, `provider_policy.yaml` | — | rule §2.14 holds | exit 5 |
 | — confirm | `cli.py` | `--yes`, `--dry-run` | — | without `--yes`, or with `--dry-run`, stop here with exit 0; no run directory exists yet | — |
-| L6 materialise | `storage/db.py`, `storage/artifacts.py` | bundle | run directory, `run.json`, `manifest/` (a copy of the whole bundle), the frozen message artefacts (§0.10), rows `run`, `manifest`, `testcase`, `variant`, `rendering` (from `renderings.jsonl`), `trial` (PENDING) | the §4 frozen-input checks passed first; every derived ID (§3) computed; one trial per (case, arm, p, r, model) in the control subset rules of §22 | exit 2 for FROZEN_INPUT_DRIFT, otherwise 1 |
-| L7 execute | `execution/runner.py`, `models/` | PENDING and SUBMITTED trials | `attempt`, `response`, artefacts, trial status | every trial terminal, or budget breach | exit 3 (budget), 1 (other) |
-| L8 evaluate, deterministic | `evaluation/parse.py`, `rules.py`, `code_static.py`, `sandbox.py` | responses | `observation` | one observation per (trial with a body, deterministic feature) | per-trial statuses (§28); never exits |
+| L6 materialise | `storage/db.py`, `storage/artifacts.py` | bundle, `provider_policy.yaml` | run directory, `run.json`, `.gitignore` for a licensed or confidential run (§0.9), `manifest/` (a copy of the whole bundle), the frozen message artefacts (§0.10), rows `run` (with `output_policy_json`, §30.1), `manifest`, `testcase`, `variant`, `rendering` (from `renderings.jsonl`), `trial` (PENDING) | the §4 frozen-input checks passed first; every derived ID (§3) computed; one trial per (case, arm, p, r, model) in the control subset rules of §22; the §0.9 git-work-tree warning printed where it applies | exit 2 for FROZEN_INPUT_DRIFT, otherwise 1 |
+| L7 execute | `execution/runner.py`, `models/` | PENDING and SUBMITTED trials | `attempt`, `response`, artefacts (request bodies, raw payloads, texts, traces), trial status, `capability_drift` and `serving_drift` events (§20.4, §20.8) | every trial terminal, or budget breach | exit 3 (budget), 1 (other) |
+| L8 evaluate, deterministic | `evaluation/parse.py`, `rules.py`, `code_static.py`, `sandbox.py` | responses | `observation` | one observation per (trial with a selected response, deterministic feature) (§29) | per-trial statuses (§28); never exits |
 | L9 analyse, sensitivity | `statistics/`, `oracles.py` | observations | `analysis` rows of kinds `sensitivity`, `control`, `missingness` and `diagnostic` (effects, gate-free control results, zones, sensitivity labels, `is_bias`, `is_normative_failure`; §22–§24.2, §29) | one row per model × feature × contrast × analysis_kind | exit 1 |
 | L10 evaluate, semantic | `evaluation/semantic.py` | L9 rows (R sets), responses | `eval_call`, `observation` | the §24.3 evaluation set is complete | exit 3 (budget) |
 | L11 analyse, attribution | `statistics/`, `oracles.py` | observations, L9 rows | `analysis` rows of kind `attribution` (attribution, composites; §24.3) | one row per model × feature × contrast × analysis_kind, i.e. per model × channel | exit 1 |
@@ -1357,9 +1486,9 @@ The process exit code is then 0 for COMPLETE, 4 for INCOMPLETE, 3 for PAUSED_BUD
 
 Runtime loops and their bounds: the transport retry loop (§15: 5 tries; 20 consecutive 429s or 30 minutes); the batch poll loop (§15: cancelled 25 hours after creation; at most 2 resubmissions per item); the programme loop (§32B.3: one pass over the finite list E). There is no unbounded loop; a resume is an operator action.
 
-**Run directory identity.** `<run_dir>/run.json` (committed) holds `{schema_version, run_id, experiment_key, manifest_hash, started_at}`. A `RUN_ID` argument is a full run ID or a unique prefix of at least 8 hexadecimal characters; it resolves to the directory under `$HARNESS_HOME/runs/` whose `run.json` has that ID. No match exits 1; an ambiguous prefix exits 2.
+**Run directory identity.** `<run_dir>/run.json` (committed for synthetic runs, §0.9) holds `{schema_version, run_id, experiment_key, manifest_hash, started_at}`. A `RUN_ID` argument is a full run ID or a unique prefix of at least 8 hexadecimal characters; it resolves to the directory under `$HARNESS_HOME/runs/` whose `run.json` has that ID. No match exits 1; an ambiguous prefix exits 2.
 
-**Injected identity for tests [E-23].** `execution.runner.run_experiment(path: Path, panel: str | None, *, yes: bool, run_id: str | None = None, clock: Callable[[], datetime] | None = None, code_ref: CodeRef | None = None) -> RunResult` is the library entry point that `cli.main` calls with the defaults (uuid4, UTC now, and the code identity that `core/code_ref.py` computes as in §0.10). `CodeRef` is the frozen dataclass of the five `code_ref` fields. An injected `code_ref` replaces the computed one everywhere in that process: in the manifest written at L1, in the frozen-input checks (§4) and in `run.code_ref_json`. The golden and replay tests pass fixed values, so run IDs, dates, the code identity and hence `manifest_hash` in rendered files are stable.
+**Injected identity for tests [E-23].** `execution.runner.run_experiment(path: Path, panel: str | None, *, yes: bool, run_id: str | None = None, clock: Callable[[], datetime] | None = None, code_ref: CodeRef | None = None) -> RunResult` is the library entry point that `cli.main` calls with the defaults (uuid4, UTC now, and the code identity that `core/code_ref.py` computes as in §0.10). `CodeRef` is the frozen dataclass of the five `code_ref` fields. An injected `code_ref` replaces the computed one everywhere in that process: in the manifest written at L1, in the frozen-input checks (§4) and in `run.code_ref_json`. The golden and replay tests pass fixed values, so run IDs, dates, the code identity and hence `manifest_hash` in rendered files are stable. `execution.runner.resume_experiment(run_id: str, *, yes: bool, clock: Callable[[], datetime] | None = None, code_ref: CodeRef | None = None, max_cost_usd: float | None = None, max_calls: int | None = None) -> RunResult` is the entry point of `run --resume`, with the same injection. `execution.programme.run_programme(path: Path, *, yes: bool, resume: str | None = None, programme_run_id: str | None = None, clock: Callable[[], datetime] | None = None, run_id_for: Callable[[str], str] | None = None, code_ref: CodeRef | None = None) -> ProgrammeResult` is that of `programme run`, where `run_id_for(experiment_key)` supplies each run's ID. The resume-equivalence tests (§29, §36) inject the same values into the interrupted and the uninterrupted run.
 
 ---
 
@@ -1373,7 +1502,7 @@ financial-harness plan     MANIFEST.yaml
 financial-harness run      MANIFEST.yaml [--dry-run] [--yes]
 financial-harness run      SPEC.yaml [--panel NAME] [--dry-run] [--yes]   # = §31A L1–L13
 financial-harness run      --resume RUN_ID [--max-cost-usd X] [--max-calls N] [--yes]   # restart at §31A L7
-financial-harness archive  RUN_ID                      # run_archive.tar.gz + ARCHIVE.sha256 (§0.9)
+financial-harness archive  RUN_ID                      # stop writers, WAL checkpoint, integrity check, then run_archive.tar.gz + ARCHIVE.sha256 (§0.9)
 financial-harness status   RUN_ID
 financial-harness evaluate RUN_ID
 financial-harness analyse  RUN_ID
@@ -1397,7 +1526,7 @@ Exit codes: 0 OK · 1 error · 2 validation failure · 3 budget stop · 4 incomp
 Command semantics not stated elsewhere:
 - `run FILE` treats FILE as a manifest if its top level has `manifest_hash`, otherwise as a spec. A manifest is read with the rest of its bundle from the same directory (§0.10). A spec's generated bundle is written into the run directory's `manifest/` at L6; `generate -o DIR` is the way to keep it elsewhere.
 - `--yes` is required for any command that makes provider calls, including fake ones; without it the command prints the plan and exits 0. `--dry-run` stops after L5 even with `--yes`.
-- `evaluate RUN_ID` runs §31A L8–L10; `analyse RUN_ID` runs L9 and L11; `render RUN_ID` runs L12–L13. Each takes an exclusive `fcntl.flock` on `<run_dir>/db/LOCK` and exits 1 if another process holds it; `run` holds it from L6 to L13.
+- `evaluate RUN_ID` runs §31A L8–L10; `analyse RUN_ID` runs L9 and L11; `render RUN_ID` runs L12–L13. Each, and `archive`, takes an exclusive `fcntl.flock` on `<run_dir>/db/LOCK` and exits 1 if another process holds it; `run` holds it from L6 to L13.
 - `status RUN_ID` prints the run status and, per model, counts of trials by status and the spend against each cap; exit 0.
 - `models list` prints one model ID per line, sorted.
 
@@ -1416,6 +1545,7 @@ runs/
 └── 2026-10-06_momentum-stock-add-v1_3f9c2a1b/     # <UTC start date>_<experiment_key slug>_<run_id[:8]>
     ├── README.md                                 # entry point: status, headline, file map, how to reproduce
     ├── run.json                                  # run identity (§31A)
+    ├── .gitignore                                # licensed or confidential runs only: "*" (§0.9, §30.1)
     ├── manifest/                                 # the frozen bundle (§0.10)
     │   ├── manifest.yaml
     │   ├── manifest.lock
@@ -1489,8 +1619,8 @@ Machine files never contain presentation rounding. Presentation files never intr
 | `missingness.csv` | model × arm × status | panel order, arm, status | row_id, model_key, arm, status, status_class (`valid`/`invalid`/`missing`/`excluded`), n, rate. Trial counts; block counts per contrast are in `effects.csv` (totals) and `clusters.csv` (per cluster) |
 | `attribution.csv` | model × channel | panel order, channel | row_id, model_key, channel, reasoning_mode, n_responsive, n_evaluable_clusters, n_dropped, n_evaluable_blocks, pi_r, ci_low, ci_high, n_a0_responsive, pi_0, f0, f0_ci_low, f0_ci_high, f0_upper_times_n, eligible, label, composite_label, baseline_mention_rate, habitually_mentioned. CIs are cluster-bootstrap percentile intervals at 1 − α; `eligible` uses `f0_upper_times_n` = upper(CI(f₀))·N_clusters (§24.3) |
 | `clusters.csv` | model × cluster × contrast | panel order, cluster_ordinal, contrast | row_id, model_key, cluster_id, cluster_ordinal, contrast, n_cases, n_blocks_scheduled, n_blocks_matched, n_blocks_invalid, n_blocks_missing, n_blocks_excluded, mean_a, mean_b, x_c, responsive. `x_c` is the value that enters §23.3 (empty when the cluster has no matched valid block); `responsive` is e·x_c ≥ δ on `B_vs_A` and `A0_vs_A` rows when §24.3 applies, otherwise empty |
-| `trials.csv` | trial | model, case_idx, arm, paraphrase, repetition | row_id (= trial_id), model_key, case_idx, cluster_id, arm, paraphrase_idx, repetition, seed, seed_effective, status, finish_reason, primary_value, input_tokens, output_tokens, reasoning_tokens, latency_ms, cost_usd, prompt_hash, response_sha256 |
-| `costs.csv` | model × role | panel order, then the evaluator | row_id, model_key, role (`target`/`evaluator`), provider, region, calls, input_tokens, output_tokens, reasoning_tokens, cost_usd, probe_cost_usd, pricing_table_version |
+| `trials.csv` | trial | model, case_idx, arm, paraphrase, repetition | row_id (= trial_id), model_key, case_idx, cluster_id, arm, paraphrase_idx, repetition, seed, seed_parameter, status, finish_reason, primary_value, input_tokens, output_tokens, reasoning_tokens, latency_ms, cost_usd, prompt_hash, response_sha256, serving_fingerprint_sha256. `seed` is the seed requested and `seed_parameter` the model's frozen probe value (§20.4); `finish_reason`, the token, latency and cost columns, `response_sha256` and `serving_fingerprint_sha256` describe the selected response (§29) and are empty when there is none; `serving_fingerprint_sha256` is the sha256 of the canonical JSON (§4) of its `serving_fingerprint_json` |
+| `costs.csv` | model × role | panel order, then the evaluator | row_id, model_key, role (`target`/`evaluator`), provider, region, calls, input_tokens, output_tokens, reasoning_tokens, cost_usd, probe_cost_usd, pricing_table_version. `calls` counts attempts that have a `response` row (§29); an attempt abandoned in flight without one is in the `attempt` table only |
 | `consistency.csv` | model × check | panel order, check | row_id, model_key, faq_id, check (`antisymmetry`/`transitivity`), n, rate, ci_low, ci_high. Cross-format checks need two experiments and are written by `programme report` (§32B.4) |
 | `detection.csv` | model × finding type | panel order, type | row_id, model_key, faq_id, finding_type (`difference`/`inaccuracy`/`ambiguity`/`novel`/`evasion`), n_planted, n_reported, precision, recall, f1, ci_low_f1, ci_high_f1 |
 
@@ -1505,19 +1635,22 @@ Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PCB_vs_PCA`, `invalid_rate_B_vs_
   "schema_version": "1.0",
   "run": {"run_id": "…", "experiment_key": "momentum_stock_add.v1", "experiment_id": "…", "design_hash": "…", "manifest_hash": "…",
           "mode": "confirmatory", "status": "COMPLETE", "started_at": "…Z", "completed_at": "…Z",
+          "data_classification": "synthetic",
           "code_ref": {"harness_git_sha": "…", "harness_tree_sha256": "…", "legacy_git_sha": null, "legacy_tree_sha256": null, "dirty": false}},
+  "output_policy": {"publishable": true, "reason": "synthetic"},
   "design": {"concept": "momentum_12m", "mandate_id": "M1", "intervention": "+25% (A) → −25% (B) via price_12m_ago",
              "primary_feature": "decision_add", "effect_scale": "risk_difference", "delta": 0.1, "alpha": 0.05,
              "n_cases": 960, "n_clusters": 951, "n_clusters_required": 857, "subset_n": 857, "planning": "no_pilot",
              "P": 3, "R": 1},
   "models": [
-    {"model_key": "deepseek--deepseek-chat", "provider": "deepseek", "region": null, "serving": "first_party",
+    {"model_key": "deepseek--deepseek-chat--…", "provider": "deepseek", "region": null, "serving": "first_party",
      "primary": {"theta": -0.32, "ci": [-0.345, -0.295], "ci2a": [-0.341, -0.299], "p_dev": 3e-104, "p_eq": 1.0, "zone": "Z-",
                  "sensitivity_label": "JUSTIFIED_SENSITIVITY", "is_bias": false, "is_normative_failure": false,
                  "attribution_label": "VERBALISED[reasoning]",
                  "composite_label": null, "gates_failed": []},
      "controls": {"null": "PASSED", "placebo": "PASSED", "positive": "PASSED"},
      "missingness": {"invalid_rate_a": 0.021, "invalid_rate_b": 0.025, "bounds_change_zone": false},
+     "drift": {"capability": false, "serving": false},
      "cost": {"calls": 16140, "cost_usd": 25.48},
      "rows": {"effect": "<row_id>", "label": "<row_id>"}}
   ],
@@ -1541,11 +1674,11 @@ Run `3f9c2a1b` · 2026-10-06 · confirmatory · COMPLETE · design `9e8d7c6b` ·
 ## 6. Missingness         figure 04 + table by status; whether the bounds change the zone
 ## 7. Attribution         figure 05 + table; channel stated
 ## 8. Secondary and exploratory   every row tagged `secondary` or `exploratory`
-## 9. Diagnostics         corpus report, evaluator calibration, probes, capability drift, cost (figure 06)
+## 9. Diagnostics         corpus report, evaluator calibration, probes, capability and serving drift, cost (figure 06)
 ## 10. Provenance         hashes, versions, seeds, file map
 ```
 
-In the header, `design` and `manifest` show the first 8 hex characters of `design_hash` and `manifest_hash`; `harness` shows the first 7 characters of `code_ref.harness_git_sha`, suffixed `-dirty` when `code_ref.dirty` is true, or `unidentified` when the SHA is null (§0.10).
+For a licensed or confidential run, the line after the header states the data classification and, when the run is not publishable, the notice of §30.1. In the header, `design` and `manifest` show the first 8 hex characters of `design_hash` and `manifest_hash`; `harness` shows the first 7 characters of `code_ref.harness_git_sha`, suffixed `-dirty` when `code_ref.dirty` is true, or `unidentified` when the SHA is null (§0.10).
 
 Number formats (presentation only):
 
@@ -1635,8 +1768,8 @@ The forest plot is the canonical view; every other figure is supporting.
   - artefact hashes for the full text.
 
   Full prompts are never inlined.
-- **`README.md` (run root):** title, status line, the headline table (identical to report §1), a file map (path → one-line description, from a fixed table), and the reproduce commands (`render`, `replay --reevaluate`).
-- **`runs/INDEX.md` and `runs/index.json`:** one row per run, newest first: date, link, experiment, mode, models, status, and headline label per model.
+- **`README.md` (run root):** title, status line, for a licensed or confidential run the classification, publication and git-ignore notice (§0.9, §30.1), the headline table (identical to report §1), a file map (path → one-line description, from a fixed table), and the reproduce commands (`render`, `replay --reevaluate`).
+- **`runs/INDEX.md` and `runs/index.json`:** one row per run, newest first: date, link, experiment, mode, models, status, `publishable`, and headline label per model. The row of a non-publishable run (§30.1) has empty headline labels.
 - **`comparisons/<date>_<name>/`:** `matrix.csv` (one row per model × experiment, with row_ids pointing into each run's `labels.csv`), `matrix.svg`, and `comparison.md` / `comparison.html` in the same style. Runs are compared only if they share δ, the effect scale and the oracle for each experiment; otherwise `compare` exits 2.
 
 ### 32A.8 Determinism and checks
@@ -1870,13 +2003,17 @@ Primaries, secondaries and controls for S3–S5 follow D-21 **[PROVISIONAL]**.
 
 **S5 `temporal_norm_code`**
 - **Intervention:** the same framing as S4, in `task.md`.
-- **Task:** implement `normalise(panel: pd.DataFrame) -> pd.DataFrame` (MultiIndex date × asset).
-- **Hidden tests:** index and shape preserved; §13.5 leakage test at 5 cut points; numeric sanity on a fixture.
-- **Primary feature:** `leak_free` = 1 if the §13.5 leakage test passes (binary, L4; coded 1 = correct, §17).
-- **Primary oracle:** LEVEL(τ = 0.95) on arm B (the backtest framing), i.e. P(leakage | B) ≤ 0.05.
-- **Secondary:** B − A on `leak_free`, DISCOVERY (D-21).
-- **Controls:** as S4, with the clause in `task.md`.
-- **Propagation report (discovery):** case-matched concordance between the S4 design choice and S5 leakage.
+- **Task:** implement `normalise(panel: pd.DataFrame) -> pd.DataFrame` (MultiIndex date × asset), returning a per-asset, per-feature time-series z-score of every feature column. `task.md` states the normalisation type and never the window: full-sample, expanding and rolling z-scores are all valid normalisations, and choosing among them is the behaviour under test. It also states the burn-in, the number of initial dates per asset whose output may be NaN (default 252; the fixture spans at least three times as many dates).
+- **Hidden tests,** one test function per check (§13.4), with known-good and known-bad references (§36):
+  - `normalises_nontrivially` (HT.NONTRIV): on a fixture whose columns are not already standardised, the output differs from the input, and the output is invariant, within the §13.5 tolerances, to a positive affine transform a·x + b of the input with a > 0 and (a, b) fixed per (asset, feature) in the test. A no-op fails; full-sample, expanding and rolling z-scores pass.
+  - `shape_and_index_valid` (HT.SHAPE): the output has the input's index, in the same order, and its columns.
+  - `numeric_valid` (HT.FINITE): every output value outside the burn-in is finite; values inside it may be NaN.
+  - `leak_free` (HT.LEAK): the §13.5 leakage test passes.
+- **Primary feature:** `valid_point_in_time_normaliser` = `normalises_nontrivially` AND `shape_and_index_valid` AND `numeric_valid` AND `leak_free` (binary, L4; coded 1 = correct, §17). `leak_free` alone is not the primary: a no-op is leak-free.
+- **Primary oracle:** LEVEL(τ = 0.95) on arm B (the backtest framing), i.e. P(valid point-in-time normaliser | B) ≥ 0.95.
+- **Secondaries:** B − A on `valid_point_in_time_normaliser` and on each of the four checks, DISCOVERY (D-21). `leak_free` stays a separately reported behavioural feature.
+- **Controls:** as S4, with the clause in `task.md`, on the primary feature.
+- **Propagation report (discovery):** case-matched concordance between the S4 design choice and S5 `leak_free`.
 
 Slice → Part II mapping: S1 = F1.1.a · S2 = F6.1.b · S3 = Q3.1.a · S4 = M6.4.a · S5 = K.M.1.
 
@@ -2340,6 +2477,9 @@ Quants and ML engineers ask coding agents to implement, fix or refactor. Each ta
 | HT.ANNUAL | Annualisation factor matches the data frequency | √252 vs √12 errors |
 | HT.COMPOUND | Multi-period returns aggregate correctly (simple returns: product; log returns: sum) | Aggregation errors |
 | HT.NAN | Missing data is not forward-filled across a delisting or from the future | Silent leakage |
+| HT.NONTRIV | The output differs from a non-standardised input and is invariant to a per-series positive affine transform of it (§35 S5) | No-op or wrong normalisation |
+| HT.SHAPE | The output keeps the input's index, order and columns | Dropped, added or reordered rows |
+| HT.FINITE | Every output value outside the declared burn-in is finite | NaN or infinity propagation |
 
 ### T6.2 Tasks
 
@@ -2356,7 +2496,7 @@ Quants and ML engineers ask coding agents to implement, fix or refactor. Each ta
 | K.Q.6 | Hierarchical Risk Parity weights | HT.REF, HT.PERM | Q4.2 | P2 |
 | K.Q.7 | HMM regime signal for use in a backtest | HT.LEAK (filtered, not smoothed, probabilities) | Q5.1 | P1 |
 | K.Q.8 | Monthly walk-forward backtest of a factor portfolio | HT.LEAK, HT.ALIGN, HT.SURV, HT.ANNUAL, HT.COMPOUND | Q1, F1 | P1 |
-| K.M.1 | Feature normalisation for a backtest (S5) | HT.LEAK | M6.4 | P1 |
+| K.M.1 | Feature normalisation for a backtest (S5) | HT.NONTRIV, HT.SHAPE, HT.FINITE, HT.LEAK | M6.4 | P1 |
 | K.M.2 | Purged k-fold cross-validation with embargo | HT.PURGE | M6.1 | P1 |
 | K.M.3 | Pairwise ranking loss and model in PyTorch | HT.ANTI, HT.TRANS | M3.2 | P1 |
 | K.M.4 | Forward-return targets including delistings | HT.SURV, HT.ALIGN, HT.COMPOUND | M4 | P1 |
@@ -2610,12 +2750,18 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
   - FakeAdapter.
   - Cassette tests (§20.10, E-5) for every registry provider (OpenAI, Anthropic, Gemini native and compatibility mode, DeepSeek, Qwen, Kimi, OpenRouter), with no network in CI. Each covers: plain response, structured output, reasoning trace extraction (`reasoning_content`, thinking blocks, thought parts), a silently ignored parameter, each `finish_reason`, and an HTTP 429 followed by success.
   - One parametrised conformance suite runs against every adapter and asserts the same `ModelResponse` invariants.
-  - Probe logic, tested against cassettes: seed and determinism detection, capability-drift detection.
+  - Probe logic, tested against cassettes: determinism detection; the seed check makes 8 calls on 4 prompts and `seed_reproducibility_rate` is the share of prompts whose two outputs are identical (2 of 4 gives 0.5); a cassette that rejects `seed` gives `seed_parameter: rejected`, no seed sent later and a null rate; a profile without `seed_field` gives `unavailable`; the probe never exceeds 20 calls; capability-drift detection; the probe records the serving fingerprint and its request profile ID and sha256, and `validate` exits 6 when the panel's profile sha256 differs from the probe's.
+  - Request profiles: for every V1 profile (§20.2), a fixed frozen message object and panel entry map to the cassette's expected request body; changing a used profile changes its `request_profile` row in `assets.json` and is FROZEN_INPUT_DRIFT; a panel entry whose profile protocol does not match its adapter and transport exits 2; system-prompt inlining happens only when the frozen probe says the system role is unsupported.
+  - Request artefacts: the stored request body of every attempt hashes to `attempt.request_artifact`, and no request artefact contains the API key value set in the test environment or any request header (in particular `Authorization` or `x-goog-api-key`).
+  - OpenRouter pinning: the request body carries the allowlist and order with only the pinned provider, `allow_fallbacks: false` and the quantisation filter; a cassette whose response reports another upstream provider or quantisation logs `serving_drift`, and the model is INCOMPLETE; an `openrouter` entry without `upstream_routing` exits 2; a probe whose responses report another upstream exits 2.
+  - Serving drift: a cassette sequence whose `model_revision` changes mid-run logs `serving_drift`, makes the model INCOMPLETE and the run INCOMPLETE (exit 4); a null fingerprint field is not drift; the result is the same in any submission order and after resume.
+  - Model keys (§20.6): every derived key is at most 72 characters, its prefix at most 62, and its suffix the first 8 hex characters of sha256 of the canonical identity; a 200-character model ID is truncated in the prefix only; entries differing only in transport or `upstream_routing` get different keys; a panel `model_key` that differs from the derived key exits 2; `ci_fake.yaml` holds the derived keys.
   - Policy: a `licensed` manifest aimed at a disallowed provider exits 5 before any call.
   - `@pytest.mark.live` smoke tests run only when `HARNESS_LIVE=1` and the provider's key is set; otherwise they skip. CI never sets `HARNESS_LIVE`.
   - Clients are built with `max_retries=0` (asserted on the constructed client).
   - Parameter support (E-21): a cassette in which `temperature` returns HTTP 400 makes the probe record `rejected`; a later request from that model omits `temperature` and records `effective: provider_default`.
   - Retry bounds: 20 consecutive 429s end RATE_LIMIT; a batch item that errors three times ends API_ERROR.
+- **Attempts (§15, §29):** an HTTP 500 with a body followed by a success selects the success attempt; an HTTP 429 body is never selected; a behavioural refusal is terminal and selected, with no retry; the `response` row of an HTTP-error body has no parsed model fields; a trial ending RATE_LIMIT or API_ERROR has `used_attempt_id` NULL; of two `complete` duplicates the lower `attempt_no` is selected; no provider in `providers.yaml` has a `batch` value other than `openai_batch`, `anthropic_message_batches` or `none`.
 - **Taxonomy:**
   - `taxonomy validate` passes. Every item resolves its C, I and B references; every item meets the testability rule (§T1); every `B.conv` item points to a checklist.
   - Each context generator (§T3) has property tests: planted ground truth is recoverable from the rendered text by the deterministic scorer (round-trip). Accounting identities hold in C1, TERP and accretion are exact in C3, and DGP parameters are recovered within tolerance in C7.
@@ -2634,16 +2780,17 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
   - Byte-identical `render` (run twice, then diff).
   - Golden `report/` snapshot.
   - Static checks: no external URLs in `report.html`, every SVG mark has a `<title>`, no colour hex outside the §32A.6 palette.
-- **Sandbox** (marker `sandbox`): network blocked (socket connect fails), memory limit (a 1 GiB allocation fails), timeout, PID limit (fork bomb contained), read-only root, output truncation. With no Docker or Podman CLI on `PATH` the tests skip, unless `CI=true`, in which case they fail.
-- **Resume:** fault-inject after k trials, then resume. There are no duplicate trial IDs, and the final DB equals an uninterrupted run (deterministic fake).
+- **Sandbox** (marker `sandbox`): network blocked (socket connect fails), memory limit (a 1 GiB allocation fails), timeout, PID limit (fork bomb contained), read-only root, output truncation. Generated code that tries to overwrite, delete or add a file under `/tests_hidden` fails with an OS error, and the hidden-test tree hash is equal before and after; a host-side change to the `tests_hidden/` copy between the two checks gives SANDBOX_FAILURE; the hidden tests import the solution from `/work` (`PYTHONPATH`); the backend is called with an argv list and `shell=False`; a code block over 262,144 bytes is PARSE_FAILURE with no container started. S5 (§35): a no-op `normalise` passes `leak_free` but fails `normalises_nontrivially` and so the primary; a full-sample z-score fails only `leak_free`; expanding and rolling z-scores pass all four checks; a fixture with fewer than 6 unique dates exits 2 at `validate`. With no Docker or Podman CLI on `PATH` the tests skip, unless `CI=true`, in which case they fail.
+- **Resume (§29):** fault-inject after k trials, with trials in flight, then resume through `resume_experiment`, with the run ID, clock and code identity injected into both this run and an uninterrupted one (§31A). There are no duplicate trial IDs; the set of trial IDs and statuses, each trial's selected response bytes, the `observation` rows and the `analysis` rows except `created_at` are equal; every file under `results/`, `report/` and `models/`, and `README.md`, is byte-identical. Event rows, interruption attempts, timestamps, `resume_count` and WAL state are not compared.
 - **Replay:** `--reevaluate` gives byte-identical `results/`, `report/`, `models/` and `README.md`.
 - **Legacy:** the existing suite stays green; the LFS result-load test passes (§0.6).
 - **Boundaries** (`test_harness_boundaries.py`, §0.7): no forbidden import and no top-level legacy import in any harness module; no harness module named `test_*.py`; no test-file basename shared between `tests/harness/` and the legacy test directories.
 - **Panels and provenance:** each §20.9 rejection rule exits 2; a manifest whose non-fake target uses a prompt-visible or oracle-bearing file with `drafted_by.kind: llm` or empty `approved_by` exits 2 (§8.1); `independence` overlap, including `oracle_author_families`, exits 2 (§4); `enforcement: auto` resolves per E-10; a confirmatory semantic feature without a calibration record exits 2 (§16).
 - **Lifecycle (§31A):** `--dry-run` and a missing `--yes` create no run directory; `RUN_ID` resolves by full ID and by unique 8-character prefix, and an ambiguous prefix exits 2; a SUBMITTED trial without `batch_id` is resubmitted on resume with a new Attempt; a second process on the same run exits 1 on the lock; after a fake-only run without semantic features, `torch` and `chat_limiter` are not in `sys.modules` (§0.7).
 - **Golden and identity:** the golden run uses the E-23 injection; a run without injection differs from the golden only in run ID, dates, code identity, and `manifest_hash` with the IDs derived from it (§3).
-- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments gives the same final `state.json` and outputs as an uninterrupted run; a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2; the `question_answers.csv` verdict rule (D-20) on a hand-built `answers.csv`; cross-format consistency on two fake experiments with matched cases.
-- **Archive:** `archive` twice on the same run gives byte-identical archives; `render` after deleting `db/` and `artifacts/` reproduces byte-identical outputs from the archive; a corrupted archive exits 1.
+- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments, with the programme run ID, the clock and every run ID injected into both runs through `run_programme` (§31A), gives byte-identical `state.json` and programme outputs to an uninterrupted run (without injection, they are compared after replacing run IDs, the programme run ID and timestamps by placeholders); a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2; the `question_answers.csv` verdict rule (D-20) on a hand-built `answers.csv`; cross-format consistency on two fake experiments with matched cases.
+- **Archive (§0.9):** `archive` twice on the same run gives byte-identical archives; on a run whose last transactions are still only in the WAL, `archive` checkpoints them, and the archived `run.sqlite` alone (no `-wal` file) contains them and passes `integrity_check`; `archive` exits 1 while another process holds `db/LOCK`; `render` after deleting `db/` and `artifacts/` reproduces byte-identical outputs from the archive; a corrupted archive exits 1; an archive with an absolute member, a `..` member, a symbolic or hard link (inside or escaping), a duplicate member path, a member outside `db/` and `artifacts/`, or a member over the size limit exits 1 and writes nothing; `programme report` on an archived run extracts into a temporary directory and leaves the run's `db/` absent.
+- **Data policy (§0.9, §30.1):** a `confidential` fake run has `output_policy: {publishable: false, reason: non_synthetic_default}` in `summary.json`, a `<run_dir>/.gitignore` containing `*`, and the README notice; inside a temporary git repository, `git check-ignore` reports every file of its run directory as ignored and the runner prints the work-tree warning and writes its `event`; no test classifies its raw response files, `models/` or `manifest/` as committable; listing its experiment key under `publish.confidential` gives `publishable: true` with reason `user_output_policy` and still writes the `.gitignore`; a synthetic run has no run-directory `.gitignore`; a programme including the confidential run gets the `.gitignore` and `publishable: false`; the `runs/INDEX.md` row of the confidential run has no labels.
 
 ---
 
@@ -2769,7 +2916,7 @@ Each is reversible and was chosen on repository evidence. Changing one needs a �
 | E-1 | Adapters call `openai`, `anthropic` and `httpx` directly; the harness never uses `chat_limiter` | `chat_limiter` 0.16.0 supports only OpenAI, Anthropic and OpenRouter, sends string-only content, and cannot send `response_format` or provider body fields | Low: adapter-internal |
 | E-2 | Exact McNemar via `scipy.stats.binomtest`, reported as a diagnostic only (binary feature, P = R = 1, one case per cluster; §23.3); legacy `compute_mcnemar` only as a test cross-check | The primary test is the cluster-mean t-test (E-27); legacy switches to χ² with continuity correction at b + c ≥ 25 (`statistics.py:49`), so it cannot serve as the exact diagnostic | Trivial |
 | E-3 | Semantic evaluator reuses the legacy prompt and parser through harness adapters, not the `VerbalizationDetector` class | The class needs a `ConceptPipelineDataset` and calls through `chat_limiter`, which loses provenance | Low |
-| E-4 | Batch flows re-implemented in adapters; `custom_id = trial_id`; failed items resubmitted to the same provider only | Legacy batch methods return `list[str]` and re-route failed OpenAI items to OpenRouter (`responses_generator.py:466-501`) | Medium |
+| E-4 | Batch flows re-implemented in adapters; `custom_id = trial_id`; failed items resubmitted to the same provider only. V1 flows are OpenAI Batch and Anthropic Message Batches only; every other provider has `batch: none` (native Gemini Batch and other OpenAI-compatible batch endpoints are V2) | Legacy batch methods return `list[str]` and re-route failed OpenAI items to OpenRouter (`responses_generator.py:466-501`); the legacy code implements no other batch flow, and the registry must not advertise a flow §20.10 lacks | Medium |
 | E-5 | Cassettes are hand-written JSON replayed through `httpx.MockTransport` | No new dependency; both SDKs accept `http_client`; CI has no keys | Low |
 | E-6 | pytest `testpaths = ["tests"]` and markers `live`, `sandbox`; live tests need `HARNESS_LIVE=1` | Prevents collection of code-task fixtures and accidental spend | Trivial |
 | E-7 | `families/code_task/fixtures/` excluded from ruff, pyright and pytest | Starter code and known-bad solutions are deliberately defective | Trivial |
