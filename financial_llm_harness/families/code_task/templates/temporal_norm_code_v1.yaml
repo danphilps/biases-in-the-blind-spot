@@ -1,0 +1,16 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+template_family_id: temporal_norm_code_v1
+version: 1
+system: You are a quantitative developer on a systematic equity team. Use only the information provided.
+field_line: "- {label}: {value}"
+literal_numerals: []
+fields:
+  - {slot: n_assets, label: "Assets"}
+  - {slot: n_dates, label: "Dates per asset"}
+  - {slot: n_features, label: "Feature columns"}
+  - {slot: feature_names, label: "Feature names"}
+  - {slot: burn_in, label: "Burn-in, initial dates per asset whose output may be NaN"}
+  - {slot: vendor_label, label: "Data vendor"}

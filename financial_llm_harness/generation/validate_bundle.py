@@ -42,6 +42,7 @@ OPTIONAL_MANIFEST_KEYS = ("battery", "correctness_context", "provenance")
 TEXT_ROLES = ("template", "paraphrase", "bank", "mandate", "contract")
 ORACLE_FILES = (
     "family.yaml",
+    "fixture.yaml",
     "defaults.yaml",
     "taxonomy/faq.yaml",
     "taxonomy/bases.yaml",
@@ -86,14 +87,23 @@ def file_provenances(
         role: str | None = None
         if row["role"] in TEXT_ROLES:
             role = "text"
-        elif logical.endswith(ORACLE_FILES) or logical.startswith(
-            "taxonomy/checklists/"
+        elif (
+            row["role"] == "hidden_tests"
+            or logical.endswith(ORACLE_FILES)
+            or logical.startswith("taxonomy/checklists/")
         ):
             role = "oracle"
         if role is None or logical in seen:
             continue
         path = package_dir() / logical
-        if path.is_dir() or not path.exists() or path.suffix not in (".yaml", ".yml"):
+        if path.is_dir():
+            # a directory asset (code starter, hidden tests) carries PROVENANCE.yaml (§8.1)
+            path = path / "PROVENANCE.yaml"
+            if not path.is_file():
+                raise HarnessValidationError(
+                    f"{logical}: missing PROVENANCE.yaml (§8.1)"
+                )
+        if not path.exists() or path.suffix not in (".yaml", ".yml"):
             continue
         data = yaml_io.load(path)
         seen[logical] = parse_provenance(provenance_of(data), logical, role)
@@ -253,7 +263,7 @@ def validate_bundle(
     if manifest["task_family"] == "code_task":
         from financial_llm_harness.families.code_task.family import validate_code_design
 
-        validate_code_design(manifest)
+        validate_code_design(manifest, corpus.cases)
     if (
         manifest["mode"] == "confirmatory"
         and non_fake

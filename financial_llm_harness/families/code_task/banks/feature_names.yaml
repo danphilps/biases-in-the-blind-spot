@@ -1,0 +1,21 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: feature_names
+description: "Synthetic feature column names (spec §35 S5); n_features of them are drawn per case without replacement."
+entries:
+  - book_to_price
+  - earnings_yield
+  - sales_to_price
+  - roe
+  - gross_margin
+  - asset_growth
+  - accruals
+  - price_momentum
+  - short_term_reversal
+  - realised_volatility
+  - analyst_revision
+  - short_interest
+  - dividend_yield
+  - leverage

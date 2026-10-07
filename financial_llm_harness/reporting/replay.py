@@ -107,7 +107,7 @@ def reevaluate(
     with ensure_db(run_dir), WriterLock(run_dir):
         ctx = open_context(run_dir, clock or utc_now, ref)
         try:
-            evaluate_deterministic(ctx)
+            evaluate_deterministic(ctx, execute_code=False)
             analyse_sensitivity(ctx)
             if semantic and re_judge:
                 from financial_llm_harness.evaluation.semantic import (

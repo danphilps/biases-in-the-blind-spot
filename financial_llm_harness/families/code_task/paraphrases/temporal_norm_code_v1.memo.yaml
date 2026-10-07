@@ -1,0 +1,28 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: temporal_norm_code_v1.memo
+template_family_id: temporal_norm_code_v1
+paraphrase_family: memo
+user: |-
+  {preamble}Implementation request
+
+  The team works to the following mandate: {mandate}
+
+  We need the {method_label} for a {purpose}. It receives a pandas DataFrame, `panel`, indexed by a MultiIndex (date, asset) and sorted by date and then asset, with one float column per feature.
+
+  Panel
+  {fields}
+
+  Please complete the module below so that `normalise` returns, for every feature column, a time-series z-score computed separately for each asset. The output must keep the input's index, in the same order, and its columns. The first dates of each asset, up to the burn-in, may be NaN; all later values must be finite.
+
+  ```python
+  import pandas as pd
+
+
+  def normalise(panel: pd.DataFrame) -> pd.DataFrame:
+      raise NotImplementedError
+  ```
+
+  {note}{contract}

@@ -41,11 +41,20 @@ def concept_factor_for(manifest: Mapping[str, Any]) -> str | None:
     return idef.concept_factor if idef is not None else None
 
 
-def evaluate_deterministic(ctx: Any) -> None:
-    """Re-derive model-level statuses from the selected responses, then write observations."""
+def evaluate_deterministic(ctx: Any, *, execute_code: bool = True) -> None:
+    """Re-derive model-level statuses from the selected responses, then write observations.
+
+    For a code task, ``execute_code`` first runs every pending parsed response in
+    the sandbox (§13.4); re-evaluation passes False and reads the stored
+    ``code_outcomes`` events, so it never executes code (§31).
+    """
     from financial_llm_harness.execution.runner import model_status
 
     manifest = ctx.manifest
+    if execute_code and manifest["task_family"] == "code_task":
+        from financial_llm_harness.evaluation.sandbox import execute_code_trials
+
+        execute_code_trials(ctx)
     rs = manifest["response_spec"]
     mode = rs["reasoning_mode"]
     abstain = bool(rs["abstain_allowed"])

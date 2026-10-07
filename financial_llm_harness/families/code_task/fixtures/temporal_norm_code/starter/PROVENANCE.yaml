@@ -1,0 +1,5 @@
+# Provenance of the prompt-visible starter module (spec §8.1, D-14).
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null

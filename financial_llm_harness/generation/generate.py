@@ -447,6 +447,10 @@ def generate(
     assets, provs = collect_assets(
         spec, corpus, panel, models + ([ev_model] if ev_model else []), extra_rows
     )
+    if spec["task_family"] == "code_task":
+        from financial_llm_harness.families.code_task.family import code_provenances
+
+        provs += code_provenances(spec)
     if spec.get("provenance") is not None:
         provs.append(parse_provenance(spec["provenance"], where, "both"))
     target_families = sorted({m["family"] for m in models})

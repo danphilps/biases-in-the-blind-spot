@@ -1,0 +1,7 @@
+# Sandbox image "base" (spec §13.4, E-22). Regenerate the lock from this directory with:
+#   uv pip compile --generate-hashes --python-version 3.12 --python-platform x86_64-manylinux_2_28 requirements.in -o requirements.txt
+numpy
+pandas
+scipy
+scikit-learn
+pytest

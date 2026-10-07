@@ -1,0 +1,5 @@
+# Provenance of the hidden tests, an oracle-bearing asset (spec §2.7, §8.1, D-14).
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null

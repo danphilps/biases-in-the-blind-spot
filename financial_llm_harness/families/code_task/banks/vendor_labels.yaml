@@ -1,0 +1,13 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: vendor_labels
+description: "Matched data-vendor labels (placebo node, spec §22, §35 S4, S5)."
+entries:
+  - "Vendor A"
+  - "Vendor B"
+  - "Vendor C"
+  - "Vendor D"
+  - "Vendor E"
+  - "Vendor F"
