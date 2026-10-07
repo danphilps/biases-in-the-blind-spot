@@ -156,12 +156,24 @@ def write_probe(
     return path
 
 
+_CI_FAKE_EVALUATOR = object()
+
+
+def ci_fake_evaluator() -> dict[str, Any]:
+    data = yaml_io.load(ROOT / "experiments" / "financial" / "panels" / "ci_fake.yaml")
+    return dict(data["evaluator"])
+
+
 def write_panel(
     tmp: Path,
     models: list[dict[str, Any]],
-    evaluator: dict[str, Any] | None = None,
+    evaluator: Any = _CI_FAKE_EVALUATOR,
     name: str = "panel.yaml",
 ) -> Path:
+    """A panel file; the evaluator defaults to ci_fake's fake evaluator, which the S1
+    specs' semantic reasoning channel needs (§16); pass None for a panel without one."""
+    if evaluator is _CI_FAKE_EVALUATOR:
+        evaluator = ci_fake_evaluator()
     path = tmp / name
     path.write_text(
         yaml_io.dump({"panel_version": 1, "models": models, "evaluator": evaluator}),

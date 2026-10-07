@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from financial_llm_harness.core import yaml_io
 from financial_llm_harness.errors import HarnessError, HarnessValidationError, LockHeld
 from financial_llm_harness.execution.runner import resolve_run, run_experiment
 from financial_llm_harness.storage.archive import WriterLock
@@ -86,7 +87,14 @@ def _env(home: Path) -> dict[str, str]:
 def test_fake_run_does_not_import_torch_or_chat_limiter(
     tmp_path: Path, harness_home: Path
 ) -> None:
+    # §0.7: the S1 spec with no semantic feature (the semantic evaluator may load them)
     spec = small_spec(tmp_path)
+    data = yaml_io.load(spec)
+    assert isinstance(data, dict)
+    data["feature_spec"] = [
+        f for f in data["feature_spec"] if f["extractor"] != "semantic_verbalisation"
+    ]
+    spec.write_text(yaml_io.dump(data), encoding="utf-8")
     code = (
         "import sys\n"
         "from pathlib import Path\n"

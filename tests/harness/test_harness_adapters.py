@@ -763,7 +763,11 @@ def test_editing_a_used_profile_is_frozen_input_drift(
     )
     (out / B.LOCK_FILE).write_text(B.load_manifest(out)["manifest_hash"] + "\n")
     rows = [r for r in B.load_assets(out) if r["role"] == "request_profile"]
-    assert len(rows) == 1 and "local/chat_completions" in rows[0]["logical_name"]
+    # the target's profile, plus the fake evaluator's (the S1 reasoning channel, §16)
+    assert sorted(r["logical_name"] for r in rows) == [
+        "models/providers.yaml#fake/in_process",
+        "models/providers.yaml#local/chat_completions",
+    ]
     assert B.frozen_input_mismatches(out, FIXED_CODE_REF) == []
     path = package_dir() / "models" / "providers.yaml"
     original = path.read_bytes()

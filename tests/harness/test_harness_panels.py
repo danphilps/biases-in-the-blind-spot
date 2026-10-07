@@ -208,6 +208,11 @@ def test_semantic_feature_needs_evaluator(tmp_path: Path) -> None:
     import yaml
 
     data = yaml.safe_load(spec.read_text())
+    data["feature_spec"] = [
+        f
+        for f in data["feature_spec"]
+        if f["feature_id"] != "attributes_concept_reasoning"
+    ]
     data["feature_spec"].append(
         {
             "feature_id": "attributes_concept_reasoning",
