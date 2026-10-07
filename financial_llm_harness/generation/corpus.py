@@ -318,9 +318,13 @@ def _build(
         clause_logicals.append(logical)
         file_data[logical] = clause
         pcb_note = f"{clause['text']}\n\n"
+    # a family may render a block of items from the state (§35 S2): its render_blocks
+    # gives each arm's blocks and BLOCK_NODES the state nodes each block shows
+    blocks_fn = getattr(family.module, "render_blocks", None)
+    block_nodes = getattr(family.module, "BLOCK_NODES", None)
     rendered_set: set[str] = set()
     for p in templates.paraphrases:
-        rendered_set |= R.rendered_nodes(templates.base, p)
+        rendered_set |= R.rendered_nodes(templates.base, p, block_nodes)
     primary = _feature(design, design["hypothesis"]["primary_feature"])
     check_measurability(primary)
     oracle_nodes = list(design["oracle_spec"].get("nodes") or [])
@@ -365,6 +369,7 @@ def _build(
                 int(seeds["paraphrase"]),
                 cue_hook,
                 pcb_note,
+                blocks_fn,
             )
         except CaseRejected as exc:
             rejections[exc.reason] += 1
@@ -561,6 +566,7 @@ def _attempt(
     paraphrase_seed: int,
     cue_hook: CueHook | None,
     pcb_note: str = "",
+    blocks_fn: Callable[..., dict[str, list[tuple[str, str | None]]]] | None = None,
 ) -> dict[str, Any]:
     base = draw_state(world, rng)
     bad = violated_constraints(world, base)
@@ -602,6 +608,7 @@ def _attempt(
             mandate=pc_mandate if arm in ("PCA", "PCB") else mandate_text,
             field_order=list(order),
             note=pcb_note if arm == "PCB" else "",
+            blocks=blocks_fn(states[arm], world.nodes) if blocks_fn else {},
         )
     cue_info: dict[str, Any] | None = None
     if cue_hook is not None:
@@ -638,6 +645,7 @@ def _attempt(
             messages[arm].append((r.system, r.user))
     for p_idx in range(len(templates.paraphrases)):
         if "B" in rendered:
+            check_block_isolation(arm_ctx["A"], arm_ctx["B"], set(diff), "B vs A")
             check_text_isolation(
                 rendered["A"][p_idx],
                 rendered["B"][p_idx],
@@ -648,15 +656,29 @@ def _attempt(
             raise CaseRejected("isolation", "A0 renders differently from A")
         if "PL" in rendered:
             dpl = diff_nodes(world, states["A"], states["PL"])
-            check_text_isolation(rendered["A"][p_idx], rendered["PL"][p_idx], dpl)
+            check_block_isolation(arm_ctx["A"], arm_ctx["PL"], dpl, "PL vs A")
+            check_text_isolation(
+                rendered["A"][p_idx],
+                rendered["PL"][p_idx],
+                dpl,
+                _block_kind(arm_ctx["A"], arm_ctx["PL"]),
+            )
         if "PCA" in rendered:
             dpa = diff_nodes(world, states["A"], states["PCA"])
+            check_block_isolation(arm_ctx["A"], arm_ctx["PCA"], dpa, "PCA vs A")
             check_text_isolation(
-                rendered["A"][p_idx], rendered["PCA"][p_idx], dpa, ("mandate",)
+                rendered["A"][p_idx],
+                rendered["PCA"][p_idx],
+                dpa,
+                ("mandate", *_block_kind(arm_ctx["A"], arm_ctx["PCA"])),
             )
             dpc = diff_nodes(world, states["PCA"], states["PCB"])
+            check_block_isolation(arm_ctx["PCA"], arm_ctx["PCB"], dpc, "PCB vs PCA")
             check_text_isolation(
-                rendered["PCA"][p_idx], rendered["PCB"][p_idx], dpc, ("note",)
+                rendered["PCA"][p_idx],
+                rendered["PCB"][p_idx],
+                dpc,
+                ("note", *_block_kind(arm_ctx["PCA"], arm_ctx["PCB"])),
             )
     a0 = rendered["A"][0]
     displayed = {s.node or s.slot: a0.user[s.start : s.end] for s in a0.state_spans()}
@@ -681,6 +703,37 @@ def _attempt(
         "_displayed": displayed,
         "_slot_text": slot_text,
     }
+
+
+def check_block_isolation(
+    x: ArmRender, y: ArmRender, diff: set[str], label: str
+) -> None:
+    """Two arms' blocks may differ only by order or by removed items, and only with a state diff.
+
+    Per block, the multisets of items are equal (a reorder: POSITION_CHANGE or a
+    placebo swap) or one contains the other (a removal: REMOVE). No item may be
+    added or reworded, so the block carries no other change (§9.1, §35 S2).
+    """
+    for name in sorted(set(x.blocks) | set(y.blocks)):
+        a, b = x.blocks.get(name, []), y.blocks.get(name, [])
+        if a == b:
+            continue
+        if not diff:
+            raise CaseRejected(
+                "isolation", f"{label}: block {name!r} differs with no state diff"
+            )
+        # items compare by content: a separator newline moves with an item's position
+        ca = Counter((t.strip(), n) for t, n in a)
+        cb = Counter((t.strip(), n) for t, n in b)
+        subset = all(cb[k] <= ca[k] for k in cb) or all(ca[k] <= cb[k] for k in ca)
+        if not subset:
+            raise CaseRejected(
+                "isolation", f"{label}: block {name!r} items are added or reworded"
+            )
+
+
+def _block_kind(x: ArmRender, y: ArmRender) -> tuple[str, ...]:
+    return ("block",) if x.blocks != y.blocks else ()
 
 
 def _cue_nodes(arm_ctx: Mapping[str, ArmRender]) -> set[str]:

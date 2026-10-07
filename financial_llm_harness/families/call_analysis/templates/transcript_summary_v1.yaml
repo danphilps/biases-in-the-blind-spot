@@ -1,0 +1,10 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+template_family_id: transcript_summary_v1
+version: 1
+system: You are an equity analyst covering this company. Use only the information provided.
+field_line: "- {label}: {value}"
+literal_numerals: []
+fields: []

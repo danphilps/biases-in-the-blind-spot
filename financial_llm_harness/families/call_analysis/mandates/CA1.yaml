@@ -1,0 +1,8 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: CA1
+version: 1
+text: "long-only fundamental equity"
+country_neutral: true

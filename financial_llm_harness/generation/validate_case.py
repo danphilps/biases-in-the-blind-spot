@@ -69,17 +69,28 @@ def check_round_trip(
 
 
 def masked(rendered: Rendered, nodes_allowed: set[str], kinds_allowed: set[str]) -> str:
-    """The user text with every allowed span replaced by a marker."""
+    """The user text with every allowed span replaced by a marker.
+
+    Adjacent allowed spans (the items of one block, §35 S2) share one marker, so
+    a block whose items are reordered or removed masks alike; what the block may
+    hold is checked separately (``corpus.check_block_isolation``).
+    """
     text = rendered.user
     out: list[str] = []
     pos = 0
+    last_end = -1
     for span in sorted(rendered.spans, key=lambda s: s.start):
         if span.kind in kinds_allowed or (
             span.node is not None and span.node in nodes_allowed
         ):
+            if span.start == last_end and span.start == pos:
+                pos = span.end
+                last_end = span.end
+                continue
             out.append(text[pos : span.start])
             out.append("\x00")
             pos = span.end
+            last_end = span.end
     out.append(text[pos:])
     return "".join(out)
 

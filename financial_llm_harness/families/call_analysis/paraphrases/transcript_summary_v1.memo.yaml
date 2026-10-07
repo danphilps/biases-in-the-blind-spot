@@ -1,0 +1,18 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: transcript_summary_v1.memo
+template_family_id: transcript_summary_v1
+paraphrase_family: memo
+user: |-
+  {preamble}Earnings call notes
+
+  The team works to the following mandate: {mandate}
+
+  Management covered these points on the quarterly call, in this order:
+  {items}
+
+  Please write a short summary for the portfolio manager.
+
+  {note}{contract}
