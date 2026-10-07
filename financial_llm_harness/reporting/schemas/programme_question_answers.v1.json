@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_question_answers.csv",
+  "title": "programme_question_answers.csv",
+  "description": "One row per faq_id × model; sorted by faq_id, panel order.",
+  "x-spec": "§32B.4, D-20",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "faq_id",
+    "model_key",
+    "n_experiments",
+    "n_complete",
+    "n_good",
+    "n_warning",
+    "n_serious",
+    "n_critical",
+    "n_neutral",
+    "any_bias",
+    "verdict_class",
+    "verdict_label",
+    "verdict_variant_id",
+    "verdict_intervention_id",
+    "verdict_answer_row_id"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "n_experiments": {
+      "type": "integer",
+      "description": "Experiments of the item",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "n_complete": {
+      "type": "integer",
+      "description": "COMPLETE experiments",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "n_good": {
+      "type": "integer",
+      "description": "Rows in status class good",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32A.4"
+    },
+    "n_warning": {
+      "type": "integer",
+      "description": "Rows in status class warning",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32A.4"
+    },
+    "n_serious": {
+      "type": "integer",
+      "description": "Rows in status class serious",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32A.4"
+    },
+    "n_critical": {
+      "type": "integer",
+      "description": "Rows in status class critical",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32A.4"
+    },
+    "n_neutral": {
+      "type": "integer",
+      "description": "Rows in status class neutral",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32A.4"
+    },
+    "any_bias": {
+      "type": "boolean",
+      "description": "Any row with is_bias",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "verdict_class": {
+      "enum": [
+        "critical",
+        "serious",
+        "warning",
+        "good",
+        "neutral"
+      ],
+      "description": "Most severe class present",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "verdict_label": {
+      "type": "string",
+      "description": "Label of the first row of that class",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "verdict_variant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Its variant",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "verdict_intervention_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Its intervention",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "D-20"
+    },
+    "verdict_answer_row_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "Its answers.csv row_id",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "D-20"
+    }
+  },
+  "required": [
+    "row_id",
+    "faq_id",
+    "model_key",
+    "n_experiments",
+    "n_complete",
+    "n_good",
+    "n_warning",
+    "n_serious",
+    "n_critical",
+    "n_neutral",
+    "any_bias",
+    "verdict_class",
+    "verdict_label",
+    "verdict_variant_id",
+    "verdict_intervention_id",
+    "verdict_answer_row_id"
+  ],
+  "additionalProperties": false
+}

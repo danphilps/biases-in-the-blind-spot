@@ -1,0 +1,11 @@
+# CI programme (spec §37): the two canonical S1 specs of F1.1.a on the fake panel.
+schema_version: 1
+programme_key: ci_fake
+panel: ci_fake
+select:
+  specs:
+    - experiments/financial/specs/momentum_stock_add.yaml
+    - experiments/financial/specs/momentum_stock_add_m2.yaml
+  generated: null
+budget: {max_cost_usd: 1.0, max_calls: 100000}
+on_experiment_failure: continue

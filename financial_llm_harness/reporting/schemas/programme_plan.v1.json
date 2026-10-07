@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_plan.csv",
+  "title": "programme_plan.csv",
+  "description": "One row per experiment × model; sorted by experiment_key, panel order.",
+  "x-spec": "§32B.4",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "experiment_key",
+    "model_key",
+    "n_clusters",
+    "trials",
+    "calls",
+    "input_tokens_est",
+    "output_tokens_max",
+    "cost_usd_low",
+    "cost_usd_high"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "experiment_key": {
+      "type": "string",
+      "description": "Experiment key",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "n_clusters": {
+      "type": "integer",
+      "description": "Clusters",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§9.2"
+    },
+    "trials": {
+      "type": "integer",
+      "description": "Trials",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§30"
+    },
+    "calls": {
+      "type": "integer",
+      "description": "Calls",
+      "x-type": "integer",
+      "x-unit": "calls",
+      "x-spec": "§30"
+    },
+    "input_tokens_est": {
+      "type": "integer",
+      "description": "Input tokens, estimated",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§30"
+    },
+    "output_tokens_max": {
+      "type": "integer",
+      "description": "Output tokens, upper bound",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§30"
+    },
+    "cost_usd_low": {
+      "type": "number",
+      "description": "Cost lower bound",
+      "x-type": "number",
+      "x-unit": "USD",
+      "x-spec": "§30"
+    },
+    "cost_usd_high": {
+      "type": "number",
+      "description": "Cost upper bound",
+      "x-type": "number",
+      "x-unit": "USD",
+      "x-spec": "§30"
+    }
+  },
+  "required": [
+    "row_id",
+    "experiment_key",
+    "model_key",
+    "n_clusters",
+    "trials",
+    "calls",
+    "input_tokens_est",
+    "output_tokens_max",
+    "cost_usd_low",
+    "cost_usd_high"
+  ],
+  "additionalProperties": false
+}

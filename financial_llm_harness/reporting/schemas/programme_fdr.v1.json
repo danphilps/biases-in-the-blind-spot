@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_fdr.csv",
+  "title": "programme_fdr.csv",
+  "description": "One row per model × experiment × claim family; sorted by panel order, fdr_family, rank.",
+  "x-spec": "§32B.4, §25",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "experiment_key",
+    "fdr_family",
+    "test",
+    "p_raw",
+    "p_adj",
+    "rank",
+    "bh_threshold",
+    "rejected",
+    "m",
+    "q"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "experiment_key": {
+      "type": "string",
+      "description": "Experiment key",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "fdr_family": {
+      "enum": [
+        "sensitivity_or_deviation",
+        "equivalence_or_adequacy"
+      ],
+      "description": "Claim family",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "test": {
+      "enum": [
+        "t_two_sided",
+        "tost",
+        "t_under",
+        "t_outside_tol",
+        "t_below",
+        "t_meets"
+      ],
+      "description": "Test",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_raw": {
+      "type": "number",
+      "description": "Unadjusted p-value",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_adj": {
+      "type": "number",
+      "description": "BH-adjusted p-value",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "rank": {
+      "type": "integer",
+      "description": "Rank in the family",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "bh_threshold": {
+      "type": "number",
+      "description": "k·q/m",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "rejected": {
+      "type": "boolean",
+      "description": "p_adj ≤ q",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "m": {
+      "type": "integer",
+      "description": "Family size",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "q": {
+      "type": "number",
+      "description": "FDR level",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "experiment_key",
+    "fdr_family",
+    "test",
+    "p_raw",
+    "p_adj",
+    "rank",
+    "bh_threshold",
+    "rejected",
+    "m",
+    "q"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_summary.json",
+  "title": "programme_summary.json",
+  "description": "The programme's one-file machine answer.",
+  "x-spec": "§32B.4",
+  "x-format": "json",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "programme": {
+      "type": "object",
+      "description": "Programme identity",
+      "x-spec": "§32B.3",
+      "properties": {
+        "programme_key": {
+          "type": "string",
+          "description": "Programme key",
+          "x-unit": null,
+          "x-spec": "§32B.1"
+        },
+        "programme_run_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Programme run ID",
+          "x-unit": null,
+          "x-spec": "§32B.3"
+        },
+        "status": {
+          "type": "string",
+          "description": "Programme status",
+          "x-unit": null,
+          "x-spec": "§32B.3"
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Start time",
+          "x-unit": null,
+          "x-spec": "§32A.2"
+        },
+        "panel": {
+          "type": "string",
+          "description": "Panel",
+          "x-unit": null,
+          "x-spec": "§32B.1"
+        },
+        "programme_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Programme file hash",
+          "x-unit": null,
+          "x-spec": "§32B.3"
+        },
+        "panel_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Panel file hash",
+          "x-unit": null,
+          "x-spec": "§32B.3"
+        }
+      },
+      "required": [
+        "programme_key",
+        "programme_run_id",
+        "status",
+        "started_at",
+        "panel",
+        "programme_sha256",
+        "panel_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "output_policy": {
+      "type": "object",
+      "description": "Output policy",
+      "x-spec": "§30.1",
+      "properties": {
+        "publishable": {
+          "type": "boolean",
+          "description": "Publishable",
+          "x-unit": null,
+          "x-spec": "§30.1"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "synthetic",
+            "non_synthetic_default",
+            "user_output_policy"
+          ],
+          "description": "Reason",
+          "x-unit": null,
+          "x-spec": "§30.1"
+        }
+      },
+      "required": [
+        "publishable",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "experiments": {
+      "type": "array",
+      "description": "Experiments",
+      "x-spec": "§32B.4",
+      "items": {
+        "type": "object",
+        "description": "Experiment",
+        "x-spec": "§32B.4",
+        "properties": {
+          "experiment_key": {
+            "type": "string",
+            "description": "Experiment key",
+            "x-unit": null,
+            "x-spec": "§T1"
+          },
+          "run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Run ID",
+            "x-unit": null,
+            "x-spec": "§31A"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status",
+            "x-unit": null,
+            "x-spec": "§32B.3"
+          }
+        },
+        "required": [
+          "experiment_key",
+          "run_id",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Panel models in order",
+      "x-unit": null,
+      "x-spec": "§20.9"
+    },
+    "questions": {
+      "type": "array",
+      "description": "Verdicts",
+      "x-spec": "D-20",
+      "items": {
+        "type": "object",
+        "description": "Verdict",
+        "x-spec": "D-20",
+        "properties": {
+          "faq_id": {
+            "type": "string",
+            "description": "Item",
+            "x-unit": null,
+            "x-spec": "§T1"
+          },
+          "model_key": {
+            "type": "string",
+            "description": "Model",
+            "x-unit": null,
+            "x-spec": "§20.6"
+          },
+          "verdict_class": {
+            "type": "string",
+            "description": "Verdict class",
+            "x-unit": null,
+            "x-spec": "D-20"
+          },
+          "verdict_label": {
+            "type": "string",
+            "description": "Verdict label",
+            "x-unit": null,
+            "x-spec": "D-20"
+          },
+          "row_id": {
+            "type": "string",
+            "description": "question_answers.csv row_id",
+            "x-unit": null,
+            "x-spec": "D-20"
+          }
+        },
+        "required": [
+          "faq_id",
+          "model_key",
+          "verdict_class",
+          "verdict_label",
+          "row_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "Result files",
+      "x-spec": "§32B.4",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "programme",
+    "output_policy",
+    "experiments",
+    "models",
+    "questions",
+    "files"
+  ],
+  "additionalProperties": false
+}

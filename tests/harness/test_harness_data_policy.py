@@ -120,3 +120,50 @@ def test_synthetic_run_has_no_gitignore(tmp_path: Path, harness_home: Path) -> N
         "reason": "synthetic",
     }
     assert "Data classification" not in (run_dir / "README.md").read_text()
+
+
+def test_programme_with_a_confidential_run(tmp_path: Path, harness_home: Path) -> None:
+    import shutil
+
+    from financial_llm_harness.core import yaml_io
+    from financial_llm_harness.execution.programme import run_programme
+    from tests.harness.helpers import (
+        FIXED_CODE_REF,
+        ROOT,
+        S1_M2_SPEC,
+        fixed_clock,
+        small_spec,
+    )
+
+    s1 = small_spec(tmp_path, name="m1.yaml")
+    s2 = small_spec(
+        tmp_path, name="m2.yaml", base=S1_M2_SPEC, data_classification="confidential"
+    )
+    panel = tmp_path / "panel.yaml"
+    shutil.copyfile(
+        ROOT / "experiments" / "financial" / "panels" / "ci_fake.yaml", panel
+    )
+    prog = tmp_path / "prog.yaml"
+    prog.write_text(
+        yaml_io.dump(
+            {
+                "schema_version": 1,
+                "programme_key": "policy_mix",
+                "panel": str(panel),
+                "select": {"specs": [str(s1), str(s2)], "generated": None},
+                "budget": {"max_cost_usd": 1.0, "max_calls": 100_000},
+                "on_experiment_failure": "continue",
+            }
+        )
+    )
+    res = run_programme(prog, yes=True, clock=fixed_clock, code_ref=FIXED_CODE_REF)
+    assert res.exit_code == 0 and res.programme_dir is not None
+    assert (res.programme_dir / ".gitignore").read_text() == "*\n"
+    summary = json.loads((res.programme_dir / "results" / "summary.json").read_text())
+    assert summary["output_policy"] == {
+        "publishable": False,
+        "reason": "non_synthetic_default",
+    }
+    assert (
+        "Not publishable" in (res.programme_dir / "report" / "programme.md").read_text()
+    )

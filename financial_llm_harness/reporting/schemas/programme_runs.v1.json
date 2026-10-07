@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_runs.csv",
+  "title": "programme_runs.csv",
+  "description": "One row per experiment; sorted by experiment_key.",
+  "x-spec": "§32B.4",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "experiment_key",
+    "faq_id",
+    "variant_id",
+    "intervention_id",
+    "mode",
+    "manifest_hash",
+    "run_id",
+    "status",
+    "exit_code",
+    "calls",
+    "cost_usd"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "experiment_key": {
+      "type": "string",
+      "description": "Experiment key",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "faq_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "variant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Taxonomy variant",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "intervention_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Intervention",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T4"
+    },
+    "mode": {
+      "enum": [
+        "confirmatory",
+        "discovery",
+        null
+      ],
+      "description": "Mode",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§2"
+    },
+    "manifest_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Manifest hash",
+      "x-type": "sha256",
+      "x-unit": null,
+      "x-spec": "§4"
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "Run ID",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§31A"
+    },
+    "status": {
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "COMPLETE",
+        "INCOMPLETE",
+        "PAUSED_BUDGET",
+        "FAILED",
+        "SKIPPED_INVALID"
+      ],
+      "description": "Experiment status",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§32B.3"
+    },
+    "exit_code": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Exit code",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32"
+    },
+    "calls": {
+      "type": "integer",
+      "description": "Calls",
+      "x-type": "integer",
+      "x-unit": "calls",
+      "x-spec": "§30"
+    },
+    "cost_usd": {
+      "type": "number",
+      "description": "Cost",
+      "x-type": "number",
+      "x-unit": "USD",
+      "x-spec": "§30"
+    }
+  },
+  "required": [
+    "row_id",
+    "experiment_key",
+    "faq_id",
+    "variant_id",
+    "intervention_id",
+    "mode",
+    "manifest_hash",
+    "run_id",
+    "status",
+    "exit_code",
+    "calls",
+    "cost_usd"
+  ],
+  "additionalProperties": false
+}

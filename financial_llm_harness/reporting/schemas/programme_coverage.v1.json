@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_coverage.csv",
+  "title": "programme_coverage.csv",
+  "description": "One row per covered faq_id; sorted by faq_id.",
+  "x-spec": "§32B.4",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "faq_id",
+    "wave",
+    "priority",
+    "n_variants",
+    "n_interventions_listed",
+    "n_pairs",
+    "n_specs",
+    "n_complete",
+    "n_unimplemented"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "wave": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Wave (registry)",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "priority": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Priority (registry)",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "n_variants": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Variants (registry)",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "n_interventions_listed": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Interventions listed (registry)",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "n_pairs": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Pairs",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32B.2"
+    },
+    "n_specs": {
+      "type": "integer",
+      "description": "Selected specs",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32B.4"
+    },
+    "n_complete": {
+      "type": "integer",
+      "description": "COMPLETE runs",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32B.4"
+    },
+    "n_unimplemented": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Rows in expand_report.json",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§32B.2"
+    }
+  },
+  "required": [
+    "row_id",
+    "faq_id",
+    "wave",
+    "priority",
+    "n_variants",
+    "n_interventions_listed",
+    "n_pairs",
+    "n_specs",
+    "n_complete",
+    "n_unimplemented"
+  ],
+  "additionalProperties": false
+}

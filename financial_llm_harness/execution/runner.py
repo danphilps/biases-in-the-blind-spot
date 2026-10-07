@@ -1411,8 +1411,14 @@ def run_experiment(
     code_ref: CodeRef | None = None,
     dry_run: bool = False,
     interrupt_after: int | None = None,
+    budget_override: Mapping[str, Any] | None = None,
 ) -> RunResult:
-    """Library entry point of ``run`` (§31A, E-23)."""
+    """Library entry point of ``run`` (§31A, E-23).
+
+    ``budget_override`` replaces the manifest caps for this run (a programme
+    passes min(manifest cap, programme budget remaining), §30, §32B.3); it is
+    stored in ``run.budget_override_json`` and an ``event``.
+    """
     clk = clock or utc_now
     rid = run_id or str(uuid.uuid4())
     with tempfile.TemporaryDirectory(prefix="fh-bundle-") as tmp:
@@ -1430,7 +1436,15 @@ def run_experiment(
     lock = WriterLock(run_dir)
     lock.acquire()
     try:
-        ctx = open_context(run_dir, clk, ref)
+        ctx = open_context(run_dir, clk, ref, budget_override)
+        if budget_override is not None:
+            override = dict(budget_override)
+            ctx.db.execute(
+                "UPDATE run SET budget_override_json = ? WHERE run_id = ?",
+                (json.dumps(override, sort_keys=True), ctx.run_id),
+            )
+            ctx.db.event("budget_override", override)
+            ctx.db.commit()
         status = _execute_and_finish(ctx, interrupt_after)
         return RunResult(rid, run_dir, status, EXIT_FOR_STATUS[status], text)
     except InjectedInterruption:
