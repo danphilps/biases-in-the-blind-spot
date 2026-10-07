@@ -483,10 +483,7 @@ def expand_item(
             r = PairResult(item.id, vid, iid, item.wave)
             if status == "specified" or family is None or entry is None:
                 r.reason = "item_not_implemented"
-                r.missing = [
-                    f"families/*/family.yaml#faq_ids/{item.id}",
-                    f"families/*/defaults.yaml#{item.id}",
-                ]
+                r.missing = _content_gaps(reg, item, family, entry, variant, iid, cues)
                 out.append(r)
                 continue
             if iid == "I.NONE":
@@ -504,6 +501,38 @@ def expand_item(
                 r.spec = spec
             out.append(r)
     return out
+
+
+def _content_gaps(
+    reg: Registry,
+    item: Item,
+    family: TaskFamily | None,
+    entry: Mapping[str, Any] | None,
+    variant: Mapping[str, Any],
+    iid: str,
+    cues: Mapping[str, Mapping[str, Any]],
+) -> list[str]:
+    """What a pair of a not-yet-implemented item still needs, as paths (§T11, §32B.2 step 7).
+
+    Without a family that lists the item, the listing itself is missing. With
+    one, the pair is built against the entry as it stands (empty when absent),
+    and every input it lacks is named, so the content pack can be filled field
+    by field.
+    """
+    if family is None:
+        return [
+            f"families/*/family.yaml#faq_ids/{item.id}",
+            f"families/*/defaults.yaml#{item.id}",
+        ]
+    probe: Mapping[str, Any] = entry or {}
+    if iid == "I.NONE":
+        _, missing = expand_correctness(reg, item, family, probe, variant)
+    elif iid in cues:
+        _, missing = expand_battery(reg, item, family, probe, variant, iid, cues)
+    else:
+        _, missing = expand_relevant(reg, item, family, probe, variant, iid)
+    head = [] if entry else [f"families/{family.family_id}/defaults.yaml#{item.id}"]
+    return sorted({*head, *missing})
 
 
 def _skip_correctness(item: Item, vid: str, family: TaskFamily | None) -> bool:

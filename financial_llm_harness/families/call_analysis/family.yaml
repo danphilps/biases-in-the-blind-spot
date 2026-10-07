@@ -5,7 +5,7 @@ provenance:
 family_id: call_analysis
 description: F6 items (spec §34); slice S2 transcript_summary (§35).
 contexts: [C4]
-faq_ids: [F6.1.b]
+faq_ids: [F6.1.b, F6.1.a, F6.2.c]
 # Attach points the templates support (§T4.4): attach point → template slot that renders it.
 battery_slots:
   preamble: preamble

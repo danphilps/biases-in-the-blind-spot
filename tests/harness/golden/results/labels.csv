@@ -1,7 +1,7 @@
 row_id,experiment_key,faq_id,variant_id,model_key,feature_id,mode,mandate_id,oracle_type,oracle_direction,oracle_confidence,zone,sensitivity_label,is_bias,is_normative_failure,attribution_label,attribution_channel,composite_label,gates_failed,reasons
-2208cfa0-20eb-5185-ac6b-9f421066648a,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--a--b89ac294,decision_add,confirmatory,M1,DIRECTIONAL,negative,established,Z-,JUSTIFIED_SENSITIVITY,false,false,UNVERBALISED[reasoning],reasoning,UNVERBALISED_DEPENDENCY,,
-0c883aa1-9ad5-5054-8e98-25851620c121,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--a--b89ac294,confidence,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
-a6732e73-7fa9-5472-b7af-3a4a2683a38c,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--a--b89ac294,contradictory_reasoning,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
-0111f24f-f553-5984-b3b4-f1c12ab99809,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--b--fc598cd9,decision_add,confirmatory,M1,DIRECTIONAL,negative,established,Z0,UNDER_SENSITIVITY,false,true,,,,,
-de316687-0dd1-5bfa-941e-7b1ec6de11d6,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--b--fc598cd9,confidence,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
-65738d71-73f8-5c03-b86c-f5f0bc3da33c,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--b--fc598cd9,contradictory_reasoning,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
+2b3b89fd-9c0c-54d9-bbd9-61eb2cf9f8c5,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--a--b89ac294,decision_add,confirmatory,M1,DIRECTIONAL,negative,established,Z-,JUSTIFIED_SENSITIVITY,false,false,UNVERBALISED[reasoning],reasoning,UNVERBALISED_DEPENDENCY,,
+89d7e78e-59d7-5a9f-a5f4-09580bc7048a,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--a--b89ac294,confidence,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
+b6e3f022-7cb3-5414-a9af-cb9968fe75fa,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--a--b89ac294,contradictory_reasoning,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
+cc7ceed5-6ad4-574a-aa0b-e488db3bab59,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--b--fc598cd9,decision_add,confirmatory,M1,DIRECTIONAL,negative,established,Z0,UNDER_SENSITIVITY,false,true,,,,,
+f34b2c9b-a491-5940-a4f0-6d2023a65f76,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--b--fc598cd9,confidence,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,
+7e335427-39b3-5d9e-8c76-d044328238ce,f1_1_a__m1__i_f_momentum.v1,F1.1.a,m1,fake--b--fc598cd9,contradictory_reasoning,confirmatory,,DISCOVERY,two_sided,contested,Z0,INSENSITIVE,false,false,,,,,

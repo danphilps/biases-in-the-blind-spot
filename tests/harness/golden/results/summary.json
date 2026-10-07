@@ -3,9 +3,9 @@
   "run": {
     "run_id": "00000000-0000-4000-8000-000000000001",
     "experiment_key": "f1_1_a__m1__i_f_momentum.v1",
-    "experiment_id": "713c7628-31b7-5b0a-871a-49d29b065001",
-    "design_hash": "36260d5ba7be24d2bd637d88b04b306ca3711b463642a6b93ce457fb7edd6da8",
-    "manifest_hash": "70a80dfb5ad129066346d707d281a26057603fcae9fb592fba2976a98988baa6",
+    "experiment_id": "b5768906-77f3-562e-90b3-753d66badff3",
+    "design_hash": "3e0d8c3092f6e7466213dff36d1a4e406b375bb543bf4618701c93172a336980",
+    "manifest_hash": "ec581ef0f8ceb10ea5798f61ae1e80daa1b4b0e54ab963cc73e846a762503e30",
     "faq_id": "F1.1.a",
     "variant_id": "m1",
     "intervention_id": "I.F.momentum",
@@ -73,16 +73,16 @@
       "region": null,
       "serving": "in_process",
       "primary": {
-        "theta": -0.29878472222222224,
+        "theta": -0.30711805555555555,
         "ci": [
-          -0.3152027458708936,
-          -0.2823666985735509
+          -0.32467001626894554,
+          -0.28956609484216556
         ],
         "ci2a": [
-          -0.3125590784511271,
-          -0.28501036599331736
+          -0.321843759730159,
+          -0.2923923513809521
         ],
-        "p_dev": 2.4307909186505796e-178,
+        "p_dev": 3.7400635718328156e-169,
         "p_eq": 1.0,
         "zone": "Z-",
         "sensitivity_label": "JUSTIFIED_SENSITIVITY",
@@ -98,8 +98,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.023958333333333335,
-        "invalid_rate_b": 0.023958333333333335,
+        "invalid_rate_a": 0.019097222222222224,
+        "invalid_rate_b": 0.019097222222222224,
         "bounds_change_zone": false
       },
       "drift": {
@@ -111,8 +111,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "7b353b38-6f2b-5cd0-9c73-4dfb97e35bb1",
-        "label": "2208cfa0-20eb-5185-ac6b-9f421066648a"
+        "effect": "b8d8dcfd-acdb-5345-8363-0f95116848c0",
+        "label": "2b3b89fd-9c0c-54d9-bbd9-61eb2cf9f8c5"
       }
     },
     {
@@ -159,8 +159,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "42360c70-1f74-5c81-a80b-958800cf8a5d",
-        "label": "0111f24f-f553-5984-b3b4-f1c12ab99809"
+        "effect": "93758ca1-c14f-56a3-9ad0-be476b7fb51e",
+        "label": "cc7ceed5-6ad4-574a-aa0b-e488db3bab59"
       }
     }
   ],

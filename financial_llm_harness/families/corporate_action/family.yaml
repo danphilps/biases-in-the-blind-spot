@@ -1,0 +1,133 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+family_id: corporate_action
+description: F4 and F5 judgement items (spec §34); contexts C1, C3.
+contexts:
+- C1
+- C3
+faq_ids:
+- F4.2.a
+battery_slots:
+  preamble: preamble
+scenario_schema:
+  nodes:
+    net_income:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    shares_outstanding:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    buyback_amount:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    buyback_price:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: money
+      unit: USD
+      relevant: true
+    intrinsic_value:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: money
+      unit: USD
+      relevant: true
+    funding:
+      kind: primitive
+      type: categorical
+      display: text
+      relevant: true
+    cash_yield:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    tax_rate:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    acquirer_net_income:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    acquirer_shares:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    target_net_income:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    offer_value:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    stock_fraction:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    acquirer_price:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: money
+      unit: USD
+      relevant: true
+    debt_rate:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    cash_fraction:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    synergies:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+interventions: {}
+response_contracts: []
+features: {}
+oracles: {}
+scorers: {}

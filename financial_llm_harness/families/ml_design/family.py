@@ -58,3 +58,15 @@ def fake_response(
     else:
         body = {"normalisation_window": window, "uses_future_data": future}
     return json.dumps(body)
+
+
+def score_correct_answer(
+    state: Mapping[str, Any],
+    parsed: Mapping[str, Any],
+    *,
+    field: str,
+    correct_option: str,
+) -> bool:
+    """1 iff the chosen option is the one the base design declares correct (§T5 'Correct answer')."""
+    del state
+    return parsed.get(field) == correct_option

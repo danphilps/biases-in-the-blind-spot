@@ -496,3 +496,45 @@ def test_canonical_specs_regenerate_their_regression_cases(path: Path) -> None:
 
 def test_every_v1_canonical_spec_has_regression_cases() -> None:
     assert len(CANONICAL_FIXTURES) == 6
+
+
+# ---------------------------------------------------------------------------
+# §7 deny-list screening of synthetic entity names
+# ---------------------------------------------------------------------------
+
+
+def test_deny_list_screening(tmp_path: Path) -> None:
+    from financial_llm_harness.core import yaml_io
+    from financial_llm_harness.generation import deny_list as DL
+
+    path = tmp_path / "deny_list.yaml"
+    cases = [
+        {"arms": {"A": {"company_name": "Northgate Industrial", "ceo_name": "Ann Lee"}}}
+    ]
+    # no list: refused for a live run, allowed on the fake path
+    with pytest.raises(HarnessValidationError, match="needs the deny-list"):
+        DL.screen_cases(cases, live=True, path=path)
+    DL.screen_cases(cases, live=False, path=path)
+    path.write_text(
+        yaml_io.dump(
+            {
+                "version": "test",
+                "source": "fixture",
+                "names": ["Northgate Industrial Ltd", "Northgate Industrial"],
+                "tickers": ["NGI"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(HarnessValidationError, match="Northgate Industrial"):
+        DL.screen_cases(cases, live=False, path=path)
+    deny = DL.load_deny_list(path)
+    assert deny is not None
+    assert DL.hits("NORTHGATE  industrial plc", deny)  # normalised containment
+    assert DL.hits("Arbor NGI Holdings", deny) == ["ticker NGI"]
+    assert DL.hits("Arbor Ridge Holdings", deny) == []
+    DL.screen_cases(
+        [{"arms": {"A": {"company_name": "Arbor Ridge Holdings"}}}],
+        live=True,
+        path=path,
+    )

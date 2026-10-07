@@ -5,7 +5,7 @@ provenance:
 family_id: ml_design
 description: M1–M6 items (spec §34); contexts C6, C7.
 contexts: [C6, C7]
-faq_ids: [M6.4.a]
+faq_ids: [M6.4.a, M3.2.a, M4.3.a, M5.1.a, M5.1.b, M5.2.a, M6.1.a]
 # Attach points the templates support (§T4.4): attach point → template slot that renders it.
 battery_slots:
   preamble: preamble
@@ -40,3 +40,7 @@ features:
 oracles:
   MLD1:
     I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.identity], confidence: established}
+# Correctness scorer for M items whose check is a correct option (M3.2.a, M5.1.a): the
+# response's enum field equals the option the base design declares (D-23).
+scorers:
+  correct_answer: {fn: score_correct_answer, args: [field, correct_option]}

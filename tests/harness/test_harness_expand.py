@@ -239,16 +239,32 @@ def test_correctness_experiment_and_its_missing_inputs(
 ) -> None:
     """§32B.2 step 1a: with the skip rule lifted, K.M.1's I.NONE pair needs a scorer per check,
     a correctness feature and a full defaults entry; supplying exactly those makes it expand."""
+    import dataclasses
+
     from financial_llm_harness.generation.corpus import derive_arms
 
     monkeypatch.setattr(X, "_skip_correctness", lambda item, vid, family: False)
     reg = R.validate_registry()
     item = reg.items["K.M.1"]
+    real_family = X.load_family
+
+    def without_scorers(fid: str) -> Any:
+        fam = real_family(fid)
+        return (
+            dataclasses.replace(fam, raw={**fam.raw, "scorers": {}})
+            if fid == "code_task"
+            else fam
+        )
+
+    monkeypatch.setattr(X, "load_family", without_scorers)
     rows = {r.intervention_id: r for r in X.expand_item(reg, item, R.family_listing())}
     none = rows["I.NONE"]
     assert none.spec is None and none.reason == "unimplemented_content"
     assert "families/code_task/family.yaml#scorers/HT.LEAK" in none.missing
     assert "families/code_task/defaults.yaml#K.M.1/correctness_feature" in none.missing
+    # supplying exactly the missing inputs makes the pair expand: the family's real
+    # scorers (§T6.1 engines, M9a) and a full defaults entry with a correctness feature
+    monkeypatch.setattr(X, "load_family", real_family)
     s5 = yaml_io.load(
         X.repo_root() / "experiments/financial/specs/temporal_norm_code.yaml"
     )
@@ -269,18 +285,6 @@ def test_correctness_experiment_and_its_missing_inputs(
         if fid == "code_task"
         else real_defaults(fid),
     )
-    import dataclasses
-
-    real_family = X.load_family
-    scorers = {c: {"hidden_test": c} for c in item.correctness_checks}
-
-    def with_scorers(fid: str) -> Any:
-        fam = real_family(fid)
-        if fid != "code_task":
-            return fam
-        return dataclasses.replace(fam, raw={**fam.raw, "scorers": scorers})
-
-    monkeypatch.setattr(X, "load_family", with_scorers)
     rows = {r.intervention_id: r for r in X.expand_item(reg, item, R.family_listing())}
     spec = rows["I.NONE"].spec
     assert spec is not None and spec["experiment_key"] == "k_m_1__base__i_none.v1"

@@ -19,11 +19,26 @@ from tests.harness.test_harness_adapters import make_entry
 
 
 def _live_ready(monkeypatch: pytest.MonkeyPatch, provider: str, model: str) -> None:
-    """Test-only: let agent-drafted S1 content validate for a non-fake target and price it."""
+    """Test-only: let agent-drafted S1 content validate for a non-fake target and price it.
+
+    A live target also needs the §7 deny-list; the test supplies an empty one.
+    """
+    import tempfile
+
+    from financial_llm_harness.core import yaml_io
     from financial_llm_harness.execution import budget as BU
+    from financial_llm_harness.generation import deny_list as DL
     from financial_llm_harness.generation import validate_bundle as VB
 
     monkeypatch.setattr(VB, "live_violations", lambda provs: [])
+    deny = Path(tempfile.mkdtemp()) / "deny_list.yaml"
+    deny.write_text(
+        yaml_io.dump(
+            {"version": "test", "source": "empty test list", "names": [], "tickers": []}
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(DL, "deny_list_path", lambda: deny)
     real = BU.load_pricing
 
     def pricing() -> dict[str, Any]:

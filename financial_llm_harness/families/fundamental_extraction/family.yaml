@@ -1,0 +1,631 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+family_id: fundamental_extraction
+description: X items in F1–F5 (spec §34); contexts C1, C3, rendered by the C1 and
+  C3 generators.
+contexts:
+- C1
+- C3
+faq_ids:
+- F3.4.a
+- F3.6.a
+- F3.7.a
+- F5.2.a
+battery_slots:
+  preamble: preamble
+scenario_schema:
+  nodes:
+    years:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    first_year:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+    revenue0:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    dep_rate:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    tax_rate:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    interest_rate:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    cash0:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    ppe0:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    debt0:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    shares0:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    growth_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    growth_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    growth_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    growth_4:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    growth_5:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    gross_margin_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    gross_margin_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    gross_margin_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    gross_margin_4:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    gross_margin_5:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    opex_ratio_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    opex_ratio_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    opex_ratio_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    opex_ratio_4:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    opex_ratio_5:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    capex_ratio_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    capex_ratio_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    capex_ratio_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    capex_ratio_4:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    capex_ratio_5:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    dso_1:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dso_2:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dso_3:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dso_4:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dso_5:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dio_1:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dio_2:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dio_3:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dio_4:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dio_5:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dpo_1:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dpo_2:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dpo_3:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dpo_4:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    dpo_5:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    accruals_1:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    accruals_2:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    accruals_3:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    accruals_4:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    accruals_5:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    unusual_1:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    unusual_2:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    unusual_3:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    unusual_4:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    unusual_5:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    impairment_1:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    impairment_2:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    impairment_3:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    impairment_4:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    impairment_5:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    payout_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    payout_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    payout_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    payout_4:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    payout_5:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    buyback_1:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    buyback_2:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    buyback_3:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    buyback_4:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    buyback_5:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    issuance_1:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    issuance_2:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    issuance_3:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    issuance_4:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    issuance_5:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    repayment_1:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    repayment_2:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    repayment_3:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    repayment_4:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    repayment_5:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: money_m
+      unit: USD
+      relevant: true
+    share_change_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    share_change_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    share_change_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    share_change_4:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    share_change_5:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    share_price:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: money
+      unit: USD
+      relevant: true
+    shares_outstanding:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    new_shares:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    subscription_price:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: money
+      unit: USD
+      relevant: true
+interventions: {}
+response_contracts: []
+features: {}
+oracles: {}
+scorers:
+  roe:
+    fn: score_roe
+    args:
+    - field
+    - convention
+    - tolerance
+  roa:
+    fn: score_roa
+    args:
+    - field
+    - convention
+    - tolerance
+  roic:
+    fn: score_roic
+    args:
+    - field
+    - convention
+    - tolerance
+  dupont:
+    fn: score_dupont
+    args:
+    - fields
+    - convention
+    - tolerance
+  terp:
+    fn: score_terp
+    args:
+    - field
+    - tolerance
+  dilution:
+    fn: score_dilution
+    args:
+    - field
+    - definition
+    - tolerance

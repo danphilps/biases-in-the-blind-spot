@@ -5,7 +5,7 @@ provenance:
 family_id: fundamental_judgement
 description: J and E items in F1–F4 (spec §34); contexts C1, C2.
 contexts: [C1, C2]
-faq_ids: [F1.1.a]
+faq_ids: [F1.1.a, F3.2.a, F3.6.c]
 # Attach points the templates support (§T4.4): attach point → template slot that renders it.
 battery_slots:
   preamble: preamble

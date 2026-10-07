@@ -1,0 +1,116 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+family_id: quant_dgp
+description: Q1–Q6 items on a dataset with a known DGP (spec §34); contexts C6, C7
+  (§T9.2).
+contexts:
+- C6
+- C7
+faq_ids:
+- Q1.1.c
+- Q2.2.b
+battery_slots:
+  preamble: preamble
+scenario_schema:
+  nodes:
+    n_assets:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    n_dates:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    n_factors:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    n_signals:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    beta_sd:
+      kind: primitive
+      type: numeric
+      precision: 3
+      display: number
+      relevant: true
+    resid_vol:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    t_dof:
+      kind: primitive
+      type: numeric
+      precision: 1
+      display: number
+      relevant: true
+    publication_lag:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    factor_vol_1:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    factor_vol_2:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    factor_vol_3:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+      relevant: true
+    gamma_1:
+      kind: primitive
+      type: numeric
+      precision: 4
+      display: number
+    gamma_2:
+      kind: primitive
+      type: numeric
+      precision: 4
+      display: number
+    gamma_3:
+      kind: primitive
+      type: numeric
+      precision: 4
+      display: number
+    gamma_4:
+      kind: primitive
+      type: numeric
+      precision: 4
+      display: number
+    gamma_5:
+      kind: primitive
+      type: numeric
+      precision: 4
+      display: number
+interventions: {}
+response_contracts: []
+features: {}
+oracles: {}
+scorers: {}

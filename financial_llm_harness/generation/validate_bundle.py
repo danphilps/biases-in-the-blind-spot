@@ -268,6 +268,11 @@ def validate_bundle(
         from financial_llm_harness.taxonomy.battery import validate_irrelevance
 
         validate_irrelevance(manifest)
+    # §7: synthetic entity names are screened against the deny-list of real listed
+    # companies and tickers; a live target needs the list
+    from financial_llm_harness.generation.deny_list import screen_cases
+
+    screen_cases(corpus.cases, live=non_fake)
     if manifest["task_family"] == "code_task":
         from financial_llm_harness.families.code_task.family import validate_code_design
 
