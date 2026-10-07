@@ -1,0 +1,38 @@
+# CI panel (spec §20.9, §20.11): two fake targets with different configured effects
+# and a fake evaluator. Keys are the full derived keys (§20.6).
+panel_version: 1
+models:
+  - model_key: fake--a--b89ac294
+    provider: fake
+    family: fake_a
+    model: a
+    region: null
+    transport: native
+    thinking: {mode: provider_default, effort: null, budget_tokens: null}
+    request_profile: null
+    batch: false
+    upstream_routing: null
+    params: {base_rate: 0.6, theta: -0.3, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.05}
+  - model_key: fake--b--fc598cd9
+    provider: fake
+    family: fake_b
+    model: b
+    region: null
+    transport: native
+    thinking: {mode: provider_default, effort: null, budget_tokens: null}
+    request_profile: null
+    batch: false
+    upstream_routing: null
+    params: {base_rate: 0.5, theta: 0.0, pc_theta: -0.45, invalid_rate: 0.02, sd: 1.0, a0_stability: 0.8, factor_mention_rate: 0.5}
+evaluator:
+  model_key: fake--eval--69bee35b
+  provider: fake
+  family: fake_eval
+  model: eval
+  region: null
+  transport: native
+  thinking: {mode: provider_default, effort: null, budget_tokens: null}
+  request_profile: null
+  batch: false
+  upstream_routing: null
+  params: {verbalised_rate: 0.02}

@@ -58,6 +58,8 @@ class ConceptPipelineDataset(JSONWizard):
     )
     # Embedding-based clustering of sanitized inputs
     input_clusters: InputClusters | None = None
+    # KMeans seed used for input_clusters (None: unseeded, the legacy behaviour)
+    input_clustering_seed: int | None = None
 
     # Number of variations per concept per input
     n_variations_per_concept_per_input: int | None = None

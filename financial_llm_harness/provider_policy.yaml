@@ -1,0 +1,11 @@
+# Data policy (spec §20.5, user-owned D-7). By default only synthetic data goes to
+# external providers. Provider `fake` sends nothing off the machine and is allowed
+# for every classification.
+allow:
+  synthetic: [openai, anthropic, google, deepseek, qwen, moonshot, openrouter, local]
+  licensed: [local]
+  confidential: [local]
+deny_regions: []
+publish:
+  licensed: []
+  confidential: []

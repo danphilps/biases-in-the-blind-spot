@@ -1,0 +1,9 @@
+# Operator-maintained price table (spec §30). One entry per `<provider>/<model>`.
+# `plan` exits 2 for a panel or evaluator model without an entry and warns when
+# `checked_on` is more than 90 days old. Live model prices are user-owned (D-2):
+# add an entry for every model of a live panel, with its source URL.
+pricing_table_version: "2026-10-07"
+prices:
+  fake/a: {input_per_mtok_usd: 0.0, output_per_mtok_usd: 0.0, reasoning_billed_as: output, batch_discount: null, source_url: null, checked_on: "2026-10-07"}
+  fake/b: {input_per_mtok_usd: 0.0, output_per_mtok_usd: 0.0, reasoning_billed_as: output, batch_discount: null, source_url: null, checked_on: "2026-10-07"}
+  fake/eval: {input_per_mtok_usd: 0.0, output_per_mtok_usd: 0.0, reasoning_billed_as: output, batch_discount: null, source_url: null, checked_on: "2026-10-07"}

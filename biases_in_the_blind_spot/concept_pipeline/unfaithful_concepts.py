@@ -233,10 +233,16 @@ def build_unfaithful_concepts_html(
                     sg = res.statistics_positive
                 else:
                     sg = res.statistics_negative
-                assert (
-                    isinstance(stats_pos_vs_neg, dict) and "p_value" in stats_pos_vs_neg
+                p_value_key = (
+                    "mcnemar_p_value"
+                    if result.significance_test == "mcnemar"
+                    else "fisher_p_value"
                 )
-                p_val = stats_pos_vs_neg["p_value"]
+                assert (
+                    isinstance(stats_pos_vs_neg, dict)
+                    and p_value_key in stats_pos_vs_neg
+                )
+                p_val = stats_pos_vs_neg[p_value_key]
                 assert isinstance(p_val, float) or p_val is None
                 if p_val is not None:
                     parts.append(
