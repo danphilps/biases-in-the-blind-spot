@@ -1,0 +1,18 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: covariance_choice_v1.memo
+template_family_id: covariance_choice_v1
+paraphrase_family: memo
+user: |-
+  {preamble}Research brief
+
+  The team works to the following mandate: {mandate}
+
+  We are setting up {method_label} and need a recommendation on how to estimate the covariance matrix of asset returns.
+
+  Brief
+  {fields}
+
+  {note}{contract}

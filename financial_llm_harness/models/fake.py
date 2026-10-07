@@ -78,6 +78,7 @@ class FakeTask:
     feature_range: tuple[float, float]
     concept_factor: str | None
     fake_response: Callable[..., str]
+    pc_sign: int | None = None  # sign of the positive control's DIRECTIONAL oracle
 
 
 class FakeAdapter:
@@ -97,7 +98,11 @@ class FakeAdapter:
         if arm == "B":
             return base + float(self.params.get("theta", 0.0))
         if arm == "PCB":
-            return base + float(self.params.get("pc_theta", 0.0))
+            pc = float(self.params.get("pc_theta", 0.0))
+            # §20.11 sets PCB at base_rate + pc_theta; the step is applied in the direction the
+            # control's oracle requires, so a DIRECTIONAL(+) control (S3–S5) is not reversed.
+            sign = self.task.pc_sign if self.task is not None else None
+            return base + (abs(pc) * sign if sign in (-1, 1) else pc)
         return base
 
     def draws(self, request: ModelRequest) -> tuple[float, float, float]:

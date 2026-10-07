@@ -335,6 +335,9 @@ def make_adapter(manifest: Mapping[str, Any], entry: Mapping[str, Any]) -> Any:
             feature_range=feature_range(primary),
             concept_factor=concept_factor,
             fake_response=family.module.fake_response,
+            pc_sign=(
+                (manifest["controls"].get("positive") or {}).get("oracle") or {}
+            ).get("sign"),
         )
         return FakeAdapter(entry, task)
     from financial_llm_harness.models.base import build_adapter

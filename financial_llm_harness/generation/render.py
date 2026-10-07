@@ -22,7 +22,7 @@ from financial_llm_harness.families import NodeDef
 CURRENCY = {"USD": "$", "EUR": "€", "GBP": "£", "JPY": "¥"}
 _PLACEHOLDER = re.compile(r"\{([a-z_][a-z0-9_]*)\}")
 _NUMBER_IN_TEXT = re.compile(r"[-+]?\d[\d,]*(?:\.\d+)?|[-+]?\.\d+")
-FIXED_SLOTS = ("preamble", "mandate", "fields", "contract")
+FIXED_SLOTS = ("preamble", "mandate", "fields", "contract", "note")
 
 
 @dataclass(frozen=True)
@@ -186,6 +186,9 @@ class RenderContext:
     display_overrides: dict[str, str] = field(default_factory=dict)
     precision_overrides: dict[str, int] = field(default_factory=dict)
     blocks: dict[str, list[tuple[str, str | None]]] = field(default_factory=dict)
+    note: str = (
+        ""  # the positive control's PCB-only clause (§35 S3–S5); empty elsewhere
+    )
 
 
 @dataclass
@@ -252,6 +255,9 @@ def render(base: BaseTemplate, para: Paraphrase, ctx: RenderContext) -> Rendered
             b.slot(ctx.mandate, "mandate", "mandate", None)
         elif name == "contract":
             b.slot(ctx.contract, "contract", "contract", None)
+        elif name == "note":
+            # always a span, possibly empty, so arms with and without the note mask alike
+            b.slot(ctx.note, "note", "note", None)
         elif name == "fields":
             for i, slot in enumerate(order):
                 if slot not in labels:

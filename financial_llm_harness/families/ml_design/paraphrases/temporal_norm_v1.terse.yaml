@@ -1,0 +1,17 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: temporal_norm_v1.terse
+template_family_id: temporal_norm_v1
+paraphrase_family: terse
+user: |-
+  {preamble}Mandate: {mandate}
+
+  Use of the features: {purpose}.
+
+  {fields}
+
+  How should each feature be normalised over time?
+
+  {note}{contract}

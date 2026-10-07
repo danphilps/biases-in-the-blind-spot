@@ -177,6 +177,7 @@ class ArmRender:
     precision_overrides: dict[str, int] = field(default_factory=dict)
     field_order: list[str] | None = None
     blocks: dict[str, list[tuple[str, str | None]]] = field(default_factory=dict)
+    note: str = ""
 
 
 CueHook = Callable[
@@ -307,6 +308,16 @@ def _build(
         clause_logicals.append(logical)
         file_data[logical] = clause
         pc_mandate = f"{mandate_text}; {clause['text']}"
+    pcb_note = ""
+    if pos is not None and pos.get("pcb_clause"):
+        # PCB alone carries this sentence (§35 S3–S5: "PCB the same brief plus the sentence …")
+        clause = load_clause(family.family_id, pos["pcb_clause"])
+        logical = (
+            f"families/{family.family_id}/mandates/clauses/{pos['pcb_clause']}.yaml"
+        )
+        clause_logicals.append(logical)
+        file_data[logical] = clause
+        pcb_note = f"{clause['text']}\n\n"
     rendered_set: set[str] = set()
     for p in templates.paraphrases:
         rendered_set |= R.rendered_nodes(templates.base, p)
@@ -316,8 +327,9 @@ def _build(
     if (
         ispec is not None
         and ispec.node not in oracle_nodes
-        and design["oracle_spec"]["type"] != "DISCOVERY"
+        and design["oracle_spec"]["type"] not in ("DISCOVERY", "LEVEL")
     ):
+        # a LEVEL rule references the level arm's state (oracle_spec.nodes), not the intervened node
         oracle_nodes.append(ispec.node)
     check_answerability(rendered_set, [n for n in oracle_nodes if n in world.nodes])
     leak_terms = list(design["prompt_spec"].get("leak_terms") or [])
@@ -352,6 +364,7 @@ def _build(
                 policy,
                 int(seeds["paraphrase"]),
                 cue_hook,
+                pcb_note,
             )
         except CaseRejected as exc:
             rejections[exc.reason] += 1
@@ -547,6 +560,7 @@ def _attempt(
     policy: str,
     paraphrase_seed: int,
     cue_hook: CueHook | None,
+    pcb_note: str = "",
 ) -> dict[str, Any]:
     base = draw_state(world, rng)
     bad = violated_constraints(world, base)
@@ -587,6 +601,7 @@ def _attempt(
         arm_ctx[arm] = ArmRender(
             mandate=pc_mandate if arm in ("PCA", "PCB") else mandate_text,
             field_order=list(order),
+            note=pcb_note if arm == "PCB" else "",
         )
     cue_info: dict[str, Any] | None = None
     if cue_hook is not None:
@@ -612,6 +627,7 @@ def _attempt(
                 display_overrides=ac.display_overrides,
                 precision_overrides=ac.precision_overrides,
                 blocks=ac.blocks,
+                note=ac.note,
             )
             r = R.render(templates.base, para, ctx)
             check_round_trip(
@@ -639,7 +655,9 @@ def _attempt(
                 rendered["A"][p_idx], rendered["PCA"][p_idx], dpa, ("mandate",)
             )
             dpc = diff_nodes(world, states["PCA"], states["PCB"])
-            check_text_isolation(rendered["PCA"][p_idx], rendered["PCB"][p_idx], dpc)
+            check_text_isolation(
+                rendered["PCA"][p_idx], rendered["PCB"][p_idx], dpc, ("note",)
+            )
     a0 = rendered["A"][0]
     displayed = {s.node or s.slot: a0.user[s.start : s.end] for s in a0.state_spans()}
     slot_text = " ".join(

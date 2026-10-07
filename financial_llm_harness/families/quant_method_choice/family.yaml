@@ -1,0 +1,46 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+family_id: quant_method_choice
+description: Q1–Q6 items whose context is a research brief (spec §34); context C6.
+contexts: [C6]
+faq_ids: [Q3.1.a]
+# Attach points the templates support (§T4.4): attach point → template slot that renders it.
+battery_slots:
+  preamble: preamble
+  label:method_label: method_label
+scenario_schema:
+  nodes:
+    n_assets: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    t_over_n: {kind: primitive, type: numeric, precision: 2, display: number, relevant: true}
+    n_obs: {kind: derived, type: numeric, fn: n_obs, parents: [t_over_n, n_assets], precision: 0, display: int, relevant: true}
+    frequency: {kind: primitive, type: categorical, display: text, relevant: true}
+    use: {kind: primitive, type: categorical, display: text, relevant: true}
+    avg_pairwise_corr: {kind: primitive, type: numeric, precision: 2, display: number, relevant: true}
+    mean_vol_ann: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    turnover_limit: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    universe_label: {kind: primitive, type: categorical, display: text}
+    method_label: {kind: primitive, type: categorical, display: text}
+interventions:
+  I.Q.tn:
+    op: NUMERIC_SHIFT
+    node: t_over_n
+    via: null
+    form: set
+    baseline: 5.0
+    counterfactual: 0.5
+    delta: null
+    relative_delta: null
+    closure: {recompute: [n_obs], held_fixed: [], compensate: []}
+    counterbalance: false
+    concept_direction: -1
+    concept_factor: null
+    concept_lexicon: [T/N, observations per asset, sample size, rank-deficient, singular, estimation error, shrinkage]
+response_contracts: [covariance_choice_v1]
+features:
+  well_conditioned_choice: {type: binary, channel: decision, extractor: enum_in_set, field: estimator, values: [ledoit_wolf_linear, nonlinear_shrinkage, factor_model]}
+# Oracle entries per mandate and intervention (§17).
+oracles:
+  QM1:
+    I.Q.tn: {type: LEVEL, item_sign: null, basis: [B.lw2004], confidence: established}

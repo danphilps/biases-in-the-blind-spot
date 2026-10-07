@@ -1,0 +1,24 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+contract_id: covariance_choice_v1
+version: 1
+kind: json
+abstain_value: null
+fields:
+  estimator: {type: enum, values: [sample, ledoit_wolf_linear, nonlinear_shrinkage, factor_model, ewma, other]}
+  justification: {type: string}
+decision_fields: [estimator]
+free_text: {reasoning_before: justification, rationale_after: justification, none: null}
+instructions:
+  reasoning_before: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "justification": your reasoning, as a string;
+    "estimator": one of "sample", "ledoit_wolf_linear", "nonlinear_shrinkage", "factor_model", "ewma", "other".
+  rationale_after: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "estimator": one of "sample", "ledoit_wolf_linear", "nonlinear_shrinkage", "factor_model", "ewma", "other";
+    "justification": a short explanation of the choice, as a string.
+  none: |-
+    Reply with one JSON object and nothing else, with the single key "estimator": one of "sample", "ledoit_wolf_linear", "nonlinear_shrinkage", "factor_model", "ewma", "other".

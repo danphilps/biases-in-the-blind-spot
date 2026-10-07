@@ -302,3 +302,88 @@ class Cassette:
     def assert_exhausted(self) -> None:
         assert self.unmatched == [], f"unmatched requests: {self.unmatched}"
         assert all(self.used), "cassette entries not requested"
+
+
+def run_slice(spec: Path, home: Path, run_id: str = GOLDEN_RUN_ID) -> Path:
+    """A canonical slice spec at its §35 size on ci_fake, with the E-23 injected identity."""
+    import os
+
+    from financial_llm_harness.execution.runner import run_experiment
+
+    old = os.environ.get("HARNESS_HOME")
+    os.environ["HARNESS_HOME"] = str(home)
+    try:
+        res = run_experiment(
+            spec,
+            "ci_fake",
+            yes=True,
+            run_id=run_id,
+            clock=fixed_clock,
+            code_ref=FIXED_CODE_REF,
+        )
+    finally:
+        if old is None:
+            os.environ.pop("HARNESS_HOME", None)
+        else:
+            os.environ["HARNESS_HOME"] = old
+    assert res.status == "COMPLETE" and res.run_dir is not None, res.status
+    return res.run_dir
+
+
+def read_csv(path: Path) -> list[dict[str, str]]:
+    import csv
+
+    with open(path, newline="", encoding="utf-8") as fh:
+        return list(csv.DictReader(fh))
+
+
+def assert_level_slice(
+    run_dir: Path, feature: str, tau: float, n_cases: int, subset_n: int
+) -> None:
+    """§36 Slices for S3–S5: arm_level primary on B with a LEVEL label and an empty zone,
+    B − A a DISCOVERY secondary, and the three controls passing (§35, D-21)."""
+    manifest = yaml_io.load(run_dir / "manifest" / "manifest.yaml")
+    assert isinstance(manifest, dict)
+    h = manifest["hypothesis"]
+    assert (h["estimand"], h["level_arm"], h["primary_feature"]) == (
+        "arm_level",
+        "B",
+        feature,
+    )
+    assert manifest["oracle_spec"]["type"] == "LEVEL"
+    assert float(manifest["oracle_spec"]["tau"]) == tau
+    assert manifest["statistical_spec"]["planning_ref"] == []
+    assert manifest["scenario_spec"]["n_cases"] == n_cases
+    assert manifest["controls"]["subset_n"] == subset_n
+    labels = read_csv(run_dir / "results" / "labels.csv")
+    for row in labels:
+        assert row["feature_id"] == feature
+        assert row["oracle_type"] == "LEVEL"
+        assert row["zone"] == ""
+        assert row["sensitivity_label"] in ("MEETS_STANDARD", "BELOW_STANDARD")
+    effects = read_csv(run_dir / "results" / "effects.csv")
+    prim = [e for e in effects if e["analysis_role"] == "primary"]
+    assert {e["contrast"] for e in prim} == {"level_B"}
+    assert all(e["estimand"] == "arm_level" for e in prim)
+    sec = [
+        e
+        for e in effects
+        if e["analysis_role"] == "secondary" and e["feature_id"] == feature
+    ]
+    assert {e["contrast"] for e in sec} == {"B_vs_A"} and len(sec) == len(prim)
+    assert all(e["correction_family"] == "within_experiment" for e in sec)
+    controls = read_csv(run_dir / "results" / "controls.csv")
+    assert {c["control"] for c in controls} == {"null", "placebo", "positive"}
+    assert all(c["passed"] == "true" for c in controls)
+    pos = [c for c in controls if c["control"] == "positive"]
+    assert all(c["expected"] == "JUSTIFIED_SENSITIVITY" for c in pos)
+    assert all(float(c["theta"]) > 0 for c in pos)  # DIRECTIONAL(+) (§35)
+
+
+def pcb_note_only_in_pcb(run_dir: Path, sentence: str) -> None:
+    from financial_llm_harness.core import bundle as B
+
+    rows = B.read_jsonl(run_dir / "manifest" / B.RENDERINGS_FILE)
+    with_note = {r["arm"] for r in rows if sentence in r["user"]}
+    assert with_note == {"PCB"}
+    assert all(sentence in r["user"] for r in rows if r["arm"] == "PCB")

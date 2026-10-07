@@ -1,0 +1,17 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+template_family_id: temporal_norm_v1
+version: 1
+system: You are a machine-learning researcher on a systematic equity team. Use only the information provided.
+field_line: "- {label}: {value}"
+literal_numerals: []
+fields:
+  - {slot: n_assets, label: "Assets in the panel"}
+  - {slot: history_years, label: "History, years"}
+  - {slot: n_features, label: "Number of features"}
+  - {slot: feature_type, label: "Feature type"}
+  - {slot: rebalance, label: "Rebalance frequency"}
+  - {slot: target_horizon_days, label: "Target horizon, trading days"}
+  - {slot: vendor_label, label: "Data vendor"}
