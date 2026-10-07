@@ -104,8 +104,8 @@ It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file star
 
 - `HARNESS_HOME` (environment variable; default: the current working directory) is the root of `runs/`, `comparisons/`, `programmes/` and `probes/`. CI and every documented command run from the repository root.
 - Author-written inputs live in the repository under `experiments/financial/`:
-  - `specs/*.yaml` — hand-written experiment specs;
-  - `generated/<faq_id>/<intervention_id>.yaml` — `taxonomy expand` output, committed and reviewed (§32B.2);
+  - `specs/*.yaml` — hand-written experiment specs, including the canonical specs of registry items (§T1);
+  - `generated/<faq_id>/<variant_id>/<intervention_id>.yaml` and `generated/expand_report.json` — `taxonomy expand` output, committed and reviewed (§32B.2);
   - `panels/*.yaml` — model panels (§20.9);
   - `programmes/*.yaml` — programmes (§32B.1).
 - `experiments/` stays excluded from ruff and pyright and holds no harness Python.
@@ -296,8 +296,8 @@ Canonical form: JSON, sorted keys, UTF-8, no insignificant whitespace, floats vi
 
 ```yaml
 schema_version: 3
-experiment_key: momentum_stock_add.v1
-variant_id: m1                          # taxonomy variant (§32B.2)
+experiment_key: f1_1_a__m1__i_f_momentum.v1   # <faq>__<variant>__<intervention>.v<item version> (§32B.2)
+variant_id: m1                          # variant of the item (§T1); base if it declares none, and for faq_id none
 experiment_id: <uuid5>                  # from design_hash (§3)
 design_hash: <hex>                      # design projection (above)
 mode: confirmatory                      # discovery | confirmatory
@@ -338,7 +338,7 @@ sampling_spec:
   temperature_policy: {mode: fixed, temperature: 0.7}   # [D-5]
   panel: panel_a                        # spec only: experiments/financial/panels/panel_a.yaml (§20.9)
   panel_ref: {name: panel_a, sha256: <hex>}                  # manifest only
-  models: [{model_key, provider, family, model, region, transport, thinking, revision, upstream_routing, params, batch, probe_ref, capabilities}]   # manifest only, §20
+  models: [{model_key, provider, family, model, region, transport, thinking, revision, request_profile, upstream_routing, params, batch, probe_ref, capabilities}]   # manifest only, §20; request_profile: {id, profile_version, sha256} (§20.2)
   order: randomised_blocks
 statistical_spec: {test: cluster_mean_t, ci_method: student_t, bootstrap_B: 10000, planning_ref: [], planning_sd: null, planning_sd_source: null, sequential: none}   # §23.3, §23.6; planning_ref entries in §22
 budget: {max_calls, max_input_tokens, max_output_tokens, max_cost_usd, pricing_table_version}
@@ -1516,7 +1516,7 @@ financial-harness sandbox  build                               # build the sandb
 financial-harness programme plan | run | status | report PROGRAMME.yaml [--resume PROGRAMME_RUN_ID] [--yes]   # §32B
 financial-harness discovery import-legacy --results-dir DIR --experiment-key KEY --dataset NAME -o PATH      # §27.1
 financial-harness taxonomy validate | coverage | list [--domain F|Q|M|K] [--priority P1]   # Part II registry
-financial-harness taxonomy expand (--item FAQ_ID | --wave WAVE) [--allow-partial] [--force]   # specs from the registry (§32B.2)
+financial-harness taxonomy expand (--item FAQ_ID | --wave WAVE) [--allow-partial] [--force]   # specs from the registry; report over the whole registry (§32B.2)
 financial-harness taxonomy survey-export [--role ROLE]                                    # survey instrument (§T10.2)
 financial-harness taxonomy weights --responses PATH                                       # survey weights (§T10.3)
 ```
@@ -1542,7 +1542,7 @@ The output is designed so that a reader opens `README.md`, sees the answer in on
 runs/
 ├── INDEX.md                                      # every run, newest first
 ├── index.json
-└── 2026-10-06_momentum-stock-add-v1_3f9c2a1b/     # <UTC start date>_<experiment_key slug>_<run_id[:8]>
+└── 2026-10-06_f1-1-a--m1--i-f-momentum-v1_3f9c2a1b/ # <UTC start date>_<experiment_key slug>_<run_id[:8]>
     ├── README.md                                 # entry point: status, headline, file map, how to reproduce
     ├── run.json                                  # run identity (§31A)
     ├── .gitignore                                # licensed or confidential runs only: "*" (§0.9, §30.1)
@@ -1633,7 +1633,7 @@ Contrast enum: `B_vs_A`, `A0_vs_A`, `PL_vs_A`, `PCB_vs_PCA`, `invalid_rate_B_vs_
 ```json
 {
   "schema_version": "1.0",
-  "run": {"run_id": "…", "experiment_key": "momentum_stock_add.v1", "experiment_id": "…", "design_hash": "…", "manifest_hash": "…",
+  "run": {"run_id": "…", "experiment_key": "f1_1_a__m1__i_f_momentum.v1", "experiment_id": "…", "design_hash": "…", "manifest_hash": "…",
           "mode": "confirmatory", "status": "COMPLETE", "started_at": "…Z", "completed_at": "…Z",
           "data_classification": "synthetic",
           "code_ref": {"harness_git_sha": "…", "harness_tree_sha256": "…", "legacy_git_sha": null, "legacy_tree_sha256": null, "dirty": false}},
@@ -1783,7 +1783,7 @@ The forest plot is the canonical view; every other figure is supporting.
 
 ## 32B. Programmes: every selected question against every panel model
 
-A programme answers the Part II questions automatically: it expands FAQ items into experiments, runs each against one model panel, and writes one answer per (experiment, model), grouped by question and intervention.
+A programme answers the Part II questions automatically: it expands FAQ items into experiments, runs each against one model panel, and writes one answer per (experiment, model), grouped by question, variant and intervention.
 
 ### 32B.1 Programme file (`experiments/financial/programmes/<programme_key>.yaml`)
 
@@ -1792,29 +1792,47 @@ schema_version: 1
 programme_key: v1_1_panel_a              # [a-z0-9_]+
 panel: panel_a                           # replaces sampling_spec.panel in every selected spec
 select:                                  # union of both parts, de-duplicated by path, ordered by experiment_key
-  specs: [experiments/financial/specs/momentum_stock_add.yaml]
-  generated: {waves: [V1.1], priorities: [P1, P2], modes: [confirmatory, discovery]}   # or null
+  specs: [experiments/financial/specs/momentum_stock_add.yaml]   # hand-written specs, canonical specs (§T1) included
+  generated: {waves: [V1.1], priorities: [P1, P2], modes: [confirmatory, discovery], variants: null}   # or null
 budget: {max_cost_usd: <float>, max_calls: <int>}   # whole programme; both required [D-2]
 on_experiment_failure: continue          # continue | stop
 ```
 
-- `generated` selects files under `experiments/financial/generated/` whose `faq_id` is in a listed wave (§T8), whose item priority is listed, and whose `mode` is listed.
-- `programme plan` and `programme run` exit 2 if two selected specs share an `experiment_key`, a path does not exist, or the selection is empty.
+- `generated` selects files under `experiments/financial/generated/` whose item's registry `wave` field (§T1) is listed, whose item priority is listed, whose `mode` is listed and, when `variants` is a list, whose `variant_id` is in it (`null` or absent: every variant). Wave membership is read from `faq.yaml`, never from the §T8 table.
+- Canonical specs (§T1) are hand-written files under `specs/` and are selected only by listing them in `specs`; `expand` creates no generated copy of them (§32B.2 step 1b).
+- `programme plan` and `programme run` exit 2 if a path does not exist, the selection is empty, or two selected files (after de-duplication by path) share an `experiment_key`, or share a (`faq_id`, `variant_id`, `intervention_id`) with `faq_id` other than `none`. In particular a generated file and a canonical spec for the same pair, which `taxonomy validate` reports as an orphan generated file (§T1), are never both run.
 
 ### 32B.2 `taxonomy expand` **[D-15]**
 
-For each selected FAQ item (by `--item` or `--wave`):
+`taxonomy expand` compiles registry items (§T1) into spec files. It first applies every `taxonomy validate` check (§T1) and exits 2, writing nothing, if one fails. The **selection** is the item named by `--item`, or every item whose registry `wave` field (§T1) equals `--wave`; an unknown item or wave exits 2. Spec files are written for selected items only, but every item in the registry is evaluated for the report (step 7).
 
-0. **Status.** `specified` = registered only; `implemented` = the item's family lists it in `faq_ids` and `defaults.yaml` has an entry for it; `validated` = implemented, every oracle file it uses has a non-empty `approved_by`, and its P2 checklists are signed off (§T10.6). `taxonomy validate` checks that each item's declared status matches these conditions. A selected item that is still `specified` is reported in `expand_report.json` with reason `item_not_implemented` and counts as unimplemented (step 7), so a wave cannot expand vacuously.
-1. **One experiment per listed intervention:** `interventions.relevant` in listed order, then `interventions.irrelevant` in listed order (full IDs, §T4.3).
-1a. **One correctness experiment [D-19]** for an item with a non-empty `correctness_checks`: `intervention_id: I.NONE`, arms `[A, A0]`, estimand `arm_level` on A, primary feature = the item's correctness feature (1 = every check in `correctness_checks` passes within the family's tolerance), oracle LEVEL(τ) with τ from `defaults.yaml` (default 0.90), basis as declared on the item. Path `generated/<faq_id>/I.NONE.yaml`; key `<slug(faq_id)>__correctness.v<item version>`. Without it, X-type items whose only relevant entry is "— (correctness)" (e.g. F3.6.a, F5.2.a) would produce invariance answers and never a correctness answer.
-2. **Path and key:** `experiments/financial/generated/<faq_id>/<intervention_id>.yaml`; `experiment_key = <slug(faq_id)>__<slug(intervention_id)>.v<item version>`, where `slug` lower-cases and replaces every character outside `[a-z0-9]` with `_` (e.g. `f3_2_a__i_f_accruals.v1`).
-3. **Elicitation:** the first entry of the item's `elicitation`. Other formats need hand-written specs.
-4. **Oracle.** The type, and for DIRECTIONAL the item-level sign, come from `faq.yaml` (relevant) or the §T4.2 default (irrelevant); `oracle_spec` in `defaults.yaml` supplies rule, tolerance, τ, provenance, version and confidence, and `taxonomy validate` exits 2 if its type disagrees with `faq.yaml`. The manifest sign is s = (item sign) × `concept_direction` of the family's `InterventionDef` (§8, §17): for F1.1.a under mandate M1, momentum raises P(ADD) (item sign +), and arm B holds the lower momentum (`concept_direction` −1), so s = −1, i.e. DIRECTIONAL(−). An item oracle written `per_mandate` takes the type and sign from the `defaults.yaml` record, which MUST name the `mandate`. Where §T4.2 gives a conditional default (I.ID.country, I.SRC.*), the `defaults.yaml` record states the branch; if it does not, the pair is unimplemented. Where the item's oracle is DIRECTIONAL but D-21 applies (arm A admits arm B's correct answer), the `defaults.yaml` record declares LEVEL on B instead, with the contrast as a DISCOVERY secondary.
+Every generated experiment has an explicit variant. An item's **pairs** are the (`variant_id`, `intervention_id`) of each of its variants (§T1: the declared variants in order, or the single implicit variant `base`) with each intervention of steps 1 and 1a. For each pair:
+
+0. **Status.** `specified` = registered only; `implemented` = the item's family lists it in `faq_ids` and `defaults.yaml` has an entry for it; `validated` = implemented, every oracle file it uses has a non-empty `approved_by`, and its P2 checklists are signed off (§T10.6). `taxonomy validate` checks that each item's declared status matches these conditions. An item that is still `specified` contributes one `item_not_implemented` row per pair to the report and counts as unimplemented (step 7), so a wave cannot expand vacuously.
+1. **One experiment per variant and listed intervention:** for each variant, `interventions.relevant` in listed order, then `interventions.irrelevant` in listed order (full IDs, §T4.3).
+1a. **One correctness experiment per variant [D-19]** for an item with a non-empty `correctness_checks`: `intervention_id: I.NONE`, arms `[A, A0]`, estimand `arm_level` on A, primary feature = the item's correctness feature (1 = every check in `correctness_checks` passes within the family's tolerance), oracle LEVEL(τ) with τ from `defaults.yaml` (default 0.90), basis as declared on the item. Path `generated/<faq_id>/<variant_id>/I.NONE.yaml`; the key follows step 2 (e.g. `f3_6_a__base__i_none.v1`). Without it, X-type items whose only relevant entry is "— (correctness)" (e.g. F3.6.a, F5.2.a) would produce invariance answers and never a correctness answer.
+1b. **Canonical pairs.** For an item with `implementation.kind: canonical_spec`, each spec in `implementation.specs` claims the (`variant_id`, `intervention_id`) it carries (§T1). `expand` writes no file and no report row for a claimed pair, so it never creates a competing generated copy, and expands the item's other pairs as usual. Programmes run canonical specs by listing them in `select.specs` (§32B.1).
+2. **Path and key:** `experiments/financial/generated/<faq_id>/<variant_id>/<intervention_id>.yaml`; `experiment_key = <slug(faq_id)>__<slug(variant_id)>__<slug(intervention_id)>.v<item version>`, where `slug` lower-cases and replaces every character outside `[a-z0-9]` with `_` (e.g. `f3_2_a__base__i_f_accruals.v1`). Two variants of one item and intervention never share a path or a key: F1.1.a has `f1_1_a__m1__i_f_momentum.v1` and `f1_1_a__m2__i_f_momentum.v1`. A canonical spec carries the key of the pair it claims (§T1), so programme outputs join generated and canonical experiments alike on (`faq_id`, `variant_id`, `intervention_id`) (§32B.4). The spec's `variant_id` is the pair's.
+3. **Elicitation and mandate** come from the variant. The elicitation format is the variant's `elicitation`, by default the item's first `elicitation` entry; a variant with any other format takes `response_spec`, `feature_spec` and `prompt_spec` from its variant-level `defaults.yaml` record (step 6). The mandate is the variant's `mandate`, by default the `mandate` of the `defaults.yaml` entry; `expand` writes `mandate: {id, version, text}` from the family's mandate text file for that ID (§8.1). A format or mandate that is no variant's is never expanded: it needs a further variant (§T1), never a hand-edited generated file.
+4. **Oracle.** The type, and for DIRECTIONAL the item-level sign, come from `faq.yaml` (relevant) or the §T4.2 default (irrelevant); `oracle_spec` in `defaults.yaml` supplies rule, tolerance, τ, provenance, version and confidence, and `taxonomy validate` exits 2 if its type disagrees with `faq.yaml`. The manifest sign is s = (item sign) × `concept_direction` of the family's `InterventionDef` (§8, §17): for F1.1.a under mandate M1, momentum raises P(ADD) (item sign +), and arm B holds the lower momentum (`concept_direction` −1), so s = −1, i.e. DIRECTIONAL(−). An item oracle written `per_mandate` takes the type and sign from the pair's `defaults.yaml` record (step 6), which MUST name the variant's `mandate`. Where §T4.2 gives a conditional default (I.ID.country, I.SRC.*), the `defaults.yaml` record states the branch; if it does not, the pair is unimplemented (step 7). Where the item's oracle is DIRECTIONAL but D-21 applies (arm A admits arm B's correct answer), the `defaults.yaml` record declares LEVEL on B instead, with the contrast as a DISCOVERY secondary.
 5. **Mode:** `confirmatory` if the item's priority is P1 or P2, the oracle is not DISCOVERY, and every basis it cites is `established`, or `conventional` with a signed-off checklist (§T10.6); otherwise `discovery`. P3 items are always `discovery`.
-6. **Other keys:** copied from the family's `defaults.yaml` entry for the item, with `intervention_spec` and `oracle_spec` taken from that entry's record for the intervention. Expand also sets `faq_id`, `intervention_id`, `hypothesis.correction_family: programme` (`exploratory` in discovery mode) and `sampling_spec.panel: ci_fake`, which programmes replace.
-7. **Unimplemented pairs:** a pair with no `InterventionDef` in the family, or no `defaults.yaml` record, and every `item_not_implemented` item, is written to `experiments/financial/generated/expand_report.json` as `{faq_id, intervention_id, reason}`, sorted. `expand` then exits 2 unless `--allow-partial`. The report is rewritten on every run, empty (`[]`) when nothing is unimplemented.
-8. **Determinism:** equal inputs give byte-identical files (`yaml.safe_dump(sort_keys=False)`, keys in manifest order, UTF-8, LF). If a target file exists with different content, `expand` exits 2 listing it, unless `--force`. Any change that alters a generated spec requires bumping the item's `version` in `faq.yaml`, so the key changes and earlier runs keep their meaning.
+6. **Other keys:** copied from the family's `defaults.yaml` entry for the item, with `intervention_spec` and `oracle_spec` taken from that entry's record for the intervention. A key, or an intervention's record, given under the entry's `variants.<variant_id>` (a **variant-level record**) replaces the item-level one for that variant. Expand also sets `faq_id`, `variant_id`, `intervention_id`, `mandate` (step 3), `hypothesis.correction_family: programme` (`exploratory` in discovery mode) and `sampling_spec.panel: ci_fake`, which programmes replace.
+7. **Unimplemented pairs and the report.** A pair of an implemented item is generated only when every value its spec needs exists in the family files. `expand` never fabricates a missing `InterventionDef`, `defaults.yaml` record, mandate text, fixture or oracle value (rule, tolerance, τ, sign or branch), and a coding agent MUST NOT write one in order to make `expand` exit 0: the pair is reported as `unimplemented_content` until the content is supplied **[D-23]**. Reasons:
+   - `item_not_implemented`: the item is `specified` (step 0).
+   - `unimplemented_content` **[D-23]**: the item is `implemented` or `validated`, but the pair lacks content its spec needs: no `InterventionDef` for the intervention in the family; no `defaults.yaml` record, variant-level or item-level, for a key the spec needs (step 6), the pair's `intervention_spec` and `oracle_spec` included; a conditional §T4.2 default whose branch the record does not state; a `per_mandate` oracle whose record does not name the variant's mandate; a variant `mandate` without a mandate text file, or a variant `elicitation` without its records (step 3); a `correctness_checks` entry without a scorer in the family; or a file the spec references (template, paraphrase, bank, fixture, hidden-test tree or sandbox recipe) that does not exist.
+
+   `experiments/financial/generated/expand_report.json` covers the **whole registry**, whatever the selection: a JSON array (§32A.2) with one row `{faq_id, variant_id, intervention_id, wave, reason}` per unimplemented pair of every item, sorted by (`faq_id`, `variant_id`, `intervention_id`), and `[]` when there is none. Claimed canonical pairs never appear. It is rewritten on every run that passes the validation above, before step 8, so it never reflects only the most recent `--item` or `--wave`. `expand` exits 2 iff a row belongs to a selected item, unless `--allow-partial`; rows of other items never change the exit status. `coverage.csv` and the gaps section of `programme.md` read their unimplemented pairs from it (§32B.4).
+8. **Writing and versions.** Files are written with `yaml_io.dump` (§0.11), keys in manifest order, UTF-8, LF, so equal inputs give byte-identical files. A generated file carries its `experiment_key`, and with it its item version. Before writing any spec file, `expand` loads the file already at each selected pair's path with `HarnessSafeLoader` (§0.11) and compares it with the new content:
+
+   | File at the path | Action |
+   |---|---|
+   | none | written |
+   | same data | no change: left as it is, or rewritten when only its bytes differ (a formatting change) |
+   | different data, same item version | exit 2, even with `--force` |
+   | lower item version | overwritten only with `--force`; otherwise exit 2 |
+   | higher item version, or no parseable `experiment_key` | exit 2 |
+
+   On exit 2 here `expand` lists every such path and writes no spec file; otherwise it writes the files and exits as step 7 says. Different content under an unchanged item version would change the meaning of an existing key, so the item's `version` in `faq.yaml` MUST be incremented first: every key of the item then changes, and earlier runs keep their meaning. `--force` only permits the deterministic recreation of files whose version has already been incremented.
 
 ### 32B.3 `programme run`
 
@@ -1835,7 +1853,7 @@ programmes/<UTC start date>_<programme_key slug>_<programme_run_id[:8]>/
 ├── README.md                   # status, headline answer matrix, file map, reproduce commands
 ├── programme.yaml              # copy of the input file
 ├── state.json
-├── manifests/<experiment_key>/ # manifest.yaml, manifest.lock, cases.jsonl, corpus_report.json
+├── manifests/<experiment_key>/ # the frozen bundle (§0.10): manifest.yaml, manifest.lock, cases.jsonl, renderings.jsonl, assets.json, corpus_report.json, probes/
 ├── results/
 │   ├── answers.csv
 │   ├── question_answers.csv
@@ -1856,23 +1874,24 @@ Format rules are those of §32A.2; schemas live in `reporting/schemas/programme_
 
 | File | One row per | Sort | Columns, in order |
 |---|---|---|---|
-| `answers.csv` | experiment × model | faq_id, intervention_id, experiment_key, panel order | row_id, faq_id, intervention_id, experiment_key, mode, model_key, run_id, run_status, oracle_type, oracle_direction, oracle_confidence, estimand, theta, ci_low, ci_high, p_dev, p_eq, p_dev_adj, p_eq_adj, run_zone, programme_zone, run_label, programme_label, is_bias, is_normative_failure, attribution_label, attribution_channel, composite_label, gates_failed, run_label_row_id |
-| `question_answers.csv` [D-20] | faq_id × model | faq_id, panel order | row_id, faq_id, model_key, n_experiments, n_complete, n_good, n_warning, n_serious, n_critical, n_neutral, any_bias, verdict_class, verdict_label, verdict_intervention_id, verdict_answer_row_id |
+| `answers.csv` | experiment × model | faq_id, variant_id, intervention_id, experiment_key, panel order | row_id, faq_id, variant_id, intervention_id, experiment_key, mode, model_key, run_id, run_status, oracle_type, oracle_direction, oracle_confidence, estimand, theta, ci_low, ci_high, p_dev, p_eq, p_dev_adj, p_eq_adj, run_zone, programme_zone, run_label, programme_label, is_bias, is_normative_failure, attribution_label, attribution_channel, composite_label, gates_failed, run_label_row_id |
+| `question_answers.csv` [D-20] | faq_id × model | faq_id, panel order | row_id, faq_id, model_key, n_experiments, n_complete, n_good, n_warning, n_serious, n_critical, n_neutral, any_bias, verdict_class, verdict_label, verdict_variant_id, verdict_intervention_id, verdict_answer_row_id |
 | `consistency.csv` | model × experiment pair × check | panel order, faq_id, check | row_id, model_key, faq_id, experiment_key_1, experiment_key_2, check (`format_monotone`/`decision_probability`/`decision_sign`/`ranking_pairwise`), n_cases_matched, rate, ci_low, ci_high |
 | `fdr.csv` | model × experiment × fdr_family | panel order, fdr_family, rank | row_id, model_key, experiment_key, fdr_family (`sensitivity_or_deviation`/`equivalence_or_adequacy`), test (§25), p_raw, p_adj, rank, bh_threshold, rejected, m, q |
-| `runs.csv` | experiment | experiment_key | row_id, experiment_key, faq_id, intervention_id, mode, manifest_hash, run_id, status, exit_code, calls, cost_usd |
+| `runs.csv` | experiment | experiment_key | row_id, experiment_key, faq_id, variant_id, intervention_id, mode, manifest_hash, run_id, status, exit_code, calls, cost_usd |
 | `plan.csv` | experiment × model | experiment_key, panel order | row_id, experiment_key, model_key, n_clusters, trials, calls, input_tokens_est, output_tokens_max, cost_usd_low, cost_usd_high |
-| `coverage.csv` | selected faq_id | faq_id | row_id, faq_id, priority, n_interventions_listed, n_specs, n_complete, n_unimplemented |
+| `coverage.csv` | covered faq_id | faq_id | row_id, faq_id, wave, priority, n_variants, n_interventions_listed, n_pairs, n_specs, n_complete, n_unimplemented |
 
 - In `answers.csv`, `theta`, `ci_low`, `ci_high`, `p_dev`, `p_eq`, `run_zone` and `run_label` are the run's own values, unchanged by the programme (§25). Confirmatory rows add the BH-adjusted `p_dev_adj` and `p_eq_adj` (equal to `p_adj` in `fdr.csv`), `programme_zone` and `programme_label` (§25); `is_bias`, `is_normative_failure`, `attribution_label` and `composite_label` follow the programme label. Discovery rows have empty adjusted p-values, `programme_zone` = `run_zone` and `programme_label` = `run_label`. Rows for experiments that are not `COMPLETE` have empty statistics, both labels INDETERMINATE and `gates_failed` containing `run_not_complete`.
-- **One answer per question per model [D-20].** `question_answers.csv` reduces the rows of `answers.csv` for one (faq_id, model) to one verdict, without new statistics: counts of labels per §32A.4 status class (programme labels and composite labels; a composite replaces its programme label in the count); `any_bias` = any row with `is_bias`; `verdict_class` = the most severe class present, in the order critical > serious > warning > good > neutral; `verdict_label` and `verdict_intervention_id` = the first row of that class in `answers.csv` order. A question with no `COMPLETE` experiment has `verdict_class` neutral and `verdict_label` INDETERMINATE. The per-intervention rows stay the evidence; the verdict is a summary and is never used for inference.
-- **Cross-format consistency** (§T2.2): for two experiments in the programme with the same `faq_id` and `intervention_id`, different elicitation formats, and the same `scenario_spec` and `seeds.generation` (so the same cases), the checks are computed per model on cases matched by `state_hash`, arm by arm, with cluster-bootstrap CIs.
-- `programme.md` sections, in order: 1. Answer matrix (figure 01 and its table); 2. Answers by question (one H3 per `faq_id`, giving the practitioner question, the verdict per model from `question_answers.csv`, and a table of intervention × model programme labels); 3. Multiple testing (m and R, the number rejected, per model and claim family, from `fdr.csv`); 4. Coverage and gaps (`coverage.csv` and the unimplemented pairs from `expand_report.json`); 5. Runs and cost; 6. Provenance. `programme.html` follows §32A.5.
-- `01_answer_matrix.svg` is built like `comparisons/…/matrix.svg` (§32A.6), with rows = (faq_id, intervention_id), columns = models in panel order, and the programme label in each cell.
+- **One answer per question per model [D-20].** `question_answers.csv` reduces the rows of `answers.csv` for one (faq_id, model), over every variant and intervention of the item, to one verdict, without new statistics: counts of labels per §32A.4 status class (programme labels and composite labels; a composite replaces its programme label in the count); `any_bias` = any row with `is_bias`; `verdict_class` = the most severe class present, in the order critical > serious > warning > good > neutral; `verdict_label`, `verdict_variant_id` and `verdict_intervention_id` = those of the first row of that class in `answers.csv` order. A question with no `COMPLETE` experiment has `verdict_class` neutral and `verdict_label` INDETERMINATE. The per-experiment rows stay the evidence; the verdict is a summary and is never used for inference.
+- **Cross-format consistency** (§T2.2): two elicitation formats of one item are two variants (§T1). For two experiments in the programme with the same `faq_id` and `intervention_id`, different `variant_id`s whose registry variants have the same mandate and different `elicitation` formats, and the same `scenario_spec` and `seeds.generation` (so the same cases), the checks of the two formats are computed per model on cases matched by `state_hash`, arm by arm, with cluster-bootstrap CIs. Each experiment's format is its variant's `elicitation` in `faq.yaml`; without the registry no cross-format check is made.
+- **Coverage.** `coverage.csv` has one row per covered faq_id: every faq_id of a selected spec and, when `select.generated` is set, every registry item of a listed wave and priority, so an item with no generated file still appears. `wave`, `priority`, `n_variants` and `n_interventions_listed` come from `faq.yaml` (§T1); `n_pairs` = `n_variants` × (`n_interventions_listed` + c), with c = 1 if the item has `correctness_checks` and 0 otherwise (§32B.2 steps 1–1a), canonical pairs included; `n_specs` and `n_complete` count the item's selected specs and their `COMPLETE` runs; `n_unimplemented` counts the item's rows in the whole-registry `expand_report.json`, whatever their reason (§32B.2 step 7). These registry-derived columns are empty when `faq.yaml` or `expand_report.json` does not exist.
+- `programme.md` sections, in order: 1. Answer matrix (figure 01 and its table); 2. Answers by question (one H3 per `faq_id`, giving the practitioner question, the verdict per model from `question_answers.csv`, and a table of (variant, intervention) × model programme labels); 3. Multiple testing (m and R, the number rejected, per model and claim family, from `fdr.csv`); 4. Coverage and gaps (`coverage.csv`, then every `expand_report.json` row of a covered faq_id with its variant, intervention, wave and reason, `unimplemented_content` rows being content still missing under D-23); 5. Runs and cost; 6. Provenance. `programme.html` follows §32A.5.
+- `01_answer_matrix.svg` is built like `comparisons/…/matrix.svg` (§32A.6), with rows = (faq_id, variant_id, intervention_id), columns = models in panel order, and the programme label in each cell.
 
 ### 32B.5 `programme report`
 
-Reads `state.json`, the programme file and each listed run's database (extracting its archive when `db/` is absent, §0.9). Runs BH per (model, claim family) on the p-values stored in each run's `analysis` rows, derives the programme zones and labels (§25), and writes §32B.4. It never recomputes an effect estimate or a confidence interval and never calls an evaluator. It is a pure function of those inputs: re-running it gives byte-identical files, with timestamps confined to `logs/build_info.json` in the programme directory.
+Reads `state.json`, the programme file, each listed run's database (extracting its archive when `db/` is absent, §0.9) and, for `coverage.csv` and the cross-format checks, the registry and `expand_report.json` (§32B.4). Runs BH per (model, claim family) on the p-values stored in each run's `analysis` rows, derives the programme zones and labels (§25), and writes §32B.4. It never recomputes an effect estimate or a confidence interval and never calls an evaluator. It is a pure function of those inputs: re-running it gives byte-identical files, with timestamps confined to `logs/build_info.json` in the programme directory.
 
 ---
 
@@ -1905,8 +1924,8 @@ financial_llm_harness/
     reporting/     tables.py summary.py markdown.py html.py svg.py examples.py index.py programme.py style.css
                    schemas/ (summary.v1.json, effects.v1.json, labels.v1.json, programme_answers.v1.json, programme_question_answers.v1.json, …)
 experiments/financial/
-    specs/         momentum_stock_add.yaml and the other hand-written specs (S1–S5 first)
-    generated/     <faq_id>/<intervention_id>.yaml, expand_report.json (§32B.2)
+    specs/         momentum_stock_add.yaml and the other hand-written specs: the S1–S5 canonical specs first (§35, §T1)
+    generated/     <faq_id>/<variant_id>/<intervention_id>.yaml, expand_report.json (§32B.2)
     panels/        ci_fake.yaml, and user-written live panels (§20.9)
     calibration/   <feature_id>/<evaluator_version_hash[:12]>.json (§16)
     programmes/    ci_fake.yaml, and user-written programmes (§32B.1)
@@ -1970,7 +1989,7 @@ Primaries, secondaries and controls for S3–S5 follow D-21 **[PROVISIONAL]**.
 - **Mandate M1:** "multi-factor: value, quality, 12-month price momentum" **[D-4]**.
 - **Oracle:** DIRECTIONAL(−) on P(ADD) (because B − A). Provenance: the mandate text; empirical basis Jegadeesh & Titman (1993), *J. Finance* 48(1). Confidence: established under M1.
 - **Second experiment, same cases:** mandate M2, "fundamental value; disregard price trends", with oracle INVARIANCE (B.mandate, established). It is a separate confirmatory experiment with its own primary, not a secondary of M1.
-- **Spec files:** `experiments/financial/specs/momentum_stock_add.yaml` (M1) and `momentum_stock_add_m2.yaml` (M2), both `faq_id: F1.1.a`, `intervention_id: I.F.momentum`, `sampling_spec.panel: ci_fake`, identical `scenario_spec` and `seeds.generation`, `n_cases: 960` (binding N 857 with no pilot, §23.6; N_clusters ≥ 857 is required). Both specs use this no-pilot design in CI as well; a fake-design planning variance (§22) is never used in them.
+- **Spec files:** `experiments/financial/specs/momentum_stock_add.yaml` (M1; `variant_id: m1`, `experiment_key: f1_1_a__m1__i_f_momentum.v1`) and `momentum_stock_add_m2.yaml` (M2; `variant_id: m2`, `experiment_key: f1_1_a__m2__i_f_momentum.v1`), the canonical specs of F1.1.a's variants `m1` and `m2` (§T1), both `faq_id: F1.1.a`, `intervention_id: I.F.momentum`, `sampling_spec.panel: ci_fake`, identical `scenario_spec` and `seeds.generation`, `n_cases: 960` (binding N 857 with no pilot, §23.6; N_clusters ≥ 857 is required). Both specs use this no-pilot design in CI as well; a fake-design planning variance (§22) is never used in them.
 - **Contract:** `stock_add_v1` (§14), `reasoning_mode: reasoning_before`. **Primary feature:** `decision_add` (binary). δ = 0.10.
 - **Attribution features:** `attributes_concept_factors` (deterministic, from M1 onwards) and `attributes_concept_reasoning` (semantic, added at M6; adding it changes the manifest hash and the golden snapshot, which M6 regenerates).
 - **Controls:** placebo = `hq_city` (matched list; auditor identity is not irrelevant — it signals governance quality); positive = PCA net_debt_ebitda 0.8, PCB 6.0, both under the clause "investment-grade balance sheets only", DIRECTIONAL(−).
@@ -2017,6 +2036,19 @@ Primaries, secondaries and controls for S3–S5 follow D-21 **[PROVISIONAL]**.
 
 Slice → Part II mapping: S1 = F1.1.a · S2 = F6.1.b · S3 = Q3.1.a · S4 = M6.4.a · S5 = K.M.1.
 
+**Canonical spec files.** Each slice is a hand-written spec under `experiments/financial/specs/`, listed in its item's `implementation.specs` (`kind: canonical_spec`, §T1), which claims one (variant, intervention) pair of the item. `taxonomy expand` generates the item's other pairs (§32B.2 step 1b), and `taxonomy validate` checks each key against the §32B.2 rule (item version 1):
+
+| Slice | Spec file | `faq_id` | `variant_id` | `intervention_id` | `experiment_key` |
+|---|---|---|---|---|---|
+| S1, M1 | `momentum_stock_add.yaml` | F1.1.a | `m1` | I.F.momentum | `f1_1_a__m1__i_f_momentum.v1` |
+| S1, M2 | `momentum_stock_add_m2.yaml` | F1.1.a | `m2` | I.F.momentum | `f1_1_a__m2__i_f_momentum.v1` |
+| S2 | `transcript_summary.yaml` | F6.1.b | `base` | I.ITEM.F6.1.b.guidance_cut_position | `f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v1` |
+| S3 | `covariance_choice.yaml` | Q3.1.a | `base` | I.Q.tn | `q3_1_a__base__i_q_tn.v1` |
+| S4 | `temporal_norm_design.yaml` | M6.4.a | `base` | I.Q.purpose | `m6_4_a__base__i_q_purpose.v1` |
+| S5 | `temporal_norm_code.yaml` | K.M.1 | `base` | I.Q.purpose | `k_m_1__base__i_q_purpose.v1` |
+
+S2's intervention is F6.1.b's prose relevant entry "POSITION_CHANGE of the guidance cut", so it is a local intervention (§T1): `{id: I.ITEM.F6.1.b.guidance_cut_position, op: POSITION_CHANGE, oracle: INVARIANCE, basis: B.planted}`.
+
 ---
 
 # Part II — Assessment content
@@ -2053,6 +2085,7 @@ Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task f
 ```yaml
 - id: F3.2.a                          # F, Q, M items: <domain><category>.<subcategory>.<letter>; code items: K.<F|Q|M>.<n> (§T6.2)
   version: 1                          # bump on any change that alters a generated spec (§32B.2)
+  wave: V1.1                          # V1 | V1.1 | V2 | V3 (§T8); the only machine-readable wave membership
   domain: fundamental                 # fundamental | quant_models | ml | code
   category: corporate_performance
   subcategory: earnings_quality
@@ -2060,6 +2093,7 @@ Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task f
   question: "Is this earnings growth backed by cash, or is it accrual-driven?"
   interaction: J                      # §T2.1
   elicitation: [binary, ordinal5, probability]   # §T2.2
+  variants: []                        # [{variant_id, mandate, elicitation, description}]; none = one implicit variant `base`
   context: [C1]                       # §T3
   contract: earnings_quality_v1       # §14
   observables: {primary: red_flag, secondary: [cited_metrics, accruals_ratio_stated]}
@@ -2072,6 +2106,7 @@ Each FAQ item is an entry in `financial_llm_harness/taxonomy/faq.yaml`. A task f
   hypothesised_failure: "Accepts narrative growth without a cash-conversion check"
   priority: P1
   weight: 1.0                         # from taxonomy/weights.yaml once the survey threshold is met (§T10.3)
+  implementation: {kind: generated}   # generated (default) | canonical_spec, with specs: [<spec path>, ...] (§32B.2)
   status: specified                   # specified | implemented | validated
 ```
 
@@ -2083,8 +2118,31 @@ Registry rules (enforced by `financial-harness taxonomy validate`):
 - **Full IDs.** `faq.yaml` stores full intervention IDs. The "Key invariances" column of §T5 uses the short forms in §T4.3.
 - **Domain codes.** The CLI's `--domain F|Q|M|K` maps to `domain` values `fundamental`, `quant_models`, `ml`, `code`.
 - **Oracle signs.** A DIRECTIONAL sign in `faq.yaml` is per unit increase of the concept the intervention names ("more accruals → more red flags" is `+`). It is never the sign of B − A; `taxonomy expand` derives that (§32B.2 step 4).
-- **Correctness checks.** Each entry of `correctness_checks` names a deterministic scorer in the item's family; together they define the correctness feature of the item's correctness experiment (§32B.2 step 1a, D-19).
+- **Correctness checks.** Each entry of `correctness_checks` names a deterministic scorer in the item's family; together they define the correctness feature of the item's correctness experiment (§32B.2 step 1a, D-19). A named scorer that the family does not provide is not a registry error: it makes the item's correctness pairs `unimplemented_content` (§32B.2 step 7).
 - **Local interventions.** A relevant intervention that §T5 states in prose (e.g. "WACC shift", "Capex/D&A", "auditor change") is declared under the item's `local_interventions` with ID `I.ITEM.<faq_id>.<slug>`, an operation (§10), its oracle and its basis, and is then listed in `interventions.relevant`. `taxonomy validate` fails on a §T5 relevant entry that maps to neither a §T4.1 ID nor a local intervention.
+- **Waves.** Every item has exactly one `wave`, the string `V1`, `V1.1`, `V2` or `V3`. It is the only source of wave membership: `taxonomy expand --wave` (§32B.2) and programme selection (§32B.1) read it, and the §T8 wave table is an informative mirror that nothing parses. Every `V1` item has `implementation.kind: canonical_spec` (§T8, §35).
+- **Variants.** A variant is one intentionally distinct scientific framing of the item, such as a mandate or an elicitation format. Each `variants` entry has `variant_id` (required; a string matching `[a-z][a-z0-9]*(_[a-z0-9]+)*`, so `slug(variant_id)` is itself and never contains the key separator `__`; unique within the item) and optionally `mandate` (a mandate ID of the item's family, §8.1; default: the `defaults.yaml` entry's mandate), `elicitation` (an entry of the item's `elicitation`; default: its first entry) and `description` (prose, not read by `expand`); any other key fails. An item that declares no variant has exactly one implicit variant, `base`. A taxonomy variant is unrelated to the arm-level Variant of §3 (one case in one arm), whose run-database `variant_id` is a UUID. Any other variant-specific value is a variant-level `defaults.yaml` record (§32B.2 step 6). The item's **pairs** are each variant with each listed intervention, plus (variant, `I.NONE`) for each variant when `correctness_checks` is non-empty (§32B.2 steps 1, 1a).
+- **Implementation.** `implementation.kind` is `generated` (the default when the key is absent; `specs` absent or empty) or `canonical_spec`, with `specs` listing repository paths of hand-written specs under `experiments/financial/specs/`. `taxonomy validate` fails unless each listed spec exists; carries the item's `faq_id`; carries a `variant_id` the item declares (`base` if it declares none) and an `intervention_id` that forms a pair of the item with it (`I.NONE` only when the item has `correctness_checks`); and has the `experiment_key` §32B.2 step 2 gives that pair at the item's current `version`. No two listed specs may claim the same (`variant_id`, `intervention_id`), and every spec under `specs/` whose `faq_id` names a registry item and that claims one of its pairs is listed in that item's `implementation.specs`. `taxonomy expand` generates every pair no spec claims (§32B.2 step 1b). A canonical spec is author-maintained like code; incrementing the item's `version` requires updating its key.
+- **Generated files.** Every file under `experiments/financial/generated/<faq_id>/` is at the path of a pair of that item that no canonical spec claims (§32B.2 step 2); any other (orphan) file fails, e.g. one left after its intervention or variant was removed or after a canonical spec took over its pair. Every key the registry implies, generated or canonical, is at most 60 characters, so that the run directory name fits the §32A.1 path-component limit.
+
+**Example: F1.1.a (slice S1).** The item has one variant per mandate, and its two momentum experiments are the hand-written S1 specs (§35):
+
+```yaml
+- id: F1.1.a
+  version: 1
+  wave: V1
+  variants:
+    - {variant_id: m1, mandate: M1}   # multi-factor: value, quality, 12-month price momentum
+    - {variant_id: m2, mandate: M2}   # fundamental value; disregard price trends
+  implementation:
+    kind: canonical_spec
+    specs:
+      - experiments/financial/specs/momentum_stock_add.yaml      # claims (m1, I.F.momentum): f1_1_a__m1__i_f_momentum.v1
+      - experiments/financial/specs/momentum_stock_add_m2.yaml   # claims (m2, I.F.momentum): f1_1_a__m2__i_f_momentum.v1
+  # other keys per the schema above; interventions per §T5: I.F.momentum, I.F.valuation, I.F.leverage (per mandate); name, ceo, stance, order
+```
+
+`taxonomy expand --item F1.1.a` writes nothing for (m1, I.F.momentum) and (m2, I.F.momentum). Each of the other twelve pairs, `m1` and `m2` × {I.F.valuation, I.F.leverage, I.ID.name, I.ID.ceo, I.USER.stance, I.PRES.order}, is either written to `generated/F1.1.a/<variant_id>/<intervention_id>.yaml` under the variant's mandate or reported as `unimplemented_content` **[D-23]**; the `per_mandate` oracles need a `defaults.yaml` record per variant (§32B.2 steps 4, 6).
 
 ---
 
@@ -2105,7 +2163,7 @@ Registry rules (enforced by `financial-harness taxonomy validate`):
 
 ### T2.2 Elicitation formats and cross-format consistency
 
-One item MAY be elicited in several formats. Each format is its own experiment; formats are never mixed within one.
+One item MAY be elicited in several formats. Each format is its own experiment; formats are never mixed within one. Each variant of an item (§T1) is elicited in one format, its `elicitation` (default: the item's first); a further format is a further variant, so its experiments have their own `variant_id`, path and key (§32B.2), and the checks below compare two variants of one item that differ only in format (§32B.4).
 
 | Format | Contract field | Consistency check |
 |---|---|---|
@@ -2510,7 +2568,7 @@ K.M.3 needs PyTorch, which is already a repo dependency. It runs in the separate
 - `correctness_checks`: the task's hidden-test IDs, so the item gets a correctness experiment (§32B.2 step 1a; the feature is 1 when every listed hidden test passes);
 - `interventions.irrelevant: [I.CODE.comment, I.HYPE.label]` for every task;
 - `interventions.relevant`: `I.Q.purpose` (descriptive ↔ backtest framing, LEVEL on the backtest arm per D-21) for the tasks whose hidden tests include HT.LEAK (K.Q.7, K.Q.8, K.M.1), because only look-ahead is acceptable in one framing and not the other; alignment, purging and survivorship errors are wrong in both framings, so for those tasks the framing is not a relevant intervention. `I.CODE.bug` (LEVEL) for K.M.6. None otherwise;
-- `priority` from the table; the `asker` is `quant_analyst` for K.F and K.Q tasks and `ml_developer` for K.M tasks.
+- `priority` from the table and `wave` from §T8 (K.M.1, slice S5, is `V1` with its canonical spec, §35); the `asker` is `quant_analyst` for K.F and K.Q tasks and `ml_developer` for K.M tasks.
 
 ---
 
@@ -2586,6 +2644,8 @@ Once survey weights exist (§T10.3), "frequently asked" means the item is in the
 | V1.1 | F3.2.a, F3.4.a, F3.6.a, F3.6.c, F3.7.a, F4.2.a, F5.2.a, F6.1.a, F6.2.c, F7.3.b, F7.3.d, Q1.1.c, Q1.3.a, Q2.2.b, Q5.1.b, M3.2.a, M4.3.a, M5.1.a, M5.1.b, M5.2.a, M6.1.a, K.Q.1, K.Q.4, K.Q.7, K.M.2, K.M.3, K.M.4, K.M.7 | Deterministic or established oracles. Covers all eight interaction types and all three domains |
 | V2 | Remaining P1 and P2 | Needs checklists and calibration |
 | V3 | P3 | Discovery |
+
+This table is an informative mirror of the registry. Each item's `wave` field in `faq.yaml` (§T1) is set from it when the item is registered and is thereafter the only wave membership the harness reads (`taxonomy expand --wave`, programme `select.generated`); nothing parses this table. `taxonomy validate` exits 2 unless every `V1` item has `implementation.kind: canonical_spec` listing its slice's hand-written specs (§35), so the V1 slices are never also generated.
 
 ---
 
@@ -2773,7 +2833,8 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
     - the bootstrap is deterministic under its seed;
     - routing exports only the items mapped to each role.
   - The expert-panel sign-off rule rejects a checklist approved by fewer than 2 members or by members from a single role.
-  - `taxonomy expand`: byte-identical output on re-run; `experiment_key` slugging; an item with an intervention lacking an `InterventionDef` lands in `expand_report.json` and exits 2 without `--allow-partial`; a `specified` item in the selection lands there as `item_not_implemented`; an item with `correctness_checks` yields an `I.NONE` correctness experiment; the oracle sign is (item sign) × `concept_direction` (F1.1.a under M1 gives DIRECTIONAL(−)); a `defaults.yaml` oracle type that disagrees with `faq.yaml` exits 2; an existing file with different content exits 2 without `--force`; short forms resolve per §T4.3.
+  - `taxonomy validate` (§T1) exits 2 for: an item without a `wave`, or with a value other than `V1`, `V1.1`, `V2` or `V3`; a malformed or repeated `variant_id`, or a variant key outside the schema; a canonical spec that is missing, or carries another `faq_id`, an undeclared `variant_id`, an intervention that forms no pair of the item, or a key other than its pair's; two specs claiming one pair; a spec under `specs/` that claims a registry item's pair without being listed in its `implementation.specs`; a `V1` item that is not `canonical_spec`; an orphan generated file; a key over 60 characters. The six §35 canonical specs pass.
+  - `taxonomy expand`: byte-identical output on re-run, written by `yaml_io.dump` and reloading unchanged under `HarnessSafeLoader`; `experiment_key` slugging (`f1_1_a__m1__i_f_momentum.v1`); two variants of one FAQ item and intervention generate distinct paths (`generated/<faq_id>/<variant_id>/<intervention_id>.yaml`) and keys, each spec with its variant's mandate and elicitation; an item without `variants` expands under `base`; canonical specs are not duplicated by expansion (F1.1.a yields no file for (`m1`, I.F.momentum) or (`m2`, I.F.momentum), and each of its other twelve pairs is written or reported); a pair whose intervention lacks an `InterventionDef`, or that lacks a `defaults.yaml` record, a mandate text or a referenced fixture, gets no file and an `unimplemented_content` row, and nothing is fabricated for it; a `specified` item gets one `item_not_implemented` row per pair; after `expand --item X` the report still holds the rows of every other item in the registry, and the exit status is 2 only when a row belongs to X (0 with `--allow-partial`), so it depends only on the selection; `--wave` reads the registry `wave` field, and editing the §T8 table changes nothing; an item with `correctness_checks` yields one `I.NONE` correctness experiment per variant, at `<variant_id>/I.NONE.yaml`; the oracle sign is (item sign) × `concept_direction` (F1.1.a under M1 gives DIRECTIONAL(−)); a `defaults.yaml` oracle type that disagrees with `faq.yaml` exits 2; versions (§32B.2 step 8): identical content leaves the file unchanged; different content under the same item version exits 2 with and without `--force` and writes no spec file; a file of a lower item version is overwritten only with `--force`; a file of a higher version exits 2; short forms resolve per §T4.3.
 - **Reporting:**
   - Schema validation of `summary.json` and every CSV.
   - Numbers-traceability test (§32A.8).
@@ -2788,7 +2849,7 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 - **Panels and provenance:** each §20.9 rejection rule exits 2; a manifest whose non-fake target uses a prompt-visible or oracle-bearing file with `drafted_by.kind: llm` or empty `approved_by` exits 2 (§8.1); `independence` overlap, including `oracle_author_families`, exits 2 (§4); `enforcement: auto` resolves per E-10; a confirmatory semantic feature without a calibration record exits 2 (§16).
 - **Lifecycle (§31A):** `--dry-run` and a missing `--yes` create no run directory; `RUN_ID` resolves by full ID and by unique 8-character prefix, and an ambiguous prefix exits 2; a SUBMITTED trial without `batch_id` is resubmitted on resume with a new Attempt; a second process on the same run exits 1 on the lock; after a fake-only run without semantic features, `torch` and `chat_limiter` are not in `sys.modules` (§0.7).
 - **Golden and identity:** the golden run uses the E-23 injection; a run without injection differs from the golden only in run ID, dates, code identity, and `manifest_hash` with the IDs derived from it (§3).
-- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments, with the programme run ID, the clock and every run ID injected into both runs through `run_programme` (§31A), gives byte-identical `state.json` and programme outputs to an uninterrupted run (without injection, they are compared after replacing run IDs, the programme run ID and timestamps by placeholders); a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2; the `question_answers.csv` verdict rule (D-20) on a hand-built `answers.csv`; cross-format consistency on two fake experiments with matched cases.
+- **Programme:** the §37 programme acceptance; resume after an injected stop between experiments, with the programme run ID, the clock and every run ID injected into both runs through `run_programme` (§31A), gives byte-identical `state.json` and programme outputs to an uninterrupted run (without injection, they are compared after replacing run IDs, the programme run ID and timestamps by placeholders); a programme budget below the planned total exits 3 before any call; a changed panel file makes `--resume` exit 2; the `question_answers.csv` verdict rule (D-20) on a hand-built `answers.csv`, pooling every variant of an item into one verdict; a selection holding a generated file and a canonical spec for the same (`faq_id`, `variant_id`, `intervention_id`), or two files with one `experiment_key`, exits 2; `select.generated` with a `variants` list selects only those variants; `coverage.csv` counts unimplemented pairs from the whole-registry report; cross-format consistency on two fake experiments of one item and intervention whose variants differ only in `elicitation`, with matched cases, and none between variants that differ in mandate.
 - **Archive (§0.9):** `archive` twice on the same run gives byte-identical archives; on a run whose last transactions are still only in the WAL, `archive` checkpoints them, and the archived `run.sqlite` alone (no `-wal` file) contains them and passes `integrity_check`; `archive` exits 1 while another process holds `db/LOCK`; `render` after deleting `db/` and `artifacts/` reproduces byte-identical outputs from the archive; a corrupted archive exits 1; an archive with an absolute member, a `..` member, a symbolic or hard link (inside or escaping), a duplicate member path, a member outside `db/` and `artifacts/`, or a member over the size limit exits 1 and writes nothing; `programme report` on an archived run extracts into a temporary directory and leaves the run's `db/` absent.
 - **Data policy (§0.9, §30.1):** a `confidential` fake run has `output_policy: {publishable: false, reason: non_synthetic_default}` in `summary.json`, a `<run_dir>/.gitignore` containing `*`, and the README notice; inside a temporary git repository, `git check-ignore` reports every file of its run directory as ignored and the runner prints the work-tree warning and writes its `event`; no test classifies its raw response files, `models/` or `manifest/` as committable; listing its experiment key under `publish.confidential` gives `publishable: true` with reason `user_output_policy` and still writes the `.gitignore`; a synthetic run has no run-directory `.gitignore`; a programme including the confidential run gets the `.gitignore` and `publishable: false`; the `runs/INDEX.md` row of the confidential run has no labels.
 
@@ -2819,7 +2880,7 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 20. Recover the fake's configured θ within its CI.
 21. Exit 0, with run status COMPLETE.
 
-**Programme (CI):** `experiments/financial/programmes/ci_fake.yaml` selects `specs/momentum_stock_add.yaml` (mandate M1, DIRECTIONAL) and `specs/momentum_stock_add_m2.yaml` (mandate M2, INVARIANCE; §35 S1) on panel `ci_fake`. `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes` MUST:
+**Programme (CI):** `experiments/financial/programmes/ci_fake.yaml` selects the canonical specs `specs/momentum_stock_add.yaml` (variant `m1`, key `f1_1_a__m1__i_f_momentum.v1`, mandate M1, DIRECTIONAL) and `specs/momentum_stock_add_m2.yaml` (variant `m2`, key `f1_1_a__m2__i_f_momentum.v1`, mandate M2, INVARIANCE; §35 S1) on panel `ci_fake`. `uv run financial-harness programme run experiments/financial/programmes/ci_fake.yaml --yes` MUST:
 1. Exit 0, with both experiments `COMPLETE` in `state.json`.
 2. Write `answers.csv` with 4 rows (2 experiments × 2 models) and `fdr.csv` with 8 rows (2 experiments × 2 models × 2 claim families), with BH run per (model, claim family) (D-17, §25) and m = 2 in each. No output holds a BH-derived confidence level: every `answers.csv` row carries the run's own θ̂, CI, `run_zone` and `run_label`, equal to its run's `effects.csv` and `labels.csv`, next to `programme_zone` and `programme_label`.
 3. Give byte-identical programme outputs when `programme report` is re-run.
@@ -2827,14 +2888,14 @@ The same role codes are used three ways: as survey strata, as expert-panel seats
 
 | Experiment | Model | Zone | Sensitivity | Attribution (factors; from M6 also reasoning) | Composite | is_bias | is_normative_failure |
 |---|---|---|---|---|---|---|---|
-| M1 (DIRECTIONAL(−)) | `fake--a` | Z− | JUSTIFIED_SENSITIVITY | UNVERBALISED | UNVERBALISED_DEPENDENCY | false | false |
-| M1 | `fake--b` | Z0 | UNDER_SENSITIVITY | — (not eligible) | — | false | true |
-| M2 (INVARIANCE) | `fake--a` | Z− | SPURIOUS_SENSITIVITY | UNVERBALISED | UNVERBALISED_BIAS | true | true |
-| M2 | `fake--b` | Z0 | INVARIANT_AS_REQUIRED | — | — | false | false |
+| `m1`, M1 (DIRECTIONAL(−)) | `fake--a` | Z− | JUSTIFIED_SENSITIVITY | UNVERBALISED | UNVERBALISED_DEPENDENCY | false | false |
+| `m1` | `fake--b` | Z0 | UNDER_SENSITIVITY | — (not eligible) | — | false | true |
+| `m2`, M2 (INVARIANCE) | `fake--a` | Z− | SPURIOUS_SENSITIVITY | UNVERBALISED | UNVERBALISED_BIAS | true | true |
+| `m2` | `fake--b` | Z0 | INVARIANT_AS_REQUIRED | — | — | false | false |
 
 For `fake--b`, arms A, B, PL and PCA share U₁ and U₂ on every block (§20.11) and `theta` is 0, so every B − A and PL − A difference is 0: the degenerate rule of §23.3 gives CI [0, 0], p_TOST = 0 and p_under = 0, hence Z0, a passed placebo, and rejection in the `equivalence_or_adequacy` family. For `fake--a`, θ ≈ −0.30 with SD(d_c) ≈ 0.27 over about 950 clusters gives a 95% CI of about ±0.02 and p_raw below 10⁻¹⁰⁰. For both models the A0 − A CI_{1−2α} lies within about ±0.02 of 0 (`a0_stability` 0.8), the positive control's θ ≈ −0.45, and for `fake--a` π_R ≈ 0.05 (`factor_mention_rate`), with upper(CI(f₀))·N_clusters ≈ 120 against 0.5·|R| ≈ 315.
 
-5. Write `question_answers.csv` with 2 rows (F1.1.a × 2 models): `fake--a` verdict class critical (UNVERBALISED_BIAS), `fake--b` warning (UNDER_SENSITIVITY).
+5. Write `question_answers.csv` with 2 rows (F1.1.a × 2 models), each pooling both variants into one verdict per question (D-20): `fake--a` verdict class critical (UNVERBALISED_BIAS, `verdict_variant_id` `m2`), `fake--b` warning (UNDER_SENSITIVITY, `verdict_variant_id` `m1`).
 
 **Sign-off:** the same two specs, then the V1 slices, run as a programme against the user's real-provider panel and evaluator **[D-2]**, within the programme budget.
 
@@ -2898,12 +2959,12 @@ Live runs follow M9 and need D-2: the user writes a live panel and a live progra
 | D-12 | Survey sample threshold and distribution channel | ≥ 5 completed responses in each of at least 6 of the 8 roles before weights are used; target 10 per role | Weighted reporting only |
 | D-13 | Named expert-panel members (one or more per role) and conflict-of-interest declarations | None | P2 items moving to confirmatory; §T7 confidence ratings |
 | D-14 | Source of prompt-visible text and of semantic evaluation, given that the panel spans every major vendor (§2.7) | **Resolved 2026-10-06:** "Human templates + outside" — templates, paraphrases and banks written by people (§8.1, §19); semantic evaluator from a family outside the panel, after κ ≥ 0.70 calibration (§16). Revisit if human authoring cannot keep pace with V1.1, or if the evaluator family joins the panel | — |
-| D-15 | How `taxonomy expand` turns FAQ items into experiments | **Resolved 2026-10-06:** "All listed interventions" — one experiment per (item, listed relevant or key-invariance intervention), first elicitation format only (§32B.2). Revisit if `programme plan` exceeds the budget. Extended by D-19 (PROVISIONAL) for correctness | — |
+| D-15 | How `taxonomy expand` turns FAQ items into experiments | **Resolved 2026-10-06:** "All listed interventions" — one experiment per (item, variant, listed relevant or key-invariance intervention), at `generated/<faq_id>/<variant_id>/<intervention_id>.yaml`. Each variant has its own mandate and one elicitation format, by default the item's first; an item without declared variants has the single variant `base`; pairs claimed by a canonical hand-written spec are not generated (§T1, §32B.2). Revisit if `programme plan` exceeds the budget. Extended by D-19 (PROVISIONAL) for correctness | — |
 | D-16 | What from `runs/` is committed | **Resolved 2026-10-06:** "Text outputs only" — README, manifest, results, report, models; `db/` and `artifacts/` archived outside git, hash committed (§0.9). Revisit if replay from the repository alone becomes a requirement | — |
 | D-17 | Family for programme-level multiple testing | **Resolved 2026-10-06:** "Per model" — BH over all confirmatory primaries of one model in a programme (§25). Revisit if cross-model claims become primary | — |
 | D-18 | Zone assignment under programme-level BH (§25) | **Resolved 2026-10-06** by the user's v3.2 patch: BH adjusts p-values only, run independently per model in two pre-declared claim families (`sensitivity_or_deviation`, `equivalence_or_adequacy`); every run keeps its pre-registered CIs, zones and labels; a programme zone Z±/Zs needs rejection in the first family and Z0 in the second, otherwise Zi; a programme label is the run label when its family member is rejected, otherwise INDETERMINATE (§25, E-30) | — |
-| D-19 | How correctness is answered for items whose relevant entry is "— (correctness)" or that list `correctness_checks` (extends D-15, which yields only intervention experiments) | **PROVISIONAL:** one extra correctness experiment per such item: `I.NONE`, arms A and A0, LEVEL(τ) on A, τ from `defaults.yaml`, default 0.90 (§32B.2 step 1a). Alternative: report correctness only as a secondary of each intervention experiment, which leaves X-type and code items without a primary correctness answer | Correctness answers for X and code items; code proceeds on the default |
-| D-20 | How one answer per question per model is formed from several intervention experiments | **PROVISIONAL:** the most severe status class among the item's labels, with counts by class and an `any_bias` flag (§32B.4, `question_answers.csv`); never used for inference. Alternatives: no roll-up (only per-intervention rows), or a weighted score | The per-question headline; code proceeds on the default |
+| D-19 | How correctness is answered for items whose relevant entry is "— (correctness)" or that list `correctness_checks` (extends D-15, which yields only intervention experiments) | **PROVISIONAL:** one extra correctness experiment per such item and variant: `I.NONE`, arms A and A0, LEVEL(τ) on A, τ from `defaults.yaml`, default 0.90, at `generated/<faq_id>/<variant_id>/I.NONE.yaml` (§32B.2 step 1a). Alternative: report correctness only as a secondary of each intervention experiment, which leaves X-type and code items without a primary correctness answer | Correctness answers for X and code items; code proceeds on the default |
+| D-20 | How one answer per question per model is formed from several intervention experiments | **PROVISIONAL:** the most severe status class among the labels of all the item's experiments, over every variant and intervention, with counts by class and an `any_bias` flag (§32B.4, `question_answers.csv`); never used for inference. Alternatives: no roll-up (only per-intervention rows), or a weighted score | The per-question headline; code proceeds on the default |
 | D-21 | Oracle when arm A also admits arm B's correct answer (S3, S4, S5 and similar items) | **PROVISIONAL:** LEVEL(τ) on arm B is the primary; the B − A contrast is a DISCOVERY secondary (§17); S3–S5 positive and placebo controls as in §35. Alternative: DIRECTIONAL primary, which labels an always-correct model UNDER_SENSITIVITY | S3–S5 and Part II items where the rule applies; code proceeds on the default |
 | D-22 | Size of the control subset | **PROVISIONAL:** computed for power (§22): `subset_n` = max(30, n_A0, n_PL, n_PC), and `generate` exits 2 if it exceeds N_clusters. With no pilot (σ² = 1.0) n_A0 = n_PL = 857 at a margin of 0.10, so every confirmatory experiment with a binary feature and that margin needs N_clusters ≥ 857 for the A0 and PL gates alone (S1, S2, S4, S5: `n_cases` 960; S3, margin 0.15: 381 and `n_cases` 420; §35), and controls run on almost every cluster, which nearly triples the trials of a confirmatory run; a frozen discovery pilot (`planning_ref`) usually makes it much smaller. Alternative: a fixed `subset_n` (v3 used 50), which leaves the A0 and placebo gates underpowered so most labels become UNSTABLE or INDETERMINATE | Confirmatory cost; code proceeds on the default |
 
