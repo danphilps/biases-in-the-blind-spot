@@ -1,0 +1,56 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://api.moonshot.ai/v1/chat/completions",
+      "json": {
+        "model": "kimi-test",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a careful assistant. Use only the information provided."
+          },
+          {
+            "role": "user",
+            "content": "Reply with a JSON object with the key decision, YES or NO."
+          }
+        ],
+        "max_tokens": 256,
+        "temperature": 0.0,
+        "seed": 12345,
+        "response_format": {
+          "type": "json_object"
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "msh-request-id": "moonshot-req-1"
+      },
+      "body": {
+        "id": "chatcmpl-test-1",
+        "object": "chat.completion",
+        "created": 1767225600,
+        "model": "kimi-test",
+        "system_fingerprint": "fp_test_1",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"decision\": \"YES\"}"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 31,
+          "completion_tokens": 7,
+          "total_tokens": 38
+        }
+      }
+    }
+  }
+]

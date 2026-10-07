@@ -29,6 +29,8 @@ class InputClusterer:
     """
 
     embedding_model: str = "text-embedding-3-large"
+    # KMeans random_state; None keeps the legacy unseeded behaviour
+    seed: int | None = None
 
     @property
     def config(self) -> dict[str, Any]:
@@ -72,7 +74,9 @@ class InputClusterer:
 
     @staticmethod
     def _kmeans_cluster(
-        embeddings_by_idx: dict[InputId, list[float]], n_clusters: int
+        embeddings_by_idx: dict[InputId, list[float]],
+        n_clusters: int,
+        seed: int | None = None,
     ) -> tuple[list[list[InputId]], list[InputId]]:
         print(
             f"Clustering {len(embeddings_by_idx)} embeddings into {n_clusters} clusters"
@@ -82,7 +86,7 @@ class InputClusterer:
         vectors = np.array([embeddings_by_idx[i] for i in idxs], dtype=np.float32)
         assert vectors.ndim == 2 and vectors.shape[0] == len(idxs)
         n_clusters = min(n_clusters, len(idxs))
-        km = KMeans(n_clusters=n_clusters, n_init="auto")
+        km = KMeans(n_clusters=n_clusters, n_init="auto", random_state=seed)
         labels = km.fit_predict(vectors)
 
         clusters: list[list[InputId]] = [[] for _ in range(n_clusters)]
@@ -132,8 +136,9 @@ class InputClusterer:
         print("No input clusters found. Running full clustering...")
         embeddings_by_idx = await self._embed_batch(dataset.sanitized_varying_inputs)
         clusters, representatives = self._kmeans_cluster(
-            embeddings_by_idx, dataset.n_representative_input_clusters
+            embeddings_by_idx, dataset.n_representative_input_clusters, self.seed
         )
+        dataset.input_clustering_seed = self.seed
         # Persist embeddings to a pickle at the datasets root. We include dataset_name
         # in the filename to avoid collisions across runs in the same output_dir.
         assert isinstance(dataset.dataset_name, str) and len(dataset.dataset_name) > 0

@@ -1,0 +1,8 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: MLD1
+version: 1
+text: "systematic equity research"
+country_neutral: true

@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:trials.csv",
+  "title": "trials.csv",
+  "description": "One row per trial; sorted by model, case_idx, arm, paraphrase, repetition.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "case_idx",
+    "cluster_id",
+    "arm",
+    "paraphrase_idx",
+    "repetition",
+    "seed",
+    "seed_parameter",
+    "status",
+    "finish_reason",
+    "primary_value",
+    "input_tokens",
+    "output_tokens",
+    "reasoning_tokens",
+    "latency_ms",
+    "cost_usd",
+    "prompt_hash",
+    "response_sha256",
+    "serving_fingerprint_sha256"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Trial ID",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§3"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "case_idx": {
+      "type": "integer",
+      "description": "Case index",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§9"
+    },
+    "cluster_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Cluster ID",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§3"
+    },
+    "arm": {
+      "enum": [
+        "A",
+        "B",
+        "A0",
+        "PL",
+        "PCA",
+        "PCB"
+      ],
+      "description": "Arm",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "paraphrase_idx": {
+      "type": "integer",
+      "description": "Paraphrase index",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§9"
+    },
+    "repetition": {
+      "type": "integer",
+      "description": "Repetition",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§13"
+    },
+    "seed": {
+      "type": "integer",
+      "description": "Seed requested",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§3"
+    },
+    "seed_parameter": {
+      "enum": [
+        "accepted",
+        "ignored",
+        "rejected",
+        "unavailable",
+        null
+      ],
+      "description": "Frozen probe value of the seed parameter",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§20.4"
+    },
+    "status": {
+      "enum": [
+        "SUCCESS",
+        "REFUSAL",
+        "EMPTY_RESPONSE",
+        "TRUNCATED",
+        "CONTENT_FILTERED",
+        "INVALID_RESPONSE",
+        "PARSE_FAILURE",
+        "COMPILE_FAILURE",
+        "TEST_FAILURE",
+        "RUNTIME_FAILURE",
+        "EVALUATOR_UNKNOWN",
+        "API_ERROR",
+        "RATE_LIMIT",
+        "TIMEOUT",
+        "SANDBOX_FAILURE",
+        "EXCLUDED_CONTEXT",
+        "EXCLUDED_MEMORISED",
+        "BUDGET_EXHAUSTED",
+        "PENDING",
+        "SUBMITTED"
+      ],
+      "description": "Trial status",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§28"
+    },
+    "finish_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Finish reason of the selected response",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§29"
+    },
+    "primary_value": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Primary feature value (JSON scalar text)",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§11"
+    },
+    "input_tokens": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Input tokens of the selected response",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§29"
+    },
+    "output_tokens": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Output tokens of the selected response",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§29"
+    },
+    "reasoning_tokens": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Reasoning tokens of the selected response",
+      "x-type": "integer",
+      "x-unit": "tokens",
+      "x-spec": "§29"
+    },
+    "latency_ms": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Latency of the selected response",
+      "x-type": "integer",
+      "x-unit": "ms",
+      "x-spec": "§29"
+    },
+    "cost_usd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Cost of the selected response",
+      "x-type": "number",
+      "x-unit": "USD",
+      "x-spec": "§30"
+    },
+    "prompt_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the frozen message artefact",
+      "x-type": "sha256",
+      "x-unit": null,
+      "x-spec": "§0.10"
+    },
+    "response_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the selected response text",
+      "x-type": "sha256",
+      "x-unit": null,
+      "x-spec": "§29"
+    },
+    "serving_fingerprint_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 of the canonical JSON of serving_fingerprint_json",
+      "x-type": "sha256",
+      "x-unit": null,
+      "x-spec": "§20.7"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "case_idx",
+    "cluster_id",
+    "arm",
+    "paraphrase_idx",
+    "repetition",
+    "seed",
+    "seed_parameter",
+    "status",
+    "finish_reason",
+    "primary_value",
+    "input_tokens",
+    "output_tokens",
+    "reasoning_tokens",
+    "latency_ms",
+    "cost_usd",
+    "prompt_hash",
+    "response_sha256",
+    "serving_fingerprint_sha256"
+  ],
+  "additionalProperties": false
+}

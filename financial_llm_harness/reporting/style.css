@@ -1,0 +1,27 @@
+/* report.html stylesheet (spec §32A.5). Palette tokens are prepended from reporting/svg.py; no hex here. */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--surface);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.5}
+nav.toc{position:sticky;top:0;z-index:1;background:var(--surface);border-bottom:1px solid var(--grid);overflow-x:auto;white-space:nowrap}
+nav.toc ol{list-style:none;margin:0 auto;padding:8px 16px;max-width:1100px}
+nav.toc li{display:inline-block;margin-right:14px}
+nav.toc a{color:var(--ink2);text-decoration:none;font-size:13px}
+nav.toc a:hover{color:var(--ink);text-decoration:underline}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:24px;line-height:1.25;margin:8px 0 12px}
+h2{font-size:19px;margin:32px 0 10px;padding-top:8px;border-top:1px solid var(--grid);scroll-margin-top:48px}
+h3{font-size:16px;margin:20px 0 6px}
+p,li{color:var(--ink)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.9em;color:var(--ink);background:var(--band);border-radius:3px;padding:0 3px;overflow-wrap:anywhere}
+.tw{overflow-x:auto;max-width:100%;margin:8px 0 12px}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+th,td{border-bottom:1px solid var(--grid);padding:4px 8px;text-align:left;vertical-align:top}
+th{color:var(--ink2);font-weight:600;border-bottom:1px solid var(--baseline)}
+td.n,th.n{text-align:right}
+td code{overflow-wrap:normal}
+figure{margin:12px 0 4px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:640px;height:auto}
+details{margin:4px 0 16px}
+summary{cursor:pointer;color:var(--ink2);font-size:13px}
+details table td,details table th{font-size:12px;white-space:nowrap}
+@media print{@page{size:A4;margin:14mm}nav.toc{display:none}body{font-size:11px}main{max-width:none;padding:0}figure{break-inside:avoid;page-break-inside:avoid;overflow:visible}figure svg{min-width:0}details>*{display:block}details::details-content{content-visibility:visible;display:block}summary{list-style:none}.tw{overflow:visible}}

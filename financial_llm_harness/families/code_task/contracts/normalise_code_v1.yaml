@@ -1,0 +1,18 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+contract_id: normalise_code_v1
+version: 1
+kind: code_v1
+abstain_value: null
+fields: {}
+decision_fields: []
+free_text: {reasoning_before: null, rationale_after: null, none: null}
+instructions:
+  reasoning_before: |-
+    Explain your approach briefly, then give the complete module in exactly one fenced code block whose info string is python. Do not include any other code block.
+  rationale_after: |-
+    Give the complete module in exactly one fenced code block whose info string is python, then explain your approach briefly. Do not include any other code block.
+  none: |-
+    Reply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block.

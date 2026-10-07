@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_consistency.csv",
+  "title": "programme_consistency.csv",
+  "description": "One row per model × experiment pair × check.",
+  "x-spec": "§32B.4, §T2.2",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "faq_id",
+    "experiment_key_1",
+    "experiment_key_2",
+    "check",
+    "n_cases_matched",
+    "rate",
+    "ci_low",
+    "ci_high"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "experiment_key_1": {
+      "type": "string",
+      "description": "First experiment",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    },
+    "experiment_key_2": {
+      "type": "string",
+      "description": "Second experiment",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    },
+    "check": {
+      "enum": [
+        "format_monotone",
+        "decision_probability",
+        "decision_sign",
+        "ranking_pairwise"
+      ],
+      "description": "Check",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    },
+    "n_cases_matched": {
+      "type": "integer",
+      "description": "Cases matched by state_hash",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    },
+    "rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Agreement rate",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    },
+    "ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Cluster-bootstrap CI lower bound",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    },
+    "ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Cluster-bootstrap CI upper bound",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§T2.2"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "faq_id",
+    "experiment_key_1",
+    "experiment_key_2",
+    "check",
+    "n_cases_matched",
+    "rate",
+    "ci_low",
+    "ci_high"
+  ],
+  "additionalProperties": false
+}

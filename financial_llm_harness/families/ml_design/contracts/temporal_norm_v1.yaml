@@ -1,0 +1,29 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+contract_id: temporal_norm_v1
+version: 1
+kind: json
+abstain_value: null
+fields:
+  normalisation_window: {type: enum, values: [full_sample, expanding, rolling, cross_sectional_at_t, none]}
+  uses_future_data: {type: boolean}
+  rationale: {type: string}
+decision_fields: [normalisation_window, uses_future_data]
+free_text: {reasoning_before: rationale, rationale_after: rationale, none: null}
+instructions:
+  reasoning_before: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "rationale": your reasoning, as a string;
+    "normalisation_window": one of "full_sample", "expanding", "rolling", "cross_sectional_at_t", "none";
+    "uses_future_data": true or false.
+  rationale_after: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "normalisation_window": one of "full_sample", "expanding", "rolling", "cross_sectional_at_t", "none";
+    "uses_future_data": true or false;
+    "rationale": a short explanation of the choice, as a string.
+  none: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "normalisation_window": one of "full_sample", "expanding", "rolling", "cross_sectional_at_t", "none";
+    "uses_future_data": true or false.

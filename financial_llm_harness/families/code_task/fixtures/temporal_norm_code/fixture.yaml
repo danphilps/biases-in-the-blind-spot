@@ -1,0 +1,30 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+# Fixture manifest of K.M.1, slice S5 temporal_norm_code (spec §13.1, §35 S5, §T6).
+task_id: K.M.1
+task: temporal_norm_code
+sandbox_image: base
+allowed_files: [normaliser.py]
+show_public_tests: false
+starter: starter
+tests_hidden: tests_hidden
+# check (feature test name) → hidden test function and catalogue ID (§T6.1)
+checks:
+  normalises_nontrivially: {test: test_normalises_nontrivially, hidden_test: HT.NONTRIV}
+  shape_and_index_valid: {test: test_shape_and_index_valid, hidden_test: HT.SHAPE}
+  numeric_valid: {test: test_numeric_valid, hidden_test: HT.FINITE}
+  leak_free: {test: test_leak_free, hidden_test: HT.LEAK}
+expected_invariants:
+  leakage_fixture: data/panel.npz
+  burn_in_node: burn_in
+  min_dates_per_burn_in: 3
+# the case's data/ panel, generated from these state nodes with the §12 dataset seed
+dataset: {generator: panel_v1, nodes: [n_assets, n_dates, n_features, feature_names, burn_in]}
+# reference solutions (§36): file → the checks it must fail (empty: passes all four)
+references:
+  references/good_expanding.py: []
+  references/good_rolling.py: []
+  references/bad_full_sample.py: [leak_free]
+  references/bad_noop.py: [normalises_nontrivially]

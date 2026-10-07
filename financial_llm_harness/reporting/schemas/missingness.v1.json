@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:missingness.csv",
+  "title": "missingness.csv",
+  "description": "One row per model × arm × status; sorted by panel order, arm, status.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "arm",
+    "status",
+    "status_class",
+    "n",
+    "rate"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "arm": {
+      "enum": [
+        "A",
+        "B",
+        "A0",
+        "PL",
+        "PCA",
+        "PCB"
+      ],
+      "description": "Arm",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§22"
+    },
+    "status": {
+      "enum": [
+        "SUCCESS",
+        "REFUSAL",
+        "EMPTY_RESPONSE",
+        "TRUNCATED",
+        "CONTENT_FILTERED",
+        "INVALID_RESPONSE",
+        "PARSE_FAILURE",
+        "COMPILE_FAILURE",
+        "TEST_FAILURE",
+        "RUNTIME_FAILURE",
+        "EVALUATOR_UNKNOWN",
+        "API_ERROR",
+        "RATE_LIMIT",
+        "TIMEOUT",
+        "SANDBOX_FAILURE",
+        "EXCLUDED_CONTEXT",
+        "EXCLUDED_MEMORISED",
+        "BUDGET_EXHAUSTED",
+        "PENDING",
+        "SUBMITTED"
+      ],
+      "description": "Trial status",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§28"
+    },
+    "status_class": {
+      "enum": [
+        "valid",
+        "invalid",
+        "missing",
+        "excluded"
+      ],
+      "description": "Status class",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n": {
+      "type": "integer",
+      "description": "Trial count",
+      "x-type": "integer",
+      "x-unit": "trials",
+      "x-spec": "§23.4"
+    },
+    "rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Share of the arm's trials",
+      "x-type": "proportion",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "arm",
+    "status",
+    "status_class",
+    "n",
+    "rate"
+  ],
+  "additionalProperties": false
+}

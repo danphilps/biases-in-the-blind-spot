@@ -1,0 +1,24 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: temporal_norm_code_v1.embedded
+template_family_id: temporal_norm_code_v1
+paraphrase_family: embedded
+user: |-
+  {preamble}A request from the research desk, whose mandate is: {mandate}
+
+  Could you write the {method_label}? Its output feeds a {purpose}. The data arrive as a pandas DataFrame, `panel`, with a MultiIndex (date, asset) sorted by date and then asset, and one float column per feature. Here is the panel:
+  {fields}
+
+  The function `normalise` should turn each feature column into a per-asset time-series z-score and return a DataFrame with exactly the input's index, in the same order, and the same columns. During each asset's burn-in the output may be NaN, but every value after it must be finite. Start from this module:
+
+  ```python
+  import pandas as pd
+
+
+  def normalise(panel: pd.DataFrame) -> pd.DataFrame:
+      raise NotImplementedError
+  ```
+
+  {note}{contract}

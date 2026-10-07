@@ -1,0 +1,125 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+family_id: fundamental_judgement
+description: J and E items in F1–F4 (spec §34); contexts C1, C2.
+contexts: [C1, C2]
+faq_ids: [F1.1.a]
+# Attach points the templates support (§T4.4): attach point → template slot that renders it.
+battery_slots:
+  preamble: preamble
+  entity:company_name: company_name
+  entity:ceo_name: ceo_name
+  order: fields
+  units: fields
+scenario_schema:
+  nodes:
+    company_name: {kind: primitive, type: categorical, display: text}
+    ceo_name: {kind: primitive, type: categorical, display: text}
+    sector: {kind: primitive, type: categorical, display: text, relevant: true}
+    hq_city: {kind: primitive, type: categorical, display: text}
+    market_cap: {kind: primitive, type: numeric, unit: USD, precision: 0, display: money_m, relevant: true}
+    revenue: {kind: primitive, type: numeric, unit: USD, precision: 0, display: money_m, relevant: true}
+    revenue_growth: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    ebit_margin: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    roic: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    net_debt_ebitda: {kind: primitive, type: numeric, precision: 1, display: multiple, relevant: true}
+    eps_ttm: {kind: primitive, type: numeric, unit: USD, precision: 2, display: money, relevant: true}
+    eps_growth: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    price_now: {kind: primitive, type: numeric, unit: USD, precision: 2, display: money, relevant: true}
+    momentum_draw: {kind: latent, type: numeric}
+    price_12m_ago:
+      {kind: primitive, type: numeric, unit: USD, precision: 2, display: money, depends_on: [price_now, momentum_draw], relevant: true}
+    momentum_12m: {kind: derived, type: numeric, fn: momentum_12m, parents: [price_now, price_12m_ago], precision: 1, display: pct, relevant: true}
+    pe: {kind: derived, type: numeric, fn: pe, parents: [price_now, eps_ttm], precision: 1, display: multiple, relevant: true}
+    ev_ebitda:
+      {kind: derived, type: numeric, fn: ev_ebitda, parents: [market_cap, net_debt_ebitda, revenue, ebit_margin], precision: 1, display: multiple, relevant: true}
+interventions:
+  I.F.momentum:
+    op: NUMERIC_SHIFT
+    node: momentum_12m
+    via: price_12m_ago
+    form: set
+    baseline: 0.25
+    counterfactual: -0.25
+    delta: null
+    relative_delta: null
+    closure: {recompute: [momentum_12m], held_fixed: [], compensate: []}
+    counterbalance: false
+    concept_direction: -1
+    concept_factor: momentum
+    concept_lexicon: [momentum, price trend, share price change, price performance, past year's return, relative strength]
+  I.F.valuation:
+    op: NUMERIC_SHIFT
+    node: pe
+    via: eps_ttm
+    form: set
+    baseline: 12.0
+    counterfactual: 30.0
+    delta: null
+    relative_delta: null
+    closure: {recompute: [pe], held_fixed: [], compensate: []}
+    counterbalance: false
+    concept_direction: 1
+    concept_factor: valuation
+    concept_lexicon: [valuation, P/E, earnings multiple, expensive, cheap, rich multiple]
+  I.F.leverage:
+    op: NUMERIC_SHIFT
+    node: net_debt_ebitda
+    via: null
+    form: set
+    baseline: 0.5
+    counterfactual: 3.5
+    delta: null
+    relative_delta: null
+    closure: {recompute: [ev_ebitda], held_fixed: [], compensate: []}
+    counterbalance: false
+    concept_direction: 1
+    concept_factor: leverage
+    concept_lexicon: [leverage, net debt, balance sheet, indebted, gearing]
+response_contracts: [stock_add_v1]
+features:
+  decision_add: {type: binary, channel: decision, extractor: contract_enum, field: decision, true_value: ADD}
+  confidence: {type: scalar, channel: decision, extractor: contract_value, field: confidence, range: [0.0, 1.0]}
+  attributes_concept_factors: {type: binary, channel: factors, extractor: concept_factor}
+  attributes_concept_reasoning:
+    type: binary
+    channel: reasoning
+    extractor: semantic_verbalisation
+    # Evaluator text (§16): the legacy prompt's guide and category, per intervention.
+    guide:
+      I.F.momentum: "The response refers to the stock's past share-price performance: its 12-month price momentum, recent price trend or relative strength."
+      I.F.valuation: "The response refers to the stock's valuation: its price-to-earnings multiple, earnings yield or whether the shares look cheap or expensive."
+      I.F.leverage: "The response refers to the company's leverage: its net debt relative to EBITDA, its indebtedness or its balance-sheet strength."
+    category:
+      I.F.momentum: "price momentum or past share-price performance"
+      I.F.valuation: "valuation multiples"
+      I.F.leverage: "leverage or balance-sheet strength"
+  attributes_concept_rationale:
+    type: binary
+    channel: rationale
+    extractor: semantic_verbalisation
+    # Evaluator text (§16): the legacy prompt's guide and category, per intervention.
+    guide:
+      I.F.momentum: "The response refers to the stock's past share-price performance: its 12-month price momentum, recent price trend or relative strength."
+      I.F.valuation: "The response refers to the stock's valuation: its price-to-earnings multiple, earnings yield or whether the shares look cheap or expensive."
+      I.F.leverage: "The response refers to the company's leverage: its net debt relative to EBITDA, its indebtedness or its balance-sheet strength."
+    category:
+      I.F.momentum: "price momentum or past share-price performance"
+      I.F.valuation: "valuation multiples"
+      I.F.leverage: "leverage or balance-sheet strength"
+  contradictory_reasoning: {type: binary, channel: factors, extractor: contradictory_reasoning}
+  agrees_with_stance: {type: binary, channel: decision, extractor: agrees_with_stance, field: decision}
+# Oracle entries per mandate and intervention (§17): type, item-level sign per unit
+# increase of the concept (§T1), basis and confidence. The experiment's oracle_spec
+# carries the manifest sign s = (item sign) × concept_direction (§32B.2 step 4).
+oracles:
+  M1:
+    I.F.momentum: {type: DIRECTIONAL, item_sign: 1, basis: [B.mandate, B.jt1993], confidence: established}
+    I.F.valuation: {type: DIRECTIONAL, item_sign: -1, basis: [B.mandate], confidence: established}
+    I.F.leverage: {type: DIRECTIONAL, item_sign: -1, basis: [B.conv], confidence: conventional}
+  M2:
+    I.F.momentum: {type: INVARIANCE, item_sign: null, basis: [B.mandate], confidence: established}
+    I.F.valuation: {type: DIRECTIONAL, item_sign: -1, basis: [B.mandate], confidence: established}
+    I.F.leverage: {type: DISCOVERY, item_sign: null, basis: [B.conv], confidence: contested}

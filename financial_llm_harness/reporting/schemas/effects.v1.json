@@ -1,0 +1,523 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:effects.csv",
+  "title": "effects.csv",
+  "description": "One row per model × feature × contrast; sorted by panel order, feature, contrast.",
+  "x-spec": "§32A.3",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "experiment_key",
+    "faq_id",
+    "variant_id",
+    "model_key",
+    "feature_id",
+    "analysis_role",
+    "contrast",
+    "estimand",
+    "effect_scale",
+    "n_clusters",
+    "n_cases",
+    "n_blocks_scheduled",
+    "n_blocks_matched",
+    "n_blocks_invalid",
+    "n_blocks_missing",
+    "n_blocks_excluded",
+    "n_trials_a",
+    "n_trials_b",
+    "mean_a",
+    "mean_b",
+    "theta",
+    "sd_c",
+    "ci_low",
+    "ci_high",
+    "ci2a_low",
+    "ci2a_high",
+    "boot_ci_low",
+    "boot_ci_high",
+    "p_raw",
+    "p_tost",
+    "p_dev",
+    "p_eq",
+    "p_dev_adj",
+    "p_eq_adj",
+    "diagnostic_test",
+    "p_diagnostic",
+    "delta",
+    "margin_low",
+    "margin_high",
+    "zone",
+    "correction_family"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "experiment_key": {
+      "type": "string",
+      "description": "Experiment key",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "variant_id": {
+      "type": "string",
+      "description": "Taxonomy variant",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "feature_id": {
+      "type": "string",
+      "description": "Feature measured",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§11"
+    },
+    "analysis_role": {
+      "enum": [
+        "primary",
+        "secondary",
+        "exploratory",
+        "control",
+        "missingness"
+      ],
+      "description": "Role of the row: the §11 roles for B − A and arm-level rows; `control` for the null, placebo and positive contrasts; `missingness` for the invalid-rate and worst-case-bound rows",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§11, §22, §23.4"
+    },
+    "contrast": {
+      "enum": [
+        "B_vs_A",
+        "A0_vs_A",
+        "PL_vs_A",
+        "PCB_vs_PCA",
+        "invalid_rate_B_vs_A",
+        "B_vs_A_bound_lower",
+        "B_vs_A_bound_upper",
+        "level_A",
+        "level_B",
+        "level_A_bound_lower",
+        "level_A_bound_upper",
+        "level_B_bound_lower",
+        "level_B_bound_upper"
+      ],
+      "description": "Contrast",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "estimand": {
+      "enum": [
+        "mean_paired_difference",
+        "arm_level",
+        "paired_difference_vs_truth"
+      ],
+      "description": "Estimand",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§23"
+    },
+    "effect_scale": {
+      "enum": [
+        "risk_difference",
+        "mean_difference",
+        "ordinal_shift"
+      ],
+      "description": "Effect scale",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§4"
+    },
+    "n_clusters": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Clusters entering the analysis",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "n_cases": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Cases scheduled for the contrast",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_scheduled": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Matched blocks scheduled",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_matched": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Blocks with a valid outcome in both arms",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_invalid": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Blocks with an invalid outcome in either arm",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_missing": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Blocks with a missing outcome",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_blocks_excluded": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Blocks excluded (context or memorisation)",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.4"
+    },
+    "n_trials_a": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Trials in the reference arm over matched valid blocks (the level arm for arm_level rows)",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "n_trials_b": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Trials in the other arm over matched valid blocks; empty for arm_level rows",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "mean_a": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Reference-arm mean over matched valid blocks; empty for arm_level rows",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "mean_b": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Other-arm mean over matched valid blocks; empty for arm_level rows",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "theta": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Point estimate θ̂ (λ̂ for arm_level rows)",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "sd_c": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "SD (ddof 1) of the cluster means x_c",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Student-t CI_{1−α} lower bound",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Student-t CI_{1−α} upper bound",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "ci2a_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "CI_{1−2α} lower bound (one-sided 1 − α lower bound for arm_level rows)",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3, §25"
+    },
+    "ci2a_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "CI_{1−2α} upper bound (one-sided 1 − α upper bound for arm_level rows)",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3, §25"
+    },
+    "boot_ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Cluster-bootstrap CI_{1−α} lower bound; robustness only",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "boot_ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Cluster-bootstrap CI_{1−α} upper bound; robustness only",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§23.3"
+    },
+    "p_raw": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Two-sided p-value against 0; empty for arm_level rows",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "p_tost": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "TOST p-value against (margin_low, margin_high); empty for arm_level rows",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "p_dev": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Claim-family deviation p-value (p_below for arm_level rows)",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_eq": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Claim-family equivalence p-value (p_meets for arm_level rows)",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_dev_adj": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Within-experiment BH-adjusted p_dev; secondary rows only",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_eq_adj": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Within-experiment BH-adjusted p_eq; secondary rows only",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "diagnostic_test": {
+      "enum": [
+        "mcnemar_exact",
+        "wilcoxon_pratt",
+        null
+      ],
+      "description": "Diagnostic test",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "p_diagnostic": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Diagnostic test p-value",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "delta": {
+      "type": "number",
+      "description": "Smallest effect of interest δ",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§24"
+    },
+    "margin_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Lower equivalence margin",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§24.1"
+    },
+    "margin_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Upper equivalence margin",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§24.1"
+    },
+    "zone": {
+      "enum": [
+        "Z+",
+        "Z-",
+        "Z0",
+        "Zs",
+        "Zi",
+        null
+      ],
+      "description": "Zone; empty for control, missingness and LEVEL rows",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.1"
+    },
+    "correction_family": {
+      "enum": [
+        "programme",
+        "within_experiment",
+        "exploratory",
+        null
+      ],
+      "description": "Multiplicity family",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§25"
+    }
+  },
+  "required": [
+    "row_id",
+    "experiment_key",
+    "faq_id",
+    "variant_id",
+    "model_key",
+    "feature_id",
+    "analysis_role",
+    "contrast",
+    "estimand",
+    "effect_scale",
+    "n_clusters",
+    "n_cases",
+    "n_blocks_scheduled",
+    "n_blocks_matched",
+    "n_blocks_invalid",
+    "n_blocks_missing",
+    "n_blocks_excluded",
+    "n_trials_a",
+    "n_trials_b",
+    "mean_a",
+    "mean_b",
+    "theta",
+    "sd_c",
+    "ci_low",
+    "ci_high",
+    "ci2a_low",
+    "ci2a_high",
+    "boot_ci_low",
+    "boot_ci_high",
+    "p_raw",
+    "p_tost",
+    "p_dev",
+    "p_eq",
+    "p_dev_adj",
+    "p_eq_adj",
+    "diagnostic_test",
+    "p_diagnostic",
+    "delta",
+    "margin_low",
+    "margin_high",
+    "zone",
+    "correction_family"
+  ],
+  "additionalProperties": false
+}

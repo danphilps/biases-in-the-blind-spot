@@ -1,0 +1,8 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: M2
+version: 1
+text: "fundamental value; disregard price trends"
+country_neutral: true

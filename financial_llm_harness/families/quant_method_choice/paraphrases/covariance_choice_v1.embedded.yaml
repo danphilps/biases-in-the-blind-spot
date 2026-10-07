@@ -1,0 +1,16 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: covariance_choice_v1.embedded
+template_family_id: covariance_choice_v1
+paraphrase_family: embedded
+user: |-
+  {preamble}I'm wiring up {method_label} for the desk, whose mandate is: {mandate}
+
+  The set-up looks like this:
+  {fields}
+
+  Which covariance estimator should we use?
+
+  {note}{contract}

@@ -1,0 +1,18 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+template_family_id: covariance_choice_v1
+version: 1
+system: You are a quantitative researcher advising a portfolio construction team. Use only the information provided.
+field_line: "- {label}: {value}"
+literal_numerals: []
+fields:
+  - {slot: use, label: "Intended use"}
+  - {slot: universe_label, label: "Universe"}
+  - {slot: n_assets, label: "Number of assets"}
+  - {slot: n_obs, label: "Return observations per asset"}
+  - {slot: frequency, label: "Return frequency"}
+  - {slot: avg_pairwise_corr, label: "Average pairwise correlation"}
+  - {slot: mean_vol_ann, label: "Average annualised volatility"}
+  - {slot: turnover_limit, label: "Turnover limit per rebalance, one-way"}

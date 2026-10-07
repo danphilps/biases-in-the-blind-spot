@@ -178,3 +178,11 @@ plots/
 deploy_key.txt
 # Ignore uncompressed large datasets (compressed versions are in LFS)
 experiments/llm_bias/concept_pipeline/results/dataset_llm_bias.json
+
+# financial harness (spec §0.9)
+runs/*/db/
+runs/*/artifacts/
+runs/*/logs/
+runs/*/run_archive.tar.gz
+programmes/*/logs/
+!runs/*/manifest/

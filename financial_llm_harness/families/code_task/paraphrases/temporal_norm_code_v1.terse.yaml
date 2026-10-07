@@ -1,0 +1,26 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: temporal_norm_code_v1.terse
+template_family_id: temporal_norm_code_v1
+paraphrase_family: terse
+user: |-
+  {preamble}Mandate: {mandate}
+
+  Task: implement the {method_label}. The normalised features will be used for a {purpose}.
+
+  Input: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.
+  {fields}
+
+  `normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.
+
+  ```python
+  import pandas as pd
+
+
+  def normalise(panel: pd.DataFrame) -> pd.DataFrame:
+      raise NotImplementedError
+  ```
+
+  {note}{contract}

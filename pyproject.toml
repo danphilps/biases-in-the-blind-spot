@@ -5,13 +5,14 @@ description = "Anonymized code for the paper 'Biases in the Blind Spot: Detectin
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "anthropic>=0.75.0",
+    "anthropic>=0.75.0,<1",
     "chat-limiter>=0.15.0",
     "dataclass-wizard>=0.35.1",
     "dataclasses-json>=0.6.7",
     "editables>=0.5",
     "hatchling>=1.27.0",
     "hf-transfer>=0.1.9",
+    "httpx>=0.28",
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.7",
     "kagglehub>=0.3.13",
@@ -20,6 +21,7 @@ dependencies = [
     "openai>=1.90.0",
     "pandas>=2.0.0",
     "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
     "redlines>=0.5.2",
     "scikit-learn>=1.0.0",
     "scipy>=1.10.0",
@@ -30,13 +32,19 @@ dependencies = [
     "tueplots>=0.2.1",
 ]
 
+[project.scripts]
+financial-harness = "financial_llm_harness.cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["biases_in_the_blind_spot", "financial_llm_harness"]
+
 [tool.ruff]
 target-version = "py312"
-exclude = [".venv", "experiments"]
+exclude = [".venv", "experiments", "financial_llm_harness/families/code_task/fixtures"]
 
 [tool.ruff.lint]
 select = [
@@ -55,12 +63,36 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.pyright]
-include = ["biases_in_the_blind_spot/**/*.py", "tests/**/*.py"]
-exclude = ["**/__pycache__", ".venv", "experiments"]
+include = [
+    "biases_in_the_blind_spot/**/*.py",
+    "financial_llm_harness/**/*.py",
+    "tests/**/*.py",
+]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "experiments",
+    "financial_llm_harness/families/code_task/fixtures",
+]
 pythonVersion = "3.12"
 typeCheckingMode = "basic"
 reportMissingImports = "warning"
 reportMissingTypeStubs = false
 
 [dependency-groups]
-dev = ["pyright>=1.1.402", "pytest>=8.4.1", "ruff>=0.12.0"]
+dev = [
+    "hypothesis>=6",
+    "jsonschema>=4.25",
+    "pyright>=1.1.402",
+    "pytest>=8.4.1",
+    "ruff>=0.12.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "live: calls a real provider API",
+    "sandbox: needs a Docker or Podman CLI",
+]
+tmp_path_retention_count = 1
+tmp_path_retention_policy = "failed"

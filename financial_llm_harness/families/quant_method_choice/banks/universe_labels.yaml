@@ -1,0 +1,13 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: universe_labels
+description: "Matched universe labels: same breadth and size class, differing only in region (placebo node, spec §22, §35 S3)."
+entries:
+  - "European large caps"
+  - "North American large caps"
+  - "Japanese large caps"
+  - "UK large caps"
+  - "Australian large caps"
+  - "Asia ex-Japan large caps"

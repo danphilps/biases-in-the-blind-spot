@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_answers.csv",
+  "title": "programme_answers.csv",
+  "description": "One row per experiment × model; sorted by faq_id, variant_id, intervention_id, experiment_key, panel order.",
+  "x-spec": "§32B.4",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "faq_id",
+    "variant_id",
+    "intervention_id",
+    "experiment_key",
+    "mode",
+    "model_key",
+    "run_id",
+    "run_status",
+    "oracle_type",
+    "oracle_direction",
+    "oracle_confidence",
+    "estimand",
+    "theta",
+    "ci_low",
+    "ci_high",
+    "p_dev",
+    "p_eq",
+    "p_dev_adj",
+    "p_eq_adj",
+    "run_zone",
+    "programme_zone",
+    "run_label",
+    "programme_label",
+    "is_bias",
+    "is_normative_failure",
+    "attribution_label",
+    "attribution_channel",
+    "composite_label",
+    "gates_failed",
+    "run_label_row_id"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "faq_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "variant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Taxonomy variant",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "intervention_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Intervention",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T4"
+    },
+    "experiment_key": {
+      "type": "string",
+      "description": "Experiment key",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "mode": {
+      "enum": [
+        "confirmatory",
+        "discovery",
+        null
+      ],
+      "description": "Experiment mode",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "Run ID",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§31A"
+    },
+    "run_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Experiment status in the programme",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§32B.3"
+    },
+    "oracle_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Oracle type",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "oracle_direction": {
+      "enum": [
+        "positive",
+        "negative",
+        "none",
+        "two_sided",
+        null
+      ],
+      "description": "Direction the oracle requires",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "oracle_confidence": {
+      "enum": [
+        "established",
+        "conventional",
+        "contested",
+        null
+      ],
+      "description": "Oracle confidence",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "estimand": {
+      "enum": [
+        "mean_paired_difference",
+        "arm_level",
+        "paired_difference_vs_truth",
+        null
+      ],
+      "description": "Estimand",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§4"
+    },
+    "theta": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The run's θ̂ (never recomputed)",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§25"
+    },
+    "ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The run's CI_{1−α} lower bound",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§25"
+    },
+    "ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The run's CI_{1−α} upper bound",
+      "x-type": "number",
+      "x-unit": "effect units",
+      "x-spec": "§25"
+    },
+    "p_dev": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The run's p_dev",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_eq": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "The run's p_eq",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_dev_adj": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Programme BH-adjusted p_dev (confirmatory rows)",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "p_eq_adj": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Programme BH-adjusted p_eq (confirmatory rows)",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "run_zone": {
+      "enum": [
+        "Z+",
+        "Z-",
+        "Z0",
+        "Zs",
+        "Zi",
+        null
+      ],
+      "description": "The run's zone",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§24.1"
+    },
+    "programme_zone": {
+      "enum": [
+        "Z+",
+        "Z-",
+        "Z0",
+        "Zs",
+        "Zi",
+        null
+      ],
+      "description": "Programme zone",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "run_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The run's sensitivity label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "programme_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Programme label: the run label or INDETERMINATE",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "is_bias": {
+      "type": "boolean",
+      "description": "From the programme label",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "is_normative_failure": {
+      "type": "boolean",
+      "description": "From the programme label",
+      "x-type": "boolean",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "attribution_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Programme attribution label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "attribution_channel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Attribution channel",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.3"
+    },
+    "composite_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Composite from the programme label",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§25"
+    },
+    "gates_failed": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "`;`-separated failed gates",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§24.2"
+    },
+    "run_label_row_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "row_id of the run's labels.csv row",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32B.4"
+    }
+  },
+  "required": [
+    "row_id",
+    "faq_id",
+    "variant_id",
+    "intervention_id",
+    "experiment_key",
+    "mode",
+    "model_key",
+    "run_id",
+    "run_status",
+    "oracle_type",
+    "oracle_direction",
+    "oracle_confidence",
+    "estimand",
+    "theta",
+    "ci_low",
+    "ci_high",
+    "p_dev",
+    "p_eq",
+    "p_dev_adj",
+    "p_eq_adj",
+    "run_zone",
+    "programme_zone",
+    "run_label",
+    "programme_label",
+    "is_bias",
+    "is_normative_failure",
+    "attribution_label",
+    "attribution_channel",
+    "composite_label",
+    "gates_failed",
+    "run_label_row_id"
+  ],
+  "additionalProperties": false
+}

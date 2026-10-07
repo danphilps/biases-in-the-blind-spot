@@ -1,0 +1,47 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+family_id: code_task
+description: Coding-agent tasks (spec §T6); V1 holds K.M.1, slice S5 temporal_norm_code (§35).
+contexts: [C7, C8]
+faq_ids: [K.M.1]
+# Attach points the templates support (§T4.4): attach point → template slot that renders it.
+battery_slots:
+  preamble: preamble
+  label:method_label: method_label
+scenario_schema:
+  nodes:
+    n_assets: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    n_dates: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    n_features: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    feature_names: {kind: primitive, type: categorical, display: text, depends_on: [n_features], relevant: true}
+    burn_in: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    vendor_label: {kind: primitive, type: categorical, display: text}
+    method_label: {kind: primitive, type: categorical, display: text}
+    purpose: {kind: primitive, type: categorical, display: text, relevant: true}
+interventions:
+  I.Q.purpose:
+    op: FRAMING_CHANGE
+    node: purpose
+    via: null
+    form: set
+    baseline: descriptive study of historical relationships
+    counterfactual: signal for a walk-forward backtest
+    delta: null
+    relative_delta: null
+    closure: {recompute: [], held_fixed: [], compensate: []}
+    counterbalance: false
+    concept_direction: 0
+    concept_factor: null
+    concept_lexicon: [look-ahead, future data, point-in-time, walk-forward, expanding, rolling, full sample]
+response_contracts: [normalise_code_v1]
+features:
+  valid_point_in_time_normaliser: {type: binary, channel: decision, extractor: code_all, tests: [normalises_nontrivially, shape_and_index_valid, numeric_valid, leak_free]}
+  normalises_nontrivially: {type: binary, channel: decision, extractor: code_outcome, test: normalises_nontrivially}
+  shape_and_index_valid: {type: binary, channel: decision, extractor: code_outcome, test: shape_and_index_valid}
+  numeric_valid: {type: binary, channel: decision, extractor: code_outcome, test: numeric_valid}
+  leak_free: {type: binary, channel: decision, extractor: code_outcome, test: leak_free}
+oracles:
+  CT1:
+    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.lookahead], confidence: established}

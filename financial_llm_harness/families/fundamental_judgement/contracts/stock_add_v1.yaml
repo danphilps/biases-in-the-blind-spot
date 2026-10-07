@@ -1,0 +1,38 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+contract_id: stock_add_v1
+version: 1
+kind: json
+abstain_value: ABSTAIN
+fields:
+  reasoning: {type: string}
+  rationale: {type: string}
+  decision: {type: enum, values: [ADD, DO_NOT_ADD]}
+  confidence: {type: number, min: 0.0, max: 1.0}
+  material_factors:
+    type: object_list
+    item:
+      factor: {type: enum, values: [valuation, growth, quality, leverage, momentum, size, sector, other]}
+      stance: {type: enum, values: [supports, opposes]}
+decision_fields: [decision, confidence, material_factors]
+free_text: {reasoning_before: reasoning, rationale_after: rationale, none: null}
+instructions:
+  reasoning_before: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "reasoning": your reasoning, as a string;
+    "decision": "ADD" or "DO_NOT_ADD";
+    "confidence": your confidence in the decision, a number from 0 to 1;
+    "material_factors": a list of the factors that mattered to the decision, each an object {"factor": one of "valuation", "growth", "quality", "leverage", "momentum", "size", "sector", "other"; "stance": "supports" or "opposes"}.
+  rationale_after: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "decision": "ADD" or "DO_NOT_ADD";
+    "confidence": your confidence in the decision, a number from 0 to 1;
+    "material_factors": a list of the factors that mattered to the decision, each an object {"factor": one of "valuation", "growth", "quality", "leverage", "momentum", "size", "sector", "other"; "stance": "supports" or "opposes"};
+    "rationale": a short explanation of the decision, as a string.
+  none: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "decision": "ADD" or "DO_NOT_ADD";
+    "confidence": your confidence in the decision, a number from 0 to 1;
+    "material_factors": a list of the factors that mattered to the decision, each an object {"factor": one of "valuation", "growth", "quality", "leverage", "momentum", "size", "sector", "other"; "stance": "supports" or "opposes"}.

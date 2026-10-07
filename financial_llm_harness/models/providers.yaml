@@ -1,0 +1,264 @@
+# Provider registry (spec §20.2). Versioned and dated; operators edit `limits`.
+# Request profiles are data, edited only with a `profile_version` bump. Field paths
+# are dotted paths into the request body or the response JSON. A path segment may be
+# an integer index, `*` (every element) or `name[key=value]` (the elements of the list
+# `name` whose `key` equals `value`). `probe` re-verifies every value before freeze.
+# Field names were set at M3 (2026-10-07) from provider documentation; the Anthropic
+# entries were checked against platform.claude.com. The build container could not
+# reach the Google, OpenAI, OpenRouter, DeepSeek, Alibaba Cloud or Moonshot sites, so
+# those names follow §20.3 and are unverified until a live probe or live test passes.
+registry_version: "2026-10-06"
+providers:
+  openai:
+    adapter: openai_compatible
+    base_url: https://api.openai.com/v1
+    key_env: OPENAI_API_KEY
+    docs: https://platform.openai.com/docs/api-reference
+    batch: openai_batch
+    batch_poll_seconds: 180
+    serving: first_party
+    default_profile: openai/chat_completions
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      openai/chat_completions:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_completion_tokens
+        structured_output: {kind: json_schema, field: response_format}
+        thinking: {kind: reasoning_effort, fields: [reasoning_effort]}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: []
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool, function_call: tool}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: null, quantization: null, region: null}
+  anthropic:
+    adapter: anthropic
+    base_url: https://api.anthropic.com
+    key_env: ANTHROPIC_API_KEY
+    docs: https://docs.claude.com/en/api/overview
+    batch: anthropic_message_batches
+    batch_poll_seconds: 180
+    serving: first_party
+    default_profile: anthropic/adaptive_thinking
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: v1/models
+    request_profiles:
+      anthropic/adaptive_thinking:
+        profile_version: 1
+        protocol: anthropic_messages
+        max_output_field: max_tokens
+        structured_output: {kind: native_schema, field: output_config.format}
+        thinking: {kind: adaptive, fields: [thinking, output_config.effort]}
+        seed_field: null
+        routing_fields: null
+        trace_paths: ["content[type=thinking].thinking"]
+        finish_reason_map: {end_turn: stop, stop_sequence: stop, max_tokens: length, model_context_window_exceeded: length, refusal: refusal, tool_use: tool, pause_turn: other}
+        request_id_headers: [request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: null, upstream_provider: null, quantization: null, region: null}
+      anthropic/extended_thinking:
+        profile_version: 1
+        protocol: anthropic_messages
+        max_output_field: max_tokens
+        structured_output: {kind: native_schema, field: output_config.format}
+        thinking: {kind: thinking_config, fields: [thinking]}
+        seed_field: null
+        routing_fields: null
+        trace_paths: ["content[type=thinking].thinking"]
+        finish_reason_map: {end_turn: stop, stop_sequence: stop, max_tokens: length, model_context_window_exceeded: length, refusal: refusal, tool_use: tool, pause_turn: other}
+        request_id_headers: [request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: null, upstream_provider: null, quantization: null, region: null}
+  google:
+    adapter: gemini_native
+    base_url: https://generativelanguage.googleapis.com/v1beta
+    key_env: GEMINI_API_KEY
+    docs: https://ai.google.dev/api/generate-content
+    alt_transports:
+      openai_compat:
+        base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+        docs: https://ai.google.dev/gemini-api/docs/openai
+        default_profile: google/openai_compat
+    batch: none
+    serving: first_party
+    default_profile: google/generate_content
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      google/generate_content:
+        profile_version: 1
+        protocol: gemini_generate_content
+        max_output_field: generationConfig.maxOutputTokens
+        structured_output: {kind: native_schema, field: generationConfig.responseJsonSchema}
+        thinking: {kind: thinking_config, fields: [generationConfig.thinkingConfig]}
+        seed_field: generationConfig.seed
+        routing_fields: null
+        trace_paths: ["candidates.0.content.parts[thought=true].text"]
+        finish_reason_map: {STOP: stop, MAX_TOKENS: length, SAFETY: content_filter, RECITATION: content_filter, BLOCKLIST: content_filter, PROHIBITED_CONTENT: content_filter, SPII: content_filter, IMAGE_SAFETY: content_filter, LANGUAGE: other, OTHER: other, MALFORMED_FUNCTION_CALL: other, FINISH_REASON_UNSPECIFIED: other}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: modelVersion, model_revision: modelVersion, upstream_provider: null, quantization: null, region: null}
+      google/openai_compat:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_schema, field: response_format}
+        thinking: {kind: reasoning_effort, fields: [reasoning_effort]}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: []
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: null, upstream_provider: null, quantization: null, region: null}
+  deepseek:
+    adapter: openai_compatible
+    base_url: https://api.deepseek.com
+    key_env: DEEPSEEK_API_KEY
+    docs: https://api-docs.deepseek.com/
+    batch: none
+    serving: first_party
+    default_profile: deepseek/chat_completions
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      deepseek/chat_completions:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_object, field: response_format}
+        thinking: {kind: model_variant, fields: []}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: [choices.0.message.reasoning_content]
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool, insufficient_system_resource: other}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: null, quantization: null, region: null}
+  qwen:
+    adapter: openai_compatible
+    base_url: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+    regions:
+      us-virginia: https://dashscope-us.aliyuncs.com/compatible-mode/v1
+      cn-hongkong: https://cn-hongkong.dashscope.aliyuncs.com/compatible-mode/v1
+      cn-beijing: https://dashscope.aliyuncs.com/compatible-mode/v1
+    key_env: DASHSCOPE_API_KEY
+    docs: https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope
+    batch: none
+    serving: first_party
+    default_profile: qwen/reasoning_effort
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      qwen/reasoning_effort:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_object, field: response_format}
+        thinking: {kind: reasoning_effort, fields: [reasoning.effort]}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: [choices.0.message.reasoning_content]
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: null, quantization: null, region: null}
+      qwen/enable_thinking:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_object, field: response_format}
+        thinking: {kind: enable_thinking, fields: [enable_thinking, thinking_budget]}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: [choices.0.message.reasoning_content]
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: null, quantization: null, region: null}
+  moonshot:
+    adapter: openai_compatible
+    base_url: https://api.moonshot.ai/v1
+    regions:
+      cn: https://api.moonshot.cn/v1
+    key_env: MOONSHOT_API_KEY
+    docs: https://platform.kimi.ai/docs/api/overview
+    batch: none
+    serving: first_party
+    default_profile: moonshot/chat_completions
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      moonshot/chat_completions:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_object, field: response_format}
+        thinking: {kind: model_variant, fields: []}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: [choices.0.message.reasoning_content]
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool}
+        request_id_headers: [x-request-id, msh-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: null, quantization: null, region: null}
+  openrouter:
+    adapter: openai_compatible
+    base_url: https://openrouter.ai/api/v1
+    key_env: OPENROUTER_API_KEY
+    docs: https://openrouter.ai/docs
+    batch: none
+    serving: aggregator
+    default_profile: openrouter/chat_completions
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      openrouter/chat_completions:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_schema, field: response_format}
+        thinking: {kind: reasoning_effort, fields: [reasoning.effort]}
+        seed_field: seed
+        routing_fields: {allowlist: provider.only, order: provider.order, allow_fallbacks: provider.allow_fallbacks, quantizations: provider.quantizations}
+        trace_paths: [choices.0.message.reasoning]
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool, error: other}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: provider, quantization: null, region: null}
+  local:
+    adapter: openai_compatible
+    base_url: http://localhost:8000/v1
+    key_env: null
+    batch: none
+    serving: self_hosted
+    default_profile: local/chat_completions
+    limits: {max_concurrency: 8, rpm: null, tpm: null, request_timeout_s: 600}
+    models_endpoint: models
+    request_profiles:
+      local/chat_completions:
+        profile_version: 1
+        protocol: chat_completions
+        max_output_field: max_tokens
+        structured_output: {kind: json_schema, field: response_format}
+        thinking: {kind: none, fields: []}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: [choices.0.message.reasoning_content]
+        finish_reason_map: {stop: stop, length: length, content_filter: content_filter, tool_calls: tool}
+        request_id_headers: [x-request-id]
+        fingerprint_paths: {provider_model_id: model, model_revision: system_fingerprint, upstream_provider: null, quantization: null, region: null}
+  fake:
+    adapter: fake
+    base_url: null
+    key_env: null
+    batch: none
+    serving: in_process
+    default_profile: fake/in_process
+    limits: {max_concurrency: 64, rpm: null, tpm: null, request_timeout_s: 600}
+    request_profiles:
+      fake/in_process:
+        profile_version: 1
+        protocol: in_process
+        max_output_field: max_output_tokens
+        structured_output: {kind: none, field: null}
+        thinking: {kind: none, fields: []}
+        seed_field: seed
+        routing_fields: null
+        trace_paths: []
+        finish_reason_map: {stop: stop}
+        request_id_headers: []
+        fingerprint_paths: {provider_model_id: null, model_revision: null, upstream_provider: null, quantization: null, region: null}

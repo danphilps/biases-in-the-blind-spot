@@ -1,0 +1,16 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: temporal_norm_v1.embedded
+template_family_id: temporal_norm_v1
+paraphrase_family: embedded
+user: |-
+  {preamble}Quick design question for the team, whose mandate is: {mandate}
+
+  The features below will be used for a {purpose}. Here is the panel:
+  {fields}
+
+  What normalisation window should we apply to each feature?
+
+  {note}{contract}

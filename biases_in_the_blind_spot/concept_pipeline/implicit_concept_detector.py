@@ -160,6 +160,8 @@ class ImplicitConceptDetector(APILLMBase):
 
     # set this to hardcode concepts for ablations rather than generating them
     override_concepts: list[Concept] | None = None
+    # Seed for the hypothesis-input shuffle; None keeps the legacy unseeded shuffle
+    hypothesis_sampling_seed: int | None = None
 
     @property
     def config(self) -> dict[str, Any]:
@@ -210,9 +212,12 @@ class ImplicitConceptDetector(APILLMBase):
         ]
 
         # Shuffle the input indices to avoid sending inputs from the same cluster together
-        random.shuffle(all_input_indices)
+        if self.hypothesis_sampling_seed is None:
+            random.shuffle(all_input_indices)
+        else:
+            random.Random(self.hypothesis_sampling_seed).shuffle(all_input_indices)
 
-        dataset.concept_hypothesis_sampling_seed = None
+        dataset.concept_hypothesis_sampling_seed = self.hypothesis_sampling_seed
         dataset.concept_hypothesis_input_indices = all_input_indices
 
         clusters = dataset.input_clusters.clusters
