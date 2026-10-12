@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import json
+import logging
 import shutil
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -30,7 +31,11 @@ from financial_llm_harness.core.manifest import (
     order_manifest,
 )
 from financial_llm_harness.core.paths import probes_dir, repo_root
-from financial_llm_harness.errors import HarnessValidationError, StaleProbe
+from financial_llm_harness.errors import (
+    HarnessValidationError,
+    MissingApiKey,
+    StaleProbe,
+)
 from financial_llm_harness.families import (
     family_dir,
     load_defaults,
@@ -52,7 +57,14 @@ from financial_llm_harness.models.base import (
     resolve_profile_id,
 )
 from financial_llm_harness.models.fake import fake_capabilities
-from financial_llm_harness.models.panels import Panel, load_panel
+from financial_llm_harness.models.panels import (
+    Panel,
+    load_panel,
+    require_api_keys,
+    split_by_api_key,
+)
+
+log = logging.getLogger("financial_llm_harness.generation.generate")
 
 GENERATOR_VERSION = "structured_world@1"
 SEMANTIC_EXTRACTORS = ("semantic_verbalisation", "semantic_inclusion")
@@ -158,6 +170,10 @@ def resolve_evaluators(
         raise HarnessValidationError(
             "a semantic feature needs the panel's evaluator entry (§16, §20.9)"
         )
+    require_api_keys(
+        [ev],
+        f"semantic feature {semantic[0]['feature_id']} needs the panel evaluator",
+    )
     import financial_llm_harness.evaluation.semantic as sem
 
     model, probe_path = resolve_model(ev)
@@ -421,9 +437,24 @@ def generate(
     family_dir(spec["task_family"])
     panel = load_panel(panel_name or spec["sampling_spec"]["panel"])
     load_providers()
+    # only providers with a populated API key are run; the rest are recorded as skipped
+    targets, skipped = split_by_api_key(panel.models)
+    if not targets:
+        envs = sorted({str(sk["key_env"]) for sk in skipped})
+        raise MissingApiKey(
+            f"panel {panel.name}: no target model has its API key set "
+            f"({', '.join(envs)}); set one in the environment or .env"
+        )
+    for sk in skipped:
+        log.warning(
+            "panel %s: skipping %s, %s is not set",
+            panel.name,
+            sk["model_key"],
+            sk["key_env"],
+        )
     models: list[dict[str, Any]] = []
     probe_paths: dict[str, Path] = {}
-    for entry in panel.models:
+    for entry in targets:
         model, pp = resolve_model(entry)
         models.append(model)
         if pp is not None:
@@ -477,6 +508,8 @@ def generate(
     ss.pop("panel", None)
     ss["panel_ref"] = {"name": panel.name, "sha256": B.file_sha256(panel.path)}
     ss["models"] = models
+    if skipped:
+        ss["models_skipped"] = skipped
     manifest["sampling_spec"] = ss
     manifest["evaluators"] = evaluators
     manifest["independence"] = independence

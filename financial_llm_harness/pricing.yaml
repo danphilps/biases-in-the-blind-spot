@@ -7,3 +7,7 @@ prices:
   fake/a: {input_per_mtok_usd: 0.0, output_per_mtok_usd: 0.0, reasoning_billed_as: output, batch_discount: null, source_url: null, checked_on: "2026-10-07"}
   fake/b: {input_per_mtok_usd: 0.0, output_per_mtok_usd: 0.0, reasoning_billed_as: output, batch_discount: null, source_url: null, checked_on: "2026-10-07"}
   fake/eval: {input_per_mtok_usd: 0.0, output_per_mtok_usd: 0.0, reasoning_billed_as: output, batch_discount: null, source_url: null, checked_on: "2026-10-07"}
+  # Live panel `live` (2026-10-12). Rates from secondary sources; the first-party pricing
+  # pages were not reachable from the build container. Confirm before a costed run.
+  anthropic/claude-opus-5-5: {input_per_mtok_usd: 4.0, output_per_mtok_usd: 20.0, reasoning_billed_as: output, batch_discount: 0.5, source_url: "https://www.eesel.ai/blog/claude-opus-5-5-pricing", checked_on: "2026-10-12"}
+  openai/gpt-6-luna: {input_per_mtok_usd: 0.10, output_per_mtok_usd: 0.50, reasoning_billed_as: output, batch_discount: 0.5, source_url: "https://openrouter.ai/openai/gpt-6-luna", checked_on: "2026-10-12"}

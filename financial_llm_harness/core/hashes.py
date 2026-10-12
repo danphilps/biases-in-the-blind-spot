@@ -93,6 +93,7 @@ def design_projection(
         if key == "sampling_spec" and isinstance(value, dict):
             value.pop("panel_ref", None)
             value.pop("models", None)
+            value.pop("models_skipped", None)  # key gating must not move seeds (§18)
             value.pop("panel", None)
         proj[key] = value
     corpus = manifest.get("corpus") or {}

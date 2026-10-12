@@ -95,6 +95,7 @@ def plan_data(bundle_dir: Path) -> dict[str, Any]:
         "renderings_by_arm": arm_counts,
         "control_share": control_trials / len(renderings) if renderings else 0.0,
         "models": [r.__dict__ for r in rows],
+        "models_skipped": list(manifest["sampling_spec"].get("models_skipped") or []),
         "evaluators": [e["model_key"] for e in manifest.get("evaluators") or []],
         "contrasts": contrasts,
         "stale_prices": stale,
@@ -114,6 +115,8 @@ def render_plan(bundle_dir: Path) -> str:
             f"  {m['model_key']}: trials {m['trials']}, calls {m['calls']}, input tokens ≈ {m['input_tokens_est']} ({d['input_estimate_method']}), "
             f"output tokens ≤ {m['output_tokens_max']}, cost ${m['cost_usd_low']:.2f}–${m['cost_usd_high']:.2f}"
         )
+    for sk in d["models_skipped"]:
+        lines.append(f"  {sk['model_key']}: skipped, {sk['key_env']} is not set")
     for c in d["contrasts"]:
         pw = "" if c["power"] is None else f", power at N {c['power']:.3f}"
         lines.append(

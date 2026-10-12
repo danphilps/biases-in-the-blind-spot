@@ -470,6 +470,18 @@ def probe_entry(
 
 def run_probe(model_key: str, panel: str) -> Path:
     """CLI entry: the entry (target or evaluator) in the named panel; a key absent from it exits 2."""
-    from financial_llm_harness.models.panels import load_panel
+    from financial_llm_harness.models.panels import load_panel, require_api_keys
 
-    return probe_entry(load_panel(panel).entry(model_key))
+    entry = load_panel(panel).entry(model_key)
+    require_api_keys([entry], f"probe {model_key}")
+    return probe_entry(entry)
+
+
+def run_probes(panel: str) -> tuple[list[Path], list[dict[str, Any]]]:
+    """Probe every panel target and the evaluator whose provider has an API key; return (paths, skipped)."""
+    from financial_llm_harness.models.panels import load_panel, split_by_api_key
+
+    p = load_panel(panel)
+    entries = p.models + ([p.evaluator] if p.evaluator is not None else [])
+    keyed, skipped = split_by_api_key([e for e in entries if e["provider"] != "fake"])
+    return [probe_entry(e) for e in keyed], skipped
