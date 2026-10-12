@@ -214,16 +214,27 @@ def cmd_compare(args: argparse.Namespace) -> Result:
 
 
 def cmd_models(args: argparse.Namespace) -> Result:
+    from financial_llm_harness.errors import MissingApiKey
     from financial_llm_harness.models.base import list_models
+    from financial_llm_harness.models.panels import has_api_key, key_env_of
 
+    if not has_api_key(args.provider):
+        raise MissingApiKey(
+            f"models list: {key_env_of(args.provider)} is not set for provider {args.provider!r}"
+        )
     return 0, "\n".join(list_models(args.provider, args.region))
 
 
 def cmd_probe(args: argparse.Namespace) -> Result:
-    from financial_llm_harness.models.probe import run_probe
+    from financial_llm_harness.models.probe import run_probe, run_probes
 
-    path = run_probe(args.model_key, args.panel)
-    return 0, f"probe written to {path}"
+    if args.model_key is not None:
+        path = run_probe(args.model_key, args.panel)
+        return 0, f"probe written to {path}"
+    paths, skipped = run_probes(args.panel)
+    lines = [f"probe written to {p}" for p in paths]
+    lines += [f"skipped {s['model_key']}: {s['key_env']} is not set" for s in skipped]
+    return 0, "\n".join(lines) or f"panel {args.panel}: no model to probe"
 
 
 def cmd_calibrate(args: argparse.Namespace) -> Result:

@@ -756,6 +756,17 @@ def programme_md(
     return "\n".join(out)
 
 
+def tested_models(panel_keys: Sequence[str], exps: Sequence[Experiment]) -> list[str]:
+    """Panel models in panel order, less those every manifest skipped for want of an API key."""
+    tested: set[str] = set()
+    skipped: set[str] = set()
+    for x in exps:
+        ss = x.manifest.get("sampling_spec") or {}
+        tested |= {m["model_key"] for m in ss.get("models") or []}
+        skipped |= {m["model_key"] for m in ss.get("models_skipped") or []}
+    return [mk for mk in panel_keys if mk in tested or mk not in skipped]
+
+
 def render_programme(pdir: Path) -> None:
     """Write ``results/``, ``report/`` and ``README.md`` of a programme directory (§32B.4)."""
     from financial_llm_harness.models.panels import load_panel
@@ -765,8 +776,10 @@ def render_programme(pdir: Path) -> None:
     state = json.loads((pdir / "state.json").read_text(encoding="utf-8"))
     programme = yaml_io.load(pdir / "programme.yaml")
     assert isinstance(programme, dict)
-    models = [m["model_key"] for m in load_panel(programme["panel"]).models]
     exps = [_load_experiment(pdir, e) for e in state["experiments"]]
+    models = tested_models(
+        [m["model_key"] for m in load_panel(programme["panel"]).models], exps
+    )
     fdr, bh = fdr_rows(exps, models)
     answers = answers_rows(exps, models, bh)
     questions = question_rows(answers, models)

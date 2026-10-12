@@ -158,9 +158,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--region")
 
     sp = add(
-        "probe", "financial_llm_harness.commands:cmd_probe", "capability probe (§20.4)"
+        "probe",
+        "financial_llm_harness.commands:cmd_probe",
+        "capability probe (§20.4); without MODEL_KEY, every panel model with an API key",
     )
-    sp.add_argument("model_key")
+    sp.add_argument("model_key", nargs="?")
     sp.add_argument("--panel", required=True)
 
     sp = add(

@@ -65,6 +65,30 @@ uv run python -m biases_in_the_blind_spot.datasets.university_admission.generate
 
 **Common options:** `-n` (number of samples), `-o` (output file), `-m` (model name), `--seed` (random seed).
 
+## Financial harness: live runs
+
+`financial_llm_harness/` (built from `docs/financial_harness_spec.md`) tests finance answers for undeclared biases. The live panel `experiments/financial/panels/live.yaml` holds Anthropic `claude-opus-5-5` and OpenAI `gpt-6-luna`; each model is estimated, labelled and multiplicity-corrected on its own.
+
+Only providers whose key is set in the environment or `.env` are called (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). A panel model without a key is skipped at `generate`, recorded in the manifest as `sampling_spec.models_skipped`, and listed by `plan`; a frozen manifest whose model has lost its key is refused (exit 2), never silently narrowed.
+
+```bash
+uv run financial-harness models list --provider anthropic        # confirm the model IDs
+uv run financial-harness models list --provider openai
+uv run financial-harness probe --panel live                      # ≤ 20 calls per keyed model; needed within 30 days of a run
+uv run financial-harness programme plan experiments/financial/programmes/live.yaml
+uv run financial-harness programme run  experiments/financial/programmes/live.yaml --yes
+# or one experiment:
+uv run financial-harness run experiments/financial/specs/covariance_choice.yaml --panel live --yes
+```
+
+Outputs go to `experiments/financial/outputs/` (`runs/<run>/`, `programmes/<programme>/`). Per run, `results/labels.csv` answers the three questions per model: `sensitivity_label` and `is_bias` (does the answer move, and is that a bias under the oracle), `attribution_label` (does the model say so) and `composite_label` (`UNVERBALISED_BIAS` when all three hold). `effects.csv` holds θ̂ with its CI and p-values, `attribution.csv` the verbalisation rates per channel, `controls.csv` the null, placebo and positive-control gates, and `report/report.md` the narrative. A programme adds `results/answers.csv`, `question_answers.csv` and the per-model BH table `fdr.csv`.
+
+Before a live run is accepted:
+- **Human-authored text (D-14, §2.7).** The templates, paraphrases, banks, mandates and oracle files are agent-drafted placeholders. `validate` refuses any live manifest that uses an agent-drafted or unapproved file until people replace them and approve their provenance blocks; §2.7 also bars text drafted by any target's own family (the placeholders are Anthropic-drafted).
+- **Evaluator.** The S1 specs' semantic reasoning channel needs an evaluator from a family outside the panel (neither Anthropic nor OpenAI), with its own key and probe. Without it those specs are `SKIPPED_INVALID`; the structured `factors` channel needs no evaluator.
+- **Prices and budget.** The `pricing.yaml` rates for both models come from secondary sources; confirm them. The programme caps (D-2) cover the plan's upper bound of about $3,780 for all five specs.
+- **Sandbox.** The code task (`temporal_norm_code`) needs Docker (`financial-harness sandbox build`).
+
 ## Development
 
 ### Code Quality

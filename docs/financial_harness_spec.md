@@ -296,8 +296,8 @@ Experiment
 - `manifest.lock` holds `manifest_hash`.
 
 Canonical form: JSON, sorted keys, UTF-8, no insignificant whitespace, floats via Python `repr`, NaN/Inf forbidden. Two hashes are taken over it **[E-25]**:
-- `design_hash = sha256(canonical(design projection))`. The design projection is the JSON object that keeps only these manifest keys, nested keys at their manifest paths: `schema_version`, `experiment_key`, `variant_id`, `mode`, `parent_discovery_experiment_id`, `faq_id`, `intervention_id`, `domain`, `task_family`, `task`, `concept`, `research_question`, `mandate`, `hypothesis`, `scenario_spec`, `intervention_spec`, `controls`, `arms`, `prompt_spec`, `paraphrase_spec`, `response_spec` without `enforcement_resolved` (so `enforcement` as written, e.g. `auto`), `feature_spec`, `oracle_spec`, `sampling_spec` without `panel_ref` and `models`, `statistical_spec` (including any `planning_ref`), `seeds`, `versions`, `corpus.cases.sha256` and `corpus.renderings.sha256`; plus `scientific_assets`, the `{role, logical_name, sha256}` of every `assets.json` row with a scientific role (§0.10), sorted by (`role`, `logical_name`).
-- `manifest_hash = sha256(canonical(manifest − {manifest_hash, experiment_id, created_at}))`. Beyond the design keys it covers `design_hash`, `corpus.assets.sha256`, `data_classification`, `response_spec.enforcement_resolved`, `panel_ref`, `models` (with probes and capabilities), `evaluators`, `independence`, `budget` and `code_ref`.
+- `design_hash = sha256(canonical(design projection))`. The design projection is the JSON object that keeps only these manifest keys, nested keys at their manifest paths: `schema_version`, `experiment_key`, `variant_id`, `mode`, `parent_discovery_experiment_id`, `faq_id`, `intervention_id`, `domain`, `task_family`, `task`, `concept`, `research_question`, `mandate`, `hypothesis`, `scenario_spec`, `intervention_spec`, `controls`, `arms`, `prompt_spec`, `paraphrase_spec`, `response_spec` without `enforcement_resolved` (so `enforcement` as written, e.g. `auto`), `feature_spec`, `oracle_spec`, `sampling_spec` without `panel_ref`, `models` and `models_skipped` (§20.9), `statistical_spec` (including any `planning_ref`), `seeds`, `versions`, `corpus.cases.sha256` and `corpus.renderings.sha256`; plus `scientific_assets`, the `{role, logical_name, sha256}` of every `assets.json` row with a scientific role (§0.10), sorted by (`role`, `logical_name`).
+- `manifest_hash = sha256(canonical(manifest − {manifest_hash, experiment_id, created_at}))`. Beyond the design keys it covers `design_hash`, `corpus.assets.sha256`, `data_classification`, `response_spec.enforcement_resolved`, `panel_ref`, `models` (with probes and capabilities), `models_skipped`, `evaluators`, `independence`, `budget` and `code_ref`.
 - `experiment_id = uuid5(HARNESS_NS, "experiment/" + design_hash)` (§3). A derived value never enters its own hash: `design_hash`, `manifest_hash`, `experiment_id` and `created_at` are outside the design projection, and `manifest_hash`, `experiment_id` and `created_at` are outside the manifest-hash input. `code_ref` is outside the design projection on purpose: a code change that alters a stimulus already changes the hash of `cases.jsonl` or `renderings.jsonl`.
 
 ```yaml
@@ -935,7 +935,7 @@ thinking: {mode: off | on | provider_default, effort: low | medium | high | null
 - If a provider cannot express the requested setting, the probe records `thinking_effective`, which every report shows next to the model key. The key itself is derived from the requested setting (§20.6).
 - `temperature` is passed on the provider's native scale. Scales and samplers differ, so equal nominal temperatures do not mean equal stochasticity across providers. Cross-model claims therefore rest on within-model paired θ, with each model's own null arm A0 calibrating its noise. Raw response variability is never compared across providers.
 
-### 20.4 Probe (`financial-harness probe MODEL_KEY --panel NAME`)
+### 20.4 Probe (`financial-harness probe [MODEL_KEY] --panel NAME`)
 
 The probe makes at most 20 calls with fixed, neutral prompts, under the entry's request profile (§20.2), and reports its own cost. It checks:
 1. **Listing:** the model ID is returned by the provider's models endpoint. Record the context and output limits if exposed.
@@ -948,7 +948,7 @@ The probe makes at most 20 calls with fixed, neutral prompts, under the entry's 
 8. **Streaming:** whether the chosen thinking mode requires streaming.
 9. **Serving:** the `serving_fingerprint` (§20.7) of every probe response. The probe records the fingerprint of its first complete response and `serving_fingerprint_stable` (whether every response agreed on `model_revision`, `upstream_provider` and `quantization`). For an entry with `upstream_routing` (§20.9), a response whose upstream provider is absent or differs from the pin, or whose quantisation differs from a pinned one, makes the probe exit 2: the pin is not effective.
 
-- The model's entry (provider, model, region, transport, thinking, `request_profile`, `upstream_routing`, params) is read from the named panel; a key absent from the panel exits 2.
+- The model's entry (provider, model, region, transport, thinking, `request_profile`, `upstream_routing`, params) is read from the named panel; a key absent from the panel exits 2. Without `MODEL_KEY`, every non-fake panel target and the evaluator whose provider has a key is probed in turn and the others are listed as skipped; a named model whose provider has no key exits 2 (CR-6).
 - Output goes to `$HARNESS_HOME/probes/<model_key>/<YYYY-MM-DD>.json` (committed, §0.9). It records the request profile ID, `profile_version` and sha256 it ran under.
 - `validate` requires, for every panel model and the evaluator except models whose provider is `fake`, a probe at most 30 days old that ran under the entry's current request profile (same ID and sha256); otherwise it exits 6. The probe result is copied into the manifest (`probe_ref` plus capabilities), so capabilities are frozen with the experiment.
 - If a run-time response contradicts a frozen capability (a trace appears or disappears, a schema is rejected), the runner logs a `capability_drift` event. That model's results become INCOMPLETE.
@@ -1061,7 +1061,7 @@ models:                                  # list order = "panel order" in every o
 evaluator: null                          # or one entry with the same fields; required by semantic features (§16)
 ```
 
-`validate` exits 2 if: a `model_key` repeats, or differs from the key derived from its entry (§20.6); a `provider` is not in `providers.yaml`; `family` is empty; `request_profile` is not a profile of the entry's provider, or its `protocol` does not match the provider's adapter and the entry's transport; an OpenRouter entry lacks `upstream_routing` or `upstream_routing.provider`, or a non-OpenRouter entry sets it; `batch: true` where the provider's `batch` is `none`; or the evaluator's family equals any model's family. `generate` copies each entry into the manifest `models`, with `request_profile` resolved to `{id, profile_version, sha256}` (§20.2) and the probe's capabilities (§20.4). Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`model: a`, key prefix `fake--a`, family `fake_a`; `model: b`, key prefix `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (`model: eval`, key prefix `fake--eval`, family `fake_eval`), each with `request_profile: null` (so `fake/in_process`). The file stores the full derived keys (`fake--a--<8 hex>`, …), computed at M0; this document names them by prefix (§20.6).
+`validate` exits 2 if: a `model_key` repeats, or differs from the key derived from its entry (§20.6); a `provider` is not in `providers.yaml`; `family` is empty; `request_profile` is not a profile of the entry's provider, or its `protocol` does not match the provider's adapter and the entry's transport; an OpenRouter entry lacks `upstream_routing` or `upstream_routing.provider`, or a non-OpenRouter entry sets it; `batch: true` where the provider's `batch` is `none`; or the evaluator's family equals any model's family. `generate` copies each entry into the manifest `models`, with `request_profile` resolved to `{id, profile_version, sha256}` (§20.2) and the probe's capabilities (§20.4). Panel files are author-written and committed. Model IDs and the evaluator are user-owned **[D-2]**. **API-key gating (CR-6).** Only entries whose provider has a populated key are run: an entry whose provider's `key_env` (§20.2) is unset or blank in the environment or `.env` is dropped by `generate` before probes are read, logged, and recorded in the manifest as `sampling_spec.models_skipped: [{model_key, provider, model, key_env, reason: no_api_key}]`; `plan` and `programme plan` list it. Providers with `key_env: null` (`fake`, `local`) are always run. A panel with no keyed target, or a semantic feature whose evaluator has no key, exits 2. A frozen model is never dropped: `run` (at L5, with `--dry-run` too) and `run --resume` exit 2 when a manifest target or evaluator has no key. The programme report lists the panel models that some manifest tested, less those every manifest skipped. Gating never relaxes §2.7, §8.1 or D-14. `experiments/financial/panels/ci_fake.yaml` holds two fake models (`model: a`, key prefix `fake--a`, family `fake_a`; `model: b`, key prefix `fake--b`, family `fake_b`, with a different configured effect) and a fake evaluator (`model: eval`, key prefix `fake--eval`, family `fake_eval`), each with `request_profile: null` (so `fake/in_process`). The file stores the full derived keys (`fake--a--<8 hex>`, …), computed at M0; this document names them by prefix (§20.6).
 
 ### 20.10 Adapter implementation rules
 
@@ -1524,7 +1524,7 @@ financial-harness render   RUN_ID                      # regenerate every output
 financial-harness replay   RUN_ID --reevaluate | --reexecute
 financial-harness compare  RUN_ID [RUN_ID ...] --name NAME   # cross-run label matrix (§32A.7); NAME matches [a-z0-9-]{1,48}
 financial-harness models   list --provider P [--region R]     # model IDs from the provider's models endpoint
-financial-harness probe    MODEL_KEY --panel NAME             # capability probe (§20.4); the entry is read from the panel
+financial-harness probe    [MODEL_KEY] --panel NAME           # capability probe (§20.4); the entry is read from the panel; no MODEL_KEY: every keyed model
 financial-harness calibrate --feature FEATURE_ID --labels PATH --panel NAME   # evaluator calibration record (§16)
 financial-harness sandbox  build                               # build the sandbox images (§13.4)
 financial-harness programme plan | run | status | report PROGRAMME.yaml [--resume PROGRAMME_RUN_ID] [--yes]   # §32B
@@ -1542,7 +1542,7 @@ Command semantics not stated elsewhere:
 - `--yes` is required for any command that makes provider calls, including fake ones; without it the command prints the plan and exits 0. `--dry-run` stops after L5 even with `--yes`.
 - `evaluate RUN_ID` runs §31A L8–L10; `analyse RUN_ID` runs L9 and L11; `render RUN_ID` runs L12–L13. Each, and `archive`, takes an exclusive `fcntl.flock` on `<run_dir>/db/LOCK` and exits 1 if another process holds it; `run` holds it from L6 to L13.
 - `status RUN_ID` prints the run status and, per model, counts of trials by status and the spend against each cap; exit 0.
-- `models list` prints one model ID per line, sorted.
+- `models list` prints one model ID per line, sorted. It exits 2 when the provider's key is not set.
 
 ---
 
@@ -3203,6 +3203,14 @@ The cluster is the inferential unit. The matched block is the pairing unit. The 
 ---
 
 ## 41. Change log
+
+**CR-6 — 2026-10-12 — v3.4.** Trigger: the user asked that only endpoints with a populated API key be run (currently OpenAI and Anthropic), that each platform's model be tested independently (Anthropic `claude-opus-5-5`, OpenAI `gpt-6-luna`), and that the analysis produce output files from which biases can be established.
+
+- **Changed:** API-key gating in `generate`, `run`, `run --resume`, `probe` and `models list`, with `sampling_spec.models_skipped` in the manifest (§20.9, §20.4, §32). `probe` takes an optional `MODEL_KEY`. The programme report's model list excludes models every manifest skipped (§32B.4).
+- **Added:** panel `experiments/financial/panels/live.yaml` (D-2, the user's model IDs; no evaluator, since §2.7 needs a family outside {anthropic, openai}); `pricing.yaml` entries for both models from secondary sources, to be confirmed against the first-party pages; programme `experiments/financial/programmes/live.yaml`, whose caps (D-2) cover the plan's upper bound.
+- **Unchanged:** §2.7, §8.1 and D-14. A live manifest is still refused at `validate` until its prompt-visible and oracle-bearing files are human-authored and approved, and the agent-drafted placeholders cannot target the Anthropic family that drafted them. The S1 specs' semantic reasoning channel needs an outside-family evaluator with its own key and probe.
+- **Blast radius checked:** §0.10 (the manifest records the models actually run, so the frozen bundle stays closed), §2.12 (`enforcement: auto` still resolves over the models actually run, so a skipped model can change the shared response mode), §4 (`models_skipped` is outside the design projection, so gating moves neither `design_hash` nor any trial seed), §20.4, §20.9, §23 (estimates are within-model; `tests/harness/test_harness_keys.py` shows one model's effects and labels are identical with and without the other in the panel), §25, §31A L1 and L5, §32, §32B.3, §32B.4.
+- **Already-built code made non-compliant:** none; the change and its tests (`tests/harness/test_harness_keys.py`) land together.
 
 **CR-5 — 2026-10-12 — v3.3 → v3.4.** Trigger: the user asked that the files the project generates be saved inside the project structure, in a sensible location.
 

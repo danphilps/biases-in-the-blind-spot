@@ -27,6 +27,10 @@ class FrozenInputDrift(HarnessValidationError):
         )
 
 
+class MissingApiKey(HarnessValidationError):
+    """A provider the call needs has no API key in the environment or ``.env`` (exit 2)."""
+
+
 class BudgetExhausted(HarnessError):
     """A budget cap would be breached (§30; exit 3)."""
 
