@@ -9,11 +9,27 @@ from pathlib import Path
 
 import pytest
 
-from financial_llm_harness.core import yaml_io
+from financial_llm_harness.core import paths, yaml_io
 from financial_llm_harness.errors import HarnessError, HarnessValidationError, LockHeld
 from financial_llm_harness.execution.runner import resolve_run, run_experiment
 from financial_llm_harness.storage.archive import WriterLock
 from tests.harness.helpers import ROOT, small_spec
+
+
+def test_outputs_default_under_experiments_financial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """§0.8: without HARNESS_HOME, every output root sits in experiments/financial/outputs/."""
+    monkeypatch.delenv("HARNESS_HOME", raising=False)
+    monkeypatch.setenv("HARNESS_REPO_ROOT", str(tmp_path))
+    home = tmp_path / "experiments" / "financial" / "outputs"
+    assert paths.harness_home() == home
+    assert paths.runs_dir() == home / "runs"
+    assert paths.comparisons_dir() == home / "comparisons"
+    assert paths.programmes_dir() == home / "programmes"
+    assert paths.probes_dir() == home / "probes"
+    monkeypatch.setenv("HARNESS_HOME", str(tmp_path / "elsewhere"))
+    assert paths.runs_dir() == tmp_path / "elsewhere" / "runs"
 
 
 def test_dry_run_and_missing_yes_create_no_run_dir(

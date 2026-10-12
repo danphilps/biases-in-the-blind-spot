@@ -1,4 +1,4 @@
-# Financial LLM Behavioural Test Harness — Implementation Specification v3.3
+# Financial LLM Behavioural Test Harness — Implementation Specification v3.4
 
 **Purpose.** The harness tests large language models for **undeclared biases** when they answer finance and quantitative-finance questions: whether a model's answer moves with something that should not matter, fails to move with something that should, and whether the model says what moved it (§1, §24). Every rule below serves that test; `AGENTS.md` at the repository root states it for coding agents.
 
@@ -104,7 +104,7 @@ It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file star
 
 ### 0.8 Paths **[E-9]**
 
-- `HARNESS_HOME` (environment variable; default: the current working directory) is the root of `runs/`, `comparisons/`, `programmes/` and `probes/`. CI and every documented command run from the repository root.
+- `HARNESS_HOME` (environment variable; default: `experiments/financial/outputs/` under the repository root) is the root of `runs/`, `comparisons/`, `programmes/` and `probes/`. Outputs sit beside the author-written inputs, never inside `specs/`, `generated/`, `panels/`, `programmes/` or `calibration/`. CI and every documented command run from the repository root.
 - Author-written inputs live in the repository under `experiments/financial/`:
   - `specs/*.yaml` — hand-written experiment specs, including the canonical specs of registry items (§T1);
   - `generated/<faq_id>/<variant_id>/<intervention_id>.yaml` and `generated/expand_report.json` — `taxonomy expand` output, committed and reviewed (§32B.2);
@@ -132,13 +132,14 @@ The commit policy below applies only to runs whose manifest has `data_classifica
 - Append to `.gitignore`:
 
 ```
-# financial harness (spec §0.9)
-runs/*/db/
-runs/*/artifacts/
-runs/*/logs/
-runs/*/run_archive.tar.gz
-programmes/*/logs/
-!runs/*/manifest/
+# financial harness (spec §0.9); outputs default to experiments/financial/outputs/ (§0.8),
+# and the **/ prefix also covers any HARNESS_HOME set inside the repository
+**/runs/*/db/
+**/runs/*/artifacts/
+**/runs/*/logs/
+**/runs/*/run_archive.tar.gz
+**/programmes/*/logs/
+!**/runs/*/manifest/
 ```
 
 The last line re-includes `manifest/` on case-insensitive file systems, where the existing `MANIFEST` pattern would otherwise ignore it.
@@ -3146,7 +3147,7 @@ Each is reversible and was chosen on repository evidence. Changing one needs a �
 | E-6 | pytest `testpaths = ["tests"]` and markers `live`, `sandbox`; live tests need `HARNESS_LIVE=1` | Prevents collection of code-task fixtures and accidental spend | Trivial |
 | E-7 | `families/code_task/fixtures/` excluded from ruff, pyright and pytest | Starter code and known-bad solutions are deliberately defective | Trivial |
 | E-8 | `argparse` CLI; `load_dotenv()` in `main`; one `asyncio.run` | Repository convention (`datasets/*/generate_*_dataset.py`, experiment scripts); no new dependency | Low |
-| E-9 | `HARNESS_HOME` (default: working directory) roots runs, comparisons, programmes and probes | `util.PROJECT_ROOT_PATH` points inside site-packages for an installed wheel | Low |
+| E-9 | `HARNESS_HOME` (default: `experiments/financial/outputs/` under the repository root) roots runs, comparisons, programmes and probes | `util.PROJECT_ROOT_PATH` points inside site-packages for an installed wheel, so the root is the working directory, not the package; a dedicated output directory beside the inputs keeps outputs out of the repository root and mirrors the legacy `experiments/<dataset>/concept_pipeline/results/` | Low |
 | E-10 | `enforcement: auto` resolves to `provider_schema` only if every panel probe confirms it, else `prompt_only` for all | Keeps §2.12 (identical response mode) without an implicit stratum | Low |
 | E-11 | Typed exceptions mapped to exit codes; `assert` only for internal invariants; `logging` in library code | Legacy uses `assert` and `print` for validation and progress, which `-O` strips and tests cannot capture by level | Low |
 | E-12 | Legacy discovery bridge emits hypotheses only, never specs | §27: discovery never supports a confirmatory claim | Low |
@@ -3202,6 +3203,13 @@ The cluster is the inferential unit. The matched block is the pairing unit. The 
 ---
 
 ## 41. Change log
+
+**CR-5 — 2026-10-12 — v3.3 → v3.4.** Trigger: the user asked that the files the project generates be saved inside the project structure, in a sensible location.
+
+- **Changed:** the default `HARNESS_HOME` is `experiments/financial/outputs/` under the repository root, not the working directory, so a run's outputs no longer spread `runs/`, `comparisons/`, `programmes/` and `probes/` across the repository root, and output `programmes/` no longer shares a parent with the input `experiments/financial/programmes/` (§0.8, E-9). The §0.9 `.gitignore` block takes a `**/` prefix so it applies at the new default and at any `HARNESS_HOME` inside the repository.
+- **Unchanged:** the `HARNESS_HOME` override; the layout under it; the commit policy; the legacy pipeline's output paths. The clean-tree rule (§0.10) inspects the package directories only, and no asset hashes a directory that contains `outputs/`, so outputs cannot cause FROZEN_INPUT_DRIFT.
+- **Blast radius checked:** §0.8, §0.9, §0.10, §20.4 probes, §31, §32A, §32B.4, E-9.
+- **Already-built code made non-compliant:** `core/paths.py` (fixed in the same change, with a test in `tests/harness/test_harness_lifecycle.py`).
 
 **CR-4 — 2026-10-07 — v3.2 → v3.3.** Trigger: the user asked for the code specification to be completed, with a solution to every open issue left by CR-3, and for the project's aim, testing LLMs for undeclared biases in finance and quantitative-finance question answering, to be the key point of a new `AGENTS.md`.
 
