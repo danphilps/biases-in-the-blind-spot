@@ -266,6 +266,20 @@ def cmd_programme(args: argparse.Namespace) -> Result:
     raise NotImplementedCommand(args.action)
 
 
+def cmd_pilot(args: argparse.Namespace) -> Result:
+    import financial_llm_harness.execution.pilot as PI
+
+    if args.action == "make":
+        out = PI.make_pilot_spec(args.spec, args.output, args.n_cases)
+        return 0, f"wrote pilot spec {out}; run it with `run {out} --panel NAME --yes`"
+    if not args.run:
+        raise HarnessValidationError("pilot plan needs --run PILOT_RUN_ID")
+    out, proj = PI.plan_from_pilot(
+        args.run, args.spec, args.output, inflate=not args.no_inflate
+    )
+    return 0, PI.projection_text(out, proj)
+
+
 def cmd_discovery(args: argparse.Namespace) -> Result:
     from financial_llm_harness.discovery import import_legacy
 

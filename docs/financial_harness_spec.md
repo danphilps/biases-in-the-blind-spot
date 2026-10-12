@@ -1137,6 +1137,7 @@ planning_ref:
 - The entries are part of the design (`statistical_spec` is in the design projection, §4), so the planned N, `subset_n` and `design_hash` do not depend on the panel. The pilot SHOULD use the design's P and R: Var(x_c) falls as P·R rises, so a pilot with more blocks per case understates it.
 - **Design-level plan (`generate`).** For each (feature, contrast), the planning variance is the largest `variance` among the entries for it or, when there is none, the §23.6 value without a pilot (`planning_sd`², or the no-pilot bound); N_required (§23.6) and `subset_n` follow from these. For a multi-model panel the common planned N is thus the largest requirement over the models with a pilot estimate.
 - **Panel check (`validate`).** Every panel model whose provider is not `fake` and that has no entry for a contrast is planned at the §23.6 value without a pilot for that contrast. If that requirement exceeds N_clusters (primary contrast) or `subset_n` (control contrasts), `validate` exits 2 naming the model and the contrast.
+- **Planning pilot (CR-7).** `pilot make SPEC -o PILOT [--n-cases 100]` writes the discovery copy of a confirmatory spec: key `pilot__<experiment_key>`, `mode: discovery`, `seed_stream: disc`, the same design otherwise, and `controls.pilot: true`, which makes a discovery manifest carry all four control arms on every cluster (`subset_n` = min(computed, N_clusters)). A discovery manifest's N_required and control sizes are reported by `plan` and not enforced, because no discovery result carries a confirmatory label (§24.2, §27); `controls.pilot` in a confirmatory manifest exits 2. `pilot plan SPEC --run PILOT_RUN_ID -o OUT` refuses a run that is not the pilot of SPEC's design, then writes one entry per model for the primary contrast (`B_vs_A` or `level_<arm>`), A0_vs_A, PL_vs_A and PCB_vs_PCA, with `variance` = sd_c² raised by default to its one-sided 80% upper confidence limit, sd_c²·(n − 1)/χ²_{0.20, n−1}, and for a binary feature floored at 3/(n·k²) with k = P·R (no discordance seen in n·k blocks), the rule stated in `derivation`; it sets `n_cases` = ⌈1.1 × max(N_required, computed `subset_n`, 30)⌉ over the models and prints the projected calls, the pilot's calls and the cost at the pilot's mean tokens per call. Controls keep their margins, α and power; only the variance that sizes them changes.
 - **Fake-design variance.** An entry for a fake model MAY set `run_id`, `source_row_id` and `source_sha256` to null when its `variance` is derived analytically from the §20.11 mechanism, stating the derivation in a `derivation` string; `validate` exits 2 if such an entry names a model key whose provider is not `fake`. Entries are keyed by `model_key`, so such a variance never plans a live model. The S1 specs do not use one (§35).
 
 | Arm | Construction | Pass condition | If violated |
@@ -1528,6 +1529,7 @@ financial-harness probe    [MODEL_KEY] --panel NAME           # capability probe
 financial-harness calibrate --feature FEATURE_ID --labels PATH --panel NAME   # evaluator calibration record (§16)
 financial-harness sandbox  build                               # build the sandbox images (§13.4)
 financial-harness programme plan | run | status | report PROGRAMME.yaml [--resume PROGRAMME_RUN_ID] [--yes]   # §32B
+financial-harness pilot make SPEC.yaml -o PILOT.yaml [--n-cases N] | plan SPEC.yaml --run PILOT_RUN_ID -o OUT.yaml [--no-inflate]   # planning pilot (§22, CR-7)
 financial-harness discovery import-legacy --results-dir DIR --experiment-key KEY --dataset NAME -o PATH      # §27.1
 financial-harness taxonomy validate | coverage | list [--domain F|Q|M|K] [--priority P1]   # Part II registry
 financial-harness taxonomy expand (--item FAQ_ID | --wave WAVE) [--allow-partial] [--force]   # specs from the registry; report over the whole registry (§32B.2)
@@ -3203,6 +3205,14 @@ The cluster is the inferential unit. The matched block is the pairing unit. The 
 ---
 
 ## 41. Change log
+
+**CR-7 — 2026-10-12 — v3.4.** Trigger: the user asked for large cuts in calls, tokens and charges without weakening the results.
+
+- **Finding:** with no pilot, every binary contrast is planned at σ² = 1.0, so the A0 and PL equivalence gates need 857 clusters at a margin of 0.10. That sets `n_cases` 960 and `subset_n` 857 for S1, S2, S4 and S5 even where the LEVEL primary needs 155, and controls are 64% of trials. The pilot route §27 already permits (`planning_ref` naming a discovery pilot of the same design) had no tooling, and a discovery run could not carry controls.
+- **Added:** `controls.pilot`, `pilot make` and `pilot plan` (§22). Discovery manifests report rather than enforce N_required (§23.6). The live panel sends trials through the provider batch APIs (`batch: true`, §20.10), which halves the price and is outside the model key.
+- **Unchanged:** δ, margins, α, power targets, the three controls and their pass rules, P and R (D-5), the thinking setting and every prompt. Labels still come only from confirmatory runs.
+- **Blast radius checked:** §3 arms, §4 (the `planning_ref` entries are in the design projection), §22, §23.6, §26, §27 (the pilot uses the `disc` stream; a planning pilot of the same design is the case §27 names), §32.
+- **Already-built code made non-compliant:** none; tests in `tests/harness/test_harness_pilot.py`.
 
 **CR-6 — 2026-10-12 — v3.4.** Trigger: the user asked that only endpoints with a populated API key be run (currently OpenAI and Anthropic), that each platform's model be tested independently (Anthropic `claude-opus-5-5`, OpenAI `gpt-6-luna`), and that the analysis produce output files from which biases can be established.
 

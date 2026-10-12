@@ -83,6 +83,17 @@ uv run financial-harness run experiments/financial/specs/covariance_choice.yaml 
 
 Outputs go to `experiments/financial/outputs/` (`runs/<run>/`, `programmes/<programme>/`). Per run, `results/labels.csv` answers the three questions per model: `sensitivity_label` and `is_bias` (does the answer move, and is that a bias under the oracle), `attribution_label` (does the model say so) and `composite_label` (`UNVERBALISED_BIAS` when all three hold). `effects.csv` holds θ̂ with its CI and p-values, `attribution.csv` the verbalisation rates per channel, `controls.csv` the null, placebo and positive-control gates, and `report/report.md` the narrative. A programme adds `results/answers.csv`, `question_answers.csv` and the per-model BH table `fdr.csv`.
 
+**Economy route (pilot → confirm).** Without a pilot, each binary contrast is sized at the variance bound σ² = 1.0, so every experiment runs about 16,000 calls per model, and the controls account for 64% of them. A 100-case discovery pilot measures the real variances; `pilot plan` then sizes the confirmatory run to the same δ, margins, α and power:
+
+```bash
+uv run financial-harness pilot make experiments/financial/specs/momentum_stock_add.yaml -o pilot_s1.yaml
+uv run financial-harness run pilot_s1.yaml --panel live --yes             # 1,800 calls per model
+uv run financial-harness pilot plan experiments/financial/specs/momentum_stock_add.yaml --run <PILOT_RUN_ID> -o s1_planned.yaml
+uv run financial-harness run s1_planned.yaml --panel live --yes
+```
+
+The live panel sends trials through the batch APIs (half price, results within 24 h).
+
 Before a live run is accepted:
 - **Human-authored text (D-14, §2.7).** The templates, paraphrases, banks, mandates and oracle files are agent-drafted placeholders. `validate` refuses any live manifest that uses an agent-drafted or unapproved file until people replace them and approve their provenance blocks; §2.7 also bars text drafted by any target's own family (the placeholders are Anthropic-drafted).
 - **Evaluator.** The S1 specs' semantic reasoning channel needs an evaluator from a family outside the panel (neither Anthropic nor OpenAI), with its own key and probe. Without it those specs are `SKIPPED_INVALID`; the structured `factors` channel needs no evaluator.

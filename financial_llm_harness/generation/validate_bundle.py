@@ -199,7 +199,10 @@ def validate_bundle(
     # --- power (§22, §23.6) ---------------------------------------------------------
     n_clusters = corpus.n_clusters
     req = corpus.primary_requirement
-    if n_clusters < req.n_required:
+    # a discovery run (e.g. a planning pilot, CR-7) carries no confirmatory label, so its
+    # power is reported by `plan`, not enforced; its controls run on every cluster it has
+    discovery = manifest["mode"] == "discovery"
+    if n_clusters < req.n_required and not discovery:
         raise HarnessValidationError(
             f"power: N_clusters {n_clusters} < N_required {req.n_required} for {req.contrast} "
             f"(planning variance {req.variance.variance}, {req.variance.source}; §23.6)"
@@ -209,6 +212,8 @@ def validate_bundle(
         if corpus.control_requirements
         else 0
     )
+    if discovery:
+        computed = min(computed, n_clusters)
     subset_n = int(manifest["controls"]["subset_n"] or 0)
     if subset_n < computed:
         raise HarnessValidationError(
@@ -218,7 +223,8 @@ def validate_bundle(
         raise HarnessValidationError(
             f"controls.subset_n {subset_n} > N_clusters {n_clusters} (§22)"
         )
-    _panel_planning_check(manifest, n_clusters, subset_n)
+    if not discovery:
+        _panel_planning_check(manifest, n_clusters, subset_n)
     # --- provenance and independence (§2.7, §8.1, D-14) -----------------------------
     provs = file_provenances(assets, manifest)
     non_fake = manifest_targets_non_fake(manifest)

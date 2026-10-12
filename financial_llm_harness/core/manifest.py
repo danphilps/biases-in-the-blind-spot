@@ -427,8 +427,15 @@ def check_design(m: Mapping[str, Any], where: str) -> None:
             "null_margin",
             "subset_n",
         ),
-        optional=("placebo_margin",),
+        optional=("placebo_margin", "pilot"),
     )
+    if controls.get("pilot") is not None:
+        if not isinstance(controls["pilot"], bool):
+            raise fail(where, "controls.pilot must be a boolean")
+        if controls["pilot"] and mode != "discovery":
+            raise fail(
+                where, "controls.pilot is a discovery planning pilot (§22, CR-7)"
+            )
     ispec = m["intervention_spec"]
     if ispec is None:
         if m["intervention_id"] != "I.NONE":

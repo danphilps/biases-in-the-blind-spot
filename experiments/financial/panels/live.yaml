@@ -4,6 +4,8 @@
 #   financial-harness models list --provider anthropic | openai
 # Only entries whose provider key (providers.yaml `key_env`) is populated are run:
 # `generate` drops the others and records them in `sampling_spec.models_skipped`.
+# batch: true sends trials through the providers' batch APIs (50% price, results within
+# 24 h; §20.10, E-4). Batch is not part of the model key, so it changes no result.
 # No evaluator: §2.7 needs a family outside the panel (neither anthropic nor openai),
 # so specs with a semantic feature need one added here, with its own key and probe.
 panel_version: 1
@@ -16,7 +18,7 @@ models:
     transport: native
     thinking: {mode: provider_default, effort: null, budget_tokens: null}
     request_profile: null
-    batch: false
+    batch: true
     upstream_routing: null
     params: {}
   - model_key: openai--gpt-6-luna--5cfae6f9
@@ -27,7 +29,7 @@ models:
     transport: native
     thinking: {mode: provider_default, effort: null, budget_tokens: null}
     request_profile: null
-    batch: false
+    batch: true
     upstream_routing: null
     params: {}
 evaluator: null

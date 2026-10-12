@@ -190,6 +190,22 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--yes", action="store_true")
 
     sp = add(
+        "pilot",
+        "financial_llm_harness.commands:cmd_pilot",
+        "size a confirmatory spec from a small discovery pilot (§22, §23.6)",
+    )
+    sp.add_argument("action", choices=["make", "plan"])
+    sp.add_argument("spec", type=Path, help="the confirmatory spec")
+    sp.add_argument("-o", "--output", type=Path, required=True)
+    sp.add_argument("--n-cases", type=int, default=100, help="make: pilot cases")
+    sp.add_argument("--run", metavar="PILOT_RUN_ID", help="plan: the pilot run")
+    sp.add_argument(
+        "--no-inflate",
+        action="store_true",
+        help="plan: use sd_c² itself, not its 80%% upper confidence limit",
+    )
+
+    sp = add(
         "discovery",
         "financial_llm_harness.commands:cmd_discovery",
         "legacy discovery bridge (§27.1)",

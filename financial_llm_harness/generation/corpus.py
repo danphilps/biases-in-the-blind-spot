@@ -76,10 +76,10 @@ MAX_REJECTION_SHARE = 0.30
 
 
 def derive_arms(design: Mapping[str, Any]) -> list[str]:
-    """§3: [A, B] plus, in confirmatory mode, A0, PL, PCA, PCB; correctness: [A] + A0."""
+    """§3: [A, B] plus, in confirmatory mode or a planning pilot, A0, PL, PCA, PCB; correctness: [A] + A0."""
     correctness = design["intervention_id"] == "I.NONE"
     arms = ["A"] if correctness else ["A", "B"]
-    if design["mode"] != "confirmatory":
+    if design["mode"] != "confirmatory" and not design["controls"].get("pilot"):
         return arms
     controls = design["controls"]
     if controls.get("null_arm"):
@@ -409,13 +409,17 @@ def _build(
         if any(a in arms for a in CONTROL_ARMS)
         else 0
     )
+    n_clusters = clustering.n_clusters
+    if design["mode"] == "discovery":
+        computed = min(
+            computed, n_clusters
+        )  # a pilot runs its controls on every cluster
     spec_subset = controls.get("subset_n")
     if spec_subset is not None and int(spec_subset) < computed:
         raise HarnessValidationError(
             f"controls.subset_n {spec_subset} is below the computed {computed} (§22, D-22)"
         )
     subset_n = computed if spec_subset is None else int(spec_subset)
-    n_clusters = clustering.n_clusters
     if subset_n > n_clusters:
         raise HarnessValidationError(
             f"controls.subset_n {subset_n} exceeds N_clusters {n_clusters}; the subset is never truncated (§22)"
