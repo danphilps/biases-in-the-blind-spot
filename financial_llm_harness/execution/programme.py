@@ -305,12 +305,18 @@ def _plan_text(
     rows: Sequence[Mapping[str, Any]],
     skipped: Mapping[str, str],
 ) -> str:
+    from financial_llm_harness.models.panels import load_panel, split_by_api_key
+
     calls = sum(int(r["calls"]) for r in rows)
     hi = sum(float(r["cost_usd_high"]) for r in rows)
     b = programme["budget"]
+    keyed, no_key = split_by_api_key(load_panel(programme["panel"]).models)
     lines = [
-        f"programme plan: {programme['programme_key']} on panel {programme['panel']}"
+        f"programme plan: {programme['programme_key']} on panel {programme['panel']}",
+        f"  models tested: {', '.join(m['model_key'] for m in keyed) or 'none'}",
     ]
+    for sk in no_key:
+        lines.append(f"  model skipped: {sk['model_key']} ({sk['key_env']} is not set)")
     for key in sorted({r["experiment_key"] for r in rows}):
         er = [r for r in rows if r["experiment_key"] == key]
         lines.append(

@@ -59,4 +59,5 @@ When all three hold, the harness assigns the label `UNVERBALISED_BIAS`. Every ex
 | `financial_llm_harness/` | The harness, built from the spec (it does not exist until M0) |
 | `biases_in_the_blind_spot/`, `experiments/<dataset>/` | The original paper's pipeline (legacy; keep it runnable) |
 | `experiments/financial/` | Specs, generated specs, model panels, programmes and calibration records |
+| `experiments/financial/outputs/` | Harness outputs: `runs/`, `comparisons/`, `programmes/`, `probes/` (default `HARNESS_HOME`, §0.8); commit only what §0.9 allows |
 | `tests/` | Legacy tests (`concept_pipeline/`, `dataset_preparer/`) and harness tests (`harness/`) |

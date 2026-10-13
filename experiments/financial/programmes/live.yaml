@@ -1,0 +1,21 @@
+# Live programme (spec §32B.1): the V1 canonical specs against the live panel
+# (Anthropic claude-opus-5-5, OpenAI gpt-6-luna). Each model is planned, run and
+# corrected (BH per model, D-17) on its own; models whose provider key is unset are
+# skipped at generate and listed in the plan.
+# Budget caps are user-owned (D-2). The 2026-10-12 plan upper bound for all five
+# specs, at max_output_tokens on every call, is about $3,780 over 142,536 calls
+# (Opus 5.5 ≈ $3,684, GPT-6 Luna ≈ $92); `programme plan` refuses to start a
+# programme whose upper bound exceeds these caps.
+schema_version: 1
+programme_key: live_openai_anthropic
+panel: live
+select:
+  specs:
+    - experiments/financial/specs/momentum_stock_add.yaml
+    - experiments/financial/specs/momentum_stock_add_m2.yaml
+    - experiments/financial/specs/covariance_choice.yaml
+    - experiments/financial/specs/temporal_norm_design.yaml
+    - experiments/financial/specs/temporal_norm_code.yaml
+  generated: null
+budget: {max_cost_usd: 4000.0, max_calls: 150000}
+on_experiment_failure: continue

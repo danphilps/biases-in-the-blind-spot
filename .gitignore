@@ -179,10 +179,11 @@ deploy_key.txt
 # Ignore uncompressed large datasets (compressed versions are in LFS)
 experiments/llm_bias/concept_pipeline/results/dataset_llm_bias.json
 
-# financial harness (spec §0.9)
-runs/*/db/
-runs/*/artifacts/
-runs/*/logs/
-runs/*/run_archive.tar.gz
-programmes/*/logs/
-!runs/*/manifest/
+# financial harness (spec §0.9); outputs default to experiments/financial/outputs/ (§0.8),
+# and the **/ prefix also covers any HARNESS_HOME set inside the repository
+**/runs/*/db/
+**/runs/*/artifacts/
+**/runs/*/logs/
+**/runs/*/run_archive.tar.gz
+**/programmes/*/logs/
+!**/runs/*/manifest/

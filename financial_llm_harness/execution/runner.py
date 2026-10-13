@@ -189,6 +189,19 @@ def check_policy(manifest: Mapping[str, Any]) -> None:
             )
 
 
+def check_api_keys(manifest: Mapping[str, Any]) -> None:
+    """Refuse before L7 when a frozen target or evaluator has no API key; a frozen model is never dropped."""
+    from financial_llm_harness.models.panels import require_api_keys
+
+    entries: list[Mapping[str, Any]] = list(manifest["sampling_spec"]["models"])
+    seen = {e["model_key"] for e in entries}
+    for ev in manifest.get("evaluators") or []:
+        if ev["model_key"] not in seen:
+            seen.add(ev["model_key"])
+            entries.append(ev)
+    require_api_keys(entries, f"manifest {manifest['experiment_key']}")
+
+
 def in_git_work_tree(path: Path) -> bool:
     try:
         out = subprocess.run(
@@ -1432,6 +1445,7 @@ def run_experiment(
         ref = current_code_ref(manifest, code_ref)
         text = plan_text(bundle_dir)
         check_policy(manifest)
+        check_api_keys(manifest)
         if not yes or dry_run:
             return RunResult(None, None, None, 0, text)
         run_dir = materialise(bundle_dir, rid, clk, ref)
@@ -1483,6 +1497,8 @@ def resume_experiment(
     manifest = B.load_manifest(bundle_dir)
     ref = current_code_ref(manifest, code_ref)
     drift = B.frozen_input_mismatches(bundle_dir, ref, require_lock=True)
+    if not drift:
+        check_api_keys(manifest)
     lock = WriterLock(run_dir)
     lock.acquire()
     ctx: RunContext | None = None

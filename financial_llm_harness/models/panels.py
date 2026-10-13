@@ -2,11 +2,13 @@
 
 A panel is the set of target models an experiment or programme runs against.
 Model keys are ``<prefix>--<8 hex>``, at most 72 characters, derived from the
-canonical identity of the panel entry.
+canonical identity of the panel entry. Only entries whose provider has a
+populated API key are run; ``generate`` records the others as skipped.
 """
 
 from __future__ import annotations
 
+import os
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -26,10 +28,11 @@ from financial_llm_harness.core.schema import (
     check_keys,
     fail,
 )
-from financial_llm_harness.errors import HarnessValidationError
+from financial_llm_harness.errors import HarnessValidationError, MissingApiKey
 from financial_llm_harness.models.base import (
     PROTOCOL_FOR_ADAPTER,
     load_providers,
+    provider_entry,
     request_profile,
     resolve_profile_id,
 )
@@ -97,6 +100,57 @@ def derive_model_key(entry: Mapping[str, Any]) -> str:
         parts.append("think-" + _part(setting))
     prefix = "--".join(parts)[:MAX_PREFIX].rstrip("-")
     return f"{prefix}--{suffix}"
+
+
+# ---------------------------------------------------------------------------
+# API-key gating: only providers with a populated key are called
+# ---------------------------------------------------------------------------
+
+
+def key_env_of(provider: str) -> str | None:
+    """The provider's ``key_env`` in providers.yaml; None for providers without a key (fake, local)."""
+    return provider_entry(provider).get("key_env")
+
+
+def has_api_key(provider: str) -> bool:
+    """True when the provider needs no key, or its key variable is set and not blank."""
+    env = key_env_of(provider)
+    return env is None or os.environ.get(env, "").strip() != ""
+
+
+def split_by_api_key(
+    entries: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """(entries whose provider has a key, one skip record per entry without one), panel order kept."""
+    keyed: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for e in entries:
+        if has_api_key(e["provider"]):
+            keyed.append(e)
+        else:
+            skipped.append(
+                {
+                    "model_key": e["model_key"],
+                    "provider": e["provider"],
+                    "model": e["model"],
+                    "key_env": key_env_of(e["provider"]),
+                    "reason": "no_api_key",
+                }
+            )
+    return keyed, skipped
+
+
+def require_api_keys(entries: list[Mapping[str, Any]], what: str) -> None:
+    """Raise MissingApiKey naming every entry whose provider key is unset (a frozen model is never dropped)."""
+    missing = [
+        f"{e['model_key']} ({key_env_of(e['provider'])})"
+        for e in entries
+        if not has_api_key(e["provider"])
+    ]
+    if missing:
+        raise MissingApiKey(
+            f"{what}: no API key for {', '.join(missing)}; set the variable in the environment or .env"
+        )
 
 
 @dataclass(frozen=True)
