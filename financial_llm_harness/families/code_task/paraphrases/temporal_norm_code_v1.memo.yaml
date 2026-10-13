@@ -21,7 +21,7 @@ user: |-
   import pandas as pd
 
 
-  def normalise(panel: pd.DataFrame) -> pd.DataFrame:
+  {code_comment}def normalise(panel: pd.DataFrame) -> pd.DataFrame:
       raise NotImplementedError
   ```
 

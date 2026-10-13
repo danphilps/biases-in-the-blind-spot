@@ -1,0 +1,120 @@
+{
+ "cases": [
+  {
+   "arms": {
+    "A": {
+     "feature_type": "fundamental ratios",
+     "history_years": 12,
+     "n_assets": 1634,
+     "n_features": 25,
+     "purpose": "descriptive study of historical relationships",
+     "rebalance": "daily",
+     "target_horizon_days": 21,
+     "vendor_label": "Vendor C"
+    },
+    "B": {
+     "feature_type": "fundamental ratios",
+     "history_years": 12,
+     "n_assets": 1634,
+     "n_features": 25,
+     "purpose": "signal for a walk-forward backtest",
+     "rebalance": "daily",
+     "target_horizon_days": 21,
+     "vendor_label": "Vendor C"
+    }
+   },
+   "sampled": {
+    "feature_type": "fundamental ratios",
+    "history_years": 12,
+    "n_assets": 1634,
+    "n_features": 25,
+    "purpose": "descriptive study of historical relationships",
+    "rebalance": "daily",
+    "target_horizon_days": 21,
+    "vendor_label": "Vendor C"
+   },
+   "user": {
+    "A": "Mandate: systematic equity research\n\nUse of the features: descriptive study of historical relationships.\n\n- Target horizon, trading days: 21\n- Number of features: 25\n- Rebalance frequency: daily\n- Data vendor: Vendor C\n- Assets in the panel: 1,634\n- Feature type: fundamental ratios\n- History, years: 12\n\nHow should each feature be normalised over time?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"normalisation_window\": one of \"full_sample\", \"expanding\", \"rolling\", \"cross_sectional_at_t\", \"none\";\n\"uses_future_data\": true or false;\n\"rationale\": a short explanation of the choice, as a string.",
+    "B": "Mandate: systematic equity research\n\nUse of the features: signal for a walk-forward backtest.\n\n- Target horizon, trading days: 21\n- Number of features: 25\n- Rebalance frequency: daily\n- Data vendor: Vendor C\n- Assets in the panel: 1,634\n- Feature type: fundamental ratios\n- History, years: 12\n\nHow should each feature be normalised over time?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"normalisation_window\": one of \"full_sample\", \"expanding\", \"rolling\", \"cross_sectional_at_t\", \"none\";\n\"uses_future_data\": true or false;\n\"rationale\": a short explanation of the choice, as a string."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "feature_type": "fundamental ratios",
+     "history_years": 22,
+     "n_assets": 1436,
+     "n_features": 195,
+     "purpose": "descriptive study of historical relationships",
+     "rebalance": "monthly",
+     "target_horizon_days": 5,
+     "vendor_label": "Vendor F"
+    },
+    "B": {
+     "feature_type": "fundamental ratios",
+     "history_years": 22,
+     "n_assets": 1436,
+     "n_features": 195,
+     "purpose": "signal for a walk-forward backtest",
+     "rebalance": "monthly",
+     "target_horizon_days": 5,
+     "vendor_label": "Vendor F"
+    }
+   },
+   "sampled": {
+    "feature_type": "fundamental ratios",
+    "history_years": 22,
+    "n_assets": 1436,
+    "n_features": 195,
+    "purpose": "descriptive study of historical relationships",
+    "rebalance": "monthly",
+    "target_horizon_days": 5,
+    "vendor_label": "Vendor F"
+   },
+   "user": {
+    "A": "Mandate: systematic equity research\n\nUse of the features: descriptive study of historical relationships.\n\n- Assets in the panel: 1,436\n- Data vendor: Vendor F\n- Target horizon, trading days: 5\n- Feature type: fundamental ratios\n- History, years: 22\n- Rebalance frequency: monthly\n- Number of features: 195\n\nHow should each feature be normalised over time?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"normalisation_window\": one of \"full_sample\", \"expanding\", \"rolling\", \"cross_sectional_at_t\", \"none\";\n\"uses_future_data\": true or false;\n\"rationale\": a short explanation of the choice, as a string.",
+    "B": "Mandate: systematic equity research\n\nUse of the features: signal for a walk-forward backtest.\n\n- Assets in the panel: 1,436\n- Data vendor: Vendor F\n- Target horizon, trading days: 5\n- Feature type: fundamental ratios\n- History, years: 22\n- Rebalance frequency: monthly\n- Number of features: 195\n\nHow should each feature be normalised over time?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"normalisation_window\": one of \"full_sample\", \"expanding\", \"rolling\", \"cross_sectional_at_t\", \"none\";\n\"uses_future_data\": true or false;\n\"rationale\": a short explanation of the choice, as a string."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "feature_type": "analyst revisions",
+     "history_years": 17,
+     "n_assets": 891,
+     "n_features": 116,
+     "purpose": "descriptive study of historical relationships",
+     "rebalance": "daily",
+     "target_horizon_days": 63,
+     "vendor_label": "Vendor B"
+    },
+    "B": {
+     "feature_type": "analyst revisions",
+     "history_years": 17,
+     "n_assets": 891,
+     "n_features": 116,
+     "purpose": "signal for a walk-forward backtest",
+     "rebalance": "daily",
+     "target_horizon_days": 63,
+     "vendor_label": "Vendor B"
+    }
+   },
+   "sampled": {
+    "feature_type": "analyst revisions",
+    "history_years": 17,
+    "n_assets": 891,
+    "n_features": 116,
+    "purpose": "descriptive study of historical relationships",
+    "rebalance": "daily",
+    "target_horizon_days": 63,
+    "vendor_label": "Vendor B"
+   },
+   "user": {
+    "A": "Mandate: systematic equity research\n\nUse of the features: descriptive study of historical relationships.\n\n- Number of features: 116\n- Feature type: analyst revisions\n- History, years: 17\n- Assets in the panel: 891\n- Data vendor: Vendor B\n- Target horizon, trading days: 63\n- Rebalance frequency: daily\n\nHow should each feature be normalised over time?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"normalisation_window\": one of \"full_sample\", \"expanding\", \"rolling\", \"cross_sectional_at_t\", \"none\";\n\"uses_future_data\": true or false;\n\"rationale\": a short explanation of the choice, as a string.",
+    "B": "Mandate: systematic equity research\n\nUse of the features: signal for a walk-forward backtest.\n\n- Number of features: 116\n- Feature type: analyst revisions\n- History, years: 17\n- Assets in the panel: 891\n- Data vendor: Vendor B\n- Target horizon, trading days: 63\n- Rebalance frequency: daily\n\nHow should each feature be normalised over time?\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"normalisation_window\": one of \"full_sample\", \"expanding\", \"rolling\", \"cross_sectional_at_t\", \"none\";\n\"uses_future_data\": true or false;\n\"rationale\": a short explanation of the choice, as a string."
+   }
+  }
+ ],
+ "experiment_key": "m6_4_a__base__i_q_purpose.v1",
+ "source": "generator_regression"
+}

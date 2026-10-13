@@ -1,0 +1,11 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+entries:
+  K.M.1:
+    mandate: CT1
+    base_design: experiments/financial/specs/temporal_norm_code.yaml

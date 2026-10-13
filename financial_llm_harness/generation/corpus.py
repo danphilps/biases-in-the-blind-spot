@@ -10,7 +10,7 @@ import math
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Protocol
 
 import numpy as np
 from scipy import stats as sstats
@@ -21,6 +21,7 @@ from financial_llm_harness.errors import HarnessValidationError
 from financial_llm_harness.evaluation.parse import Contract, contract_from_dict
 from financial_llm_harness.families import (
     BankTracker,
+    ScenarioSchema,
     TaskFamily,
     load_clause,
     load_contract,
@@ -180,9 +181,37 @@ class ArmRender:
     note: str = ""
 
 
-CueHook = Callable[
-    [int, str, dict[str, Any], np.random.Generator, list[str]], ArmRender | None
-]
+class CueHook(Protocol):
+    """The undeclared-bias battery's generation hook (§T4.4; ``taxonomy.battery``).
+
+    ``extend_schema`` adds the injected cue node; ``prepare`` holds the base
+    intervention's node and makes the case's cue draws from ``rng_k`` after the
+    base state; ``arm_values`` gives an entity or label cue's per-case pair;
+    calling the hook applies the cue to one arm's render inputs.
+    """
+
+    def extend_schema(self, schema: ScenarioSchema) -> ScenarioSchema: ...
+
+    def prepare(
+        self,
+        world: World,
+        case_idx: int,
+        base: dict[str, Any],
+        rng: np.random.Generator,
+    ) -> dict[str, Any]: ...
+
+    def arm_values(self, case_idx: int) -> tuple[Any, Any] | None: ...
+
+    def case_info(self, case_idx: int) -> dict[str, Any] | None: ...
+
+    def __call__(
+        self,
+        case_idx: int,
+        arm: str,
+        state: Mapping[str, Any],
+        rng: np.random.Generator,
+        default: ArmRender,
+    ) -> ArmRender: ...
 
 
 @dataclass
@@ -280,7 +309,10 @@ def _build(
     cue_hook: CueHook | None,
 ) -> Corpus:
     sc = design["scenario_spec"]
-    world = build_world(family.scenario_schema, sc, fns)
+    schema = family.scenario_schema
+    if cue_hook is not None:
+        schema = cue_hook.extend_schema(schema)
+    world = build_world(schema, sc, fns)
     arms = derive_arms(design)
     ispec: InterventionSpec | None = None
     if design["intervention_spec"] is not None:
@@ -318,14 +350,20 @@ def _build(
         clause_logicals.append(logical)
         file_data[logical] = clause
         pcb_note = f"{clause['text']}\n\n"
+    # a family may render a block of items from the state (§35 S2): its render_blocks
+    # gives each arm's blocks and BLOCK_NODES the state nodes each block shows
+    blocks_fn = getattr(family.module, "render_blocks", None)
+    block_nodes = getattr(family.module, "BLOCK_NODES", None)
     rendered_set: set[str] = set()
     for p in templates.paraphrases:
-        rendered_set |= R.rendered_nodes(templates.base, p)
+        rendered_set |= R.rendered_nodes(templates.base, p, block_nodes)
     primary = _feature(design, design["hypothesis"]["primary_feature"])
     check_measurability(primary)
     oracle_nodes = list(design["oracle_spec"].get("nodes") or [])
     if (
         ispec is not None
+        and cue_hook
+        is None  # a battery cue is rendered by the hook, never by the oracle (§T4.4)
         and ispec.node not in oracle_nodes
         and design["oracle_spec"]["type"] not in ("DISCOVERY", "LEVEL")
     ):
@@ -365,6 +403,7 @@ def _build(
                 int(seeds["paraphrase"]),
                 cue_hook,
                 pcb_note,
+                blocks_fn,
             )
         except CaseRejected as exc:
             rejections[exc.reason] += 1
@@ -561,15 +600,25 @@ def _attempt(
     paraphrase_seed: int,
     cue_hook: CueHook | None,
     pcb_note: str = "",
+    blocks_fn: Callable[..., dict[str, list[tuple[str, str | None]]]] | None = None,
 ) -> dict[str, Any]:
     base = draw_state(world, rng)
+    if cue_hook is not None:
+        base = cue_hook.prepare(world, case_idx, base, rng)
     bad = violated_constraints(world, base)
     if bad:
         raise CaseRejected("constraint", f"sampled state: {bad}")
     controls = design["controls"]
-    if ispec is not None:
-        sa, sb, flipped = apply_intervention(world, ispec, base, case_idx)
+    pair = cue_hook.arm_values(case_idx) if cue_hook is not None else None
+    if ispec is not None and pair is not None:
+        # an entity or label cue: value a of the case's bank pair in A, value b in B (§T4.4)
+        sa = set_node(world, base, ispec.node, None, pair[0])
+        sb = set_node(world, base, ispec.node, None, pair[1])
+        flipped = False
         states: dict[str, dict[str, Any]] = {"A": sa, "B": sb}
+    elif ispec is not None:
+        sa, sb, flipped = apply_intervention(world, ispec, base, case_idx)
+        states = {"A": sa, "B": sb}
     else:
         sa, flipped = dict(base), False
         states = {"A": sa}
@@ -602,14 +651,13 @@ def _attempt(
             mandate=pc_mandate if arm in ("PCA", "PCB") else mandate_text,
             field_order=list(order),
             note=pcb_note if arm == "PCB" else "",
+            blocks=blocks_fn(states[arm], world.nodes) if blocks_fn else {},
         )
     cue_info: dict[str, Any] | None = None
     if cue_hook is not None:
         for arm in list(states):
-            override = cue_hook(case_idx, arm, states[arm], rng, list(order))
-            if override is not None:
-                arm_ctx[arm] = override
-        cue_info = getattr(cue_hook, "case_info", lambda _i: None)(case_idx)
+            arm_ctx[arm] = cue_hook(case_idx, arm, states[arm], rng, arm_ctx[arm])
+        cue_info = cue_hook.case_info(case_idx)
     messages: dict[str, list[tuple[str, str]]] = {}
     rendered: dict[str, list[R.Rendered]] = {}
     for arm, s in states.items():
@@ -637,10 +685,38 @@ def _attempt(
             rendered[arm].append(r)
             messages[arm].append((r.system, r.user))
     for p_idx in range(len(templates.paraphrases)):
+        if cue_hook is not None and "B" in rendered:
+            if messages["A"][p_idx] == messages["B"][p_idx]:
+                # a cue that does not render would test nothing and read as invariance
+                raise HarnessValidationError(
+                    f"battery: case {case_idx} paraphrase {p_idx} renders arms A and B identically (§T4.4)"
+                )
         if "B" in rendered:
+            check_block_isolation(arm_ctx["A"], arm_ctx["B"], set(diff), "B vs A")
+            rb = rendered["B"][p_idx]
+            if arm_ctx["A"].field_order != arm_ctx["B"].field_order:
+                # an order cue (§T4.4): B must equal A up to the order of its field lines,
+                # so B is compared in A's order, with everything else checked as usual
+                ac_b = arm_ctx["B"]
+                rb = R.render(
+                    templates.base,
+                    templates.paraphrases[p_idx],
+                    R.RenderContext(
+                        state=states["B"],
+                        nodes=world.nodes,
+                        mandate=ac_b.mandate,
+                        contract=contract_text,
+                        preamble=ac_b.preamble,
+                        field_order=arm_ctx["A"].field_order,
+                        display_overrides=ac_b.display_overrides,
+                        precision_overrides=ac_b.precision_overrides,
+                        blocks=ac_b.blocks,
+                        note=ac_b.note,
+                    ),
+                )
             check_text_isolation(
                 rendered["A"][p_idx],
-                rendered["B"][p_idx],
+                rb,
                 set(diff) | _cue_nodes(arm_ctx),
                 _cue_kinds(arm_ctx),
             )
@@ -648,20 +724,36 @@ def _attempt(
             raise CaseRejected("isolation", "A0 renders differently from A")
         if "PL" in rendered:
             dpl = diff_nodes(world, states["A"], states["PL"])
-            check_text_isolation(rendered["A"][p_idx], rendered["PL"][p_idx], dpl)
+            check_block_isolation(arm_ctx["A"], arm_ctx["PL"], dpl, "PL vs A")
+            check_text_isolation(
+                rendered["A"][p_idx],
+                rendered["PL"][p_idx],
+                dpl,
+                _block_kind(arm_ctx["A"], arm_ctx["PL"]),
+            )
         if "PCA" in rendered:
             dpa = diff_nodes(world, states["A"], states["PCA"])
+            check_block_isolation(arm_ctx["A"], arm_ctx["PCA"], dpa, "PCA vs A")
             check_text_isolation(
-                rendered["A"][p_idx], rendered["PCA"][p_idx], dpa, ("mandate",)
+                rendered["A"][p_idx],
+                rendered["PCA"][p_idx],
+                dpa,
+                ("mandate", *_block_kind(arm_ctx["A"], arm_ctx["PCA"])),
             )
             dpc = diff_nodes(world, states["PCA"], states["PCB"])
+            check_block_isolation(arm_ctx["PCA"], arm_ctx["PCB"], dpc, "PCB vs PCA")
             check_text_isolation(
-                rendered["PCA"][p_idx], rendered["PCB"][p_idx], dpc, ("note",)
+                rendered["PCA"][p_idx],
+                rendered["PCB"][p_idx],
+                dpc,
+                ("note", *_block_kind(arm_ctx["PCA"], arm_ctx["PCB"])),
             )
     a0 = rendered["A"][0]
     displayed = {s.node or s.slot: a0.user[s.start : s.end] for s in a0.state_spans()}
     slot_text = " ".join(
-        a0.user[s.start : s.end] for s in a0.spans if s.kind in ("state", "block")
+        a0.user[s.start : s.end]
+        for s in a0.spans
+        if s.kind in ("state", "block") and s.end > s.start
     )
     truth = None
     oracle = design["oracle_spec"]
@@ -683,6 +775,37 @@ def _attempt(
     }
 
 
+def check_block_isolation(
+    x: ArmRender, y: ArmRender, diff: set[str], label: str
+) -> None:
+    """Two arms' blocks may differ only by order or by removed items, and only with a state diff.
+
+    Per block, the multisets of items are equal (a reorder: POSITION_CHANGE or a
+    placebo swap) or one contains the other (a removal: REMOVE). No item may be
+    added or reworded, so the block carries no other change (§9.1, §35 S2).
+    """
+    for name in sorted(set(x.blocks) | set(y.blocks)):
+        a, b = x.blocks.get(name, []), y.blocks.get(name, [])
+        if a == b:
+            continue
+        if not diff:
+            raise CaseRejected(
+                "isolation", f"{label}: block {name!r} differs with no state diff"
+            )
+        # items compare by content: a separator newline moves with an item's position
+        ca = Counter((t.strip(), n) for t, n in a)
+        cb = Counter((t.strip(), n) for t, n in b)
+        subset = all(cb[k] <= ca[k] for k in cb) or all(ca[k] <= cb[k] for k in ca)
+        if not subset:
+            raise CaseRejected(
+                "isolation", f"{label}: block {name!r} items are added or reworded"
+            )
+
+
+def _block_kind(x: ArmRender, y: ArmRender) -> tuple[str, ...]:
+    return ("block",) if x.blocks != y.blocks else ()
+
+
 def _cue_nodes(arm_ctx: Mapping[str, ArmRender]) -> set[str]:
     out: set[str] = set()
     for a in ("A", "B"):
@@ -697,8 +820,6 @@ def _cue_kinds(arm_ctx: Mapping[str, ArmRender]) -> set[str]:
     if a and b:
         if a.preamble != b.preamble:
             kinds.add("preamble")
-        if a.field_order != b.field_order:
-            kinds.add("state")
         if a.blocks != b.blocks:
             kinds.add("block")
     return kinds

@@ -1,0 +1,167 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: transcript_items
+description: >-
+  Earnings-call item types for S2 (spec §35): materiality rank (1 = most material),
+  and ten sentences per type with numeric slots {v1} and {v2}, filled from the state
+  nodes v1_<type> and v2_<type>. The two lowest-ranked types are immaterial (the
+  placebo swaps them). No sentence outside guidance_cut mentions guidance.
+entries:
+  - type: guidance_cut
+    rank: 1
+    sentences:
+      - "Management lowered its full-year revenue guidance by {v1}, to {v2}."
+      - "The company cut its revenue outlook for the year by {v1} and now guides to {v2}."
+      - "Full-year revenue guidance was reduced by {v1} to {v2}."
+      - "The chief financial officer said full-year sales are now expected at {v2}, a cut of {v1} to the prior guidance."
+      - "Guidance for full-year revenue came down by {v1}; the new figure is {v2}."
+      - "Citing weaker orders, management reduced its annual revenue forecast by {v1} to {v2}."
+      - "The company now expects full-year revenue of {v2}, which lowers its earlier guidance by {v1}."
+      - "Annual revenue guidance was trimmed by {v1}, with the new target set at {v2}."
+      - "Management guided full-year revenue down by {v1} to {v2}."
+      - "The revenue outlook for the year was cut by {v1}; management now guides to {v2}."
+  - type: segment_results
+    rank: 2
+    sentences:
+      - "The industrial segment grew revenue by {v1} to {v2}."
+      - "Revenue in the largest segment rose {v1} to {v2}."
+      - "The services division reported revenue of {v2}, up {v1}."
+      - "Segment revenue in the consumer business reached {v2}, growth of {v1}."
+      - "The software segment delivered {v2} of revenue, a rise of {v1}."
+      - "Revenue from the healthcare segment came in at {v2}, {v1} higher year on year."
+      - "The core segment posted revenue growth of {v1}, reaching {v2}."
+      - "The international segment grew by {v1} to {v2} in revenue."
+      - "Management highlighted that segment revenue increased {v1} to {v2}."
+      - "The products division generated {v2} of revenue, up {v1}."
+  - type: gross_margin
+    rank: 3
+    sentences:
+      - "Gross margin reached {v1}, an improvement of {v2} basis points."
+      - "The gross margin expanded by {v2} basis points to {v1}."
+      - "Gross margin came in at {v1}, up {v2} basis points year on year."
+      - "Management reported a gross margin of {v1}, {v2} basis points higher."
+      - "Pricing lifted gross margin by {v2} basis points to {v1}."
+      - "The quarter's gross margin was {v1}, a gain of {v2} basis points."
+      - "Gross margin improved {v2} basis points, to {v1}."
+      - "A better product mix took gross margin to {v1}, up {v2} basis points."
+      - "Gross margin rose to {v1}, an increase of {v2} basis points."
+      - "The company posted a {v1} gross margin, {v2} basis points above last year."
+  - type: capex
+    rank: 4
+    sentences:
+      - "Capital expenditure for the year is planned at {v1}, about {v2} of revenue."
+      - "Management budgeted {v1} of capital spending, equal to {v2} of sales."
+      - "Capex is expected to reach {v1}, or {v2} of revenue."
+      - "The investment plan calls for {v1} of capital expenditure, roughly {v2} of revenue."
+      - "Planned capital spending of {v1} represents {v2} of annual revenue."
+      - "The company will invest {v1} in capital projects this year, around {v2} of sales."
+      - "Capital expenditure is set at {v1}, which is {v2} of revenue."
+      - "Spending on new capacity will total {v1}, close to {v2} of revenue."
+      - "Management outlined capex of {v1}, about {v2} of sales."
+      - "This year's capital budget is {v1}, or {v2} of revenue."
+  - type: buyback
+    rank: 5
+    sentences:
+      - "The board authorised a share buyback of {v1}, about {v2} of shares outstanding."
+      - "A new repurchase programme of {v1} was announced, equal to {v2} of the share count."
+      - "The company will buy back up to {v1} of stock, roughly {v2} of shares."
+      - "Management launched a {v1} buyback covering about {v2} of outstanding shares."
+      - "Share repurchases of {v1} were approved, around {v2} of the share base."
+      - "The board approved a buyback of {v1}, or {v2} of shares in issue."
+      - "A repurchase authorisation of {v1} was announced, about {v2} of the company's shares."
+      - "The company plans to return {v1} through buybacks, near {v2} of shares outstanding."
+      - "Buybacks of up to {v1}, about {v2} of the shares, were authorised."
+      - "Management set a share repurchase programme of {v1}, equal to {v2} of shares."
+  - type: dividend
+    rank: 6
+    sentences:
+      - "The quarterly dividend was raised to {v1} per share, an increase of {v2}."
+      - "The board lifted the quarterly dividend by {v2} to {v1} per share."
+      - "Shareholders will receive a quarterly dividend of {v1} per share, up {v2}."
+      - "The dividend rises {v2} to {v1} a share each quarter."
+      - "Management declared a quarterly dividend of {v1} per share, {v2} higher."
+      - "The quarterly payout per share increases to {v1}, a rise of {v2}."
+      - "The board approved a {v2} dividend increase, to {v1} per share per quarter."
+      - "A quarterly dividend of {v1} per share was declared, an increase of {v2}."
+      - "The company raised its quarterly dividend {v2} to {v1} per share."
+      - "Dividends per share go up {v2}, to {v1} each quarter."
+  - type: debt_refinancing
+    rank: 7
+    sentences:
+      - "The company refinanced {v1} of debt at a coupon of {v2}."
+      - "Management issued {v1} of new bonds carrying a {v2} coupon to repay maturing debt."
+      - "A {v1} refinancing was completed at an interest rate of {v2}."
+      - "The treasury team rolled over {v1} of borrowings at {v2}."
+      - "Notes totalling {v1} were refinanced, with a new coupon of {v2}."
+      - "The company extended {v1} of maturities at a coupon of {v2}."
+      - "New debt of {v1} was raised at {v2} to refinance existing loans."
+      - "Management refinanced a {v1} term loan at an interest rate of {v2}."
+      - "Bonds worth {v1} were refinanced at a coupon of {v2}."
+      - "The company replaced {v1} of maturing debt with new notes at {v2}."
+  - type: cost_programme
+    rank: 8
+    sentences:
+      - "The cost programme targets annual savings of {v1} and is {v2} complete."
+      - "Management reported that the efficiency plan, worth {v1} a year, is {v2} done."
+      - "Annual cost savings of {v1} are planned, with {v2} of the programme delivered."
+      - "The restructuring aims to save {v1} a year and is {v2} through."
+      - "Savings from the cost plan should reach {v1} annually; {v2} has been achieved."
+      - "The company is {v2} of the way through a programme to lower costs by {v1} a year."
+      - "Cost reductions of {v1} per year are targeted, and {v2} of the work is finished."
+      - "The efficiency programme, sized at {v1} a year, is {v2} complete."
+      - "Management expects {v1} of annual savings and has completed {v2} of the plan."
+      - "A {v1} annual cost-saving plan is {v2} complete."
+  - type: management_change
+    rank: 9
+    sentences:
+      - "The chief financial officer will retire after {v1} years with the company; a successor will be named within {v2} months."
+      - "The head of operations is stepping down after {v1} years, and a replacement is expected within {v2} months."
+      - "After {v1} years in the role, the general counsel will leave; the search should take {v2} months."
+      - "The company announced the departure of its chief technology officer after {v1} years, with a successor due in {v2} months."
+      - "A board member with {v1} years of service will step down; a new director is expected within {v2} months."
+      - "The chief operating officer plans to retire after {v1} years, and the board expects to appoint a successor in {v2} months."
+      - "The head of the largest division leaves after {v1} years; an internal candidate will take over within {v2} months."
+      - "Management said the treasurer will retire after {v1} years, with a successor named within {v2} months."
+      - "The chief marketing officer is leaving after {v1} years; the company expects to fill the role within {v2} months."
+      - "After {v1} years at the company, the head of investor relations will step down, with a replacement due in {v2} months."
+  - type: acquisition
+    rank: 10
+    sentences:
+      - "The company agreed to acquire a smaller competitor for {v1}, adding about {v2} to revenue."
+      - "Management announced a {v1} bolt-on acquisition expected to contribute {v2} of revenue."
+      - "A {v1} acquisition was signed; it should add roughly {v2} to annual sales."
+      - "The company will buy a regional distributor for {v1}, which adds about {v2} to revenue."
+      - "An acquisition worth {v1} was completed, contributing around {v2} of revenue."
+      - "Management agreed a {v1} purchase of a software firm that adds {v2} to revenue."
+      - "The company is acquiring a supplier for {v1}, expected to lift revenue by {v2}."
+      - "A bolt-on deal valued at {v1} will add roughly {v2} to sales."
+      - "The board approved a {v1} acquisition that should contribute {v2} of revenue."
+      - "The company announced the purchase of a niche manufacturer for {v1}, about {v2} of revenue."
+  - type: office_relocation
+    rank: 11
+    sentences:
+      - "Headquarters staff of {v1} will move to a new office within {v2} months."
+      - "The company plans to relocate {v1} employees to a new building over the next {v2} months."
+      - "About {v1} staff will move to a refurbished head office in {v2} months."
+      - "Management confirmed an office move for {v1} employees, due in {v2} months."
+      - "The head office, with {v1} staff, relocates across the city in {v2} months."
+      - "A move of {v1} employees to a new campus is planned within {v2} months."
+      - "The company will consolidate {v1} staff into one office over {v2} months."
+      - "Around {v1} employees will move to new premises in {v2} months."
+      - "The relocation of {v1} head-office staff is scheduled for {v2} months from now."
+      - "Management said {v1} employees will switch offices within {v2} months."
+  - type: sustainability_report
+    rank: 12
+    sentences:
+      - "The annual sustainability report shows emissions down {v1} across {v2} sites."
+      - "The company published its sustainability report, covering {v2} sites and a {v1} emissions reduction."
+      - "Emissions fell {v1} at the {v2} sites covered by the sustainability report."
+      - "Management reported a {v1} reduction in emissions across {v2} facilities."
+      - "The sustainability report covers {v2} sites and records a {v1} fall in emissions."
+      - "Across its {v2} sites, the company reduced emissions by {v1}."
+      - "A new sustainability report was released, with emissions {v1} lower at {v2} sites."
+      - "The company reported a {v1} emissions reduction over {v2} locations."
+      - "Emissions across {v2} sites declined by {v1}, according to the sustainability report."
+      - "The sustainability update covered {v2} facilities, where emissions fell {v1}."

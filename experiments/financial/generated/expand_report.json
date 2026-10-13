@@ -1,0 +1,4501 @@
+[
+  {
+    "faq_id": "F1.1.b",
+    "intervention_id": "I.ANC.anchor",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.b",
+      "families/*/family.yaml#faq_ids/F1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.b",
+    "intervention_id": "I.F.revisions",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.b",
+      "families/*/family.yaml#faq_ids/F1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.b",
+    "intervention_id": "I.TIME.date",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.b",
+      "families/*/family.yaml#faq_ids/F1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.b",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.b",
+      "families/*/family.yaml#faq_ids/F1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.c",
+    "intervention_id": "I.F.leverage",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.c",
+      "families/*/family.yaml#faq_ids/F1.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.c",
+    "intervention_id": "I.F.momentum",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.c",
+      "families/*/family.yaml#faq_ids/F1.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.c",
+    "intervention_id": "I.F.valuation",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.c",
+      "families/*/family.yaml#faq_ids/F1.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.1.c",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F1.1.c",
+      "families/*/family.yaml#faq_ids/F1.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.2.a",
+    "intervention_id": "I.F.valuation",
+    "missing": [
+      "families/*/defaults.yaml#F1.2.a",
+      "families/*/family.yaml#faq_ids/F1.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.2.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F1.2.a",
+      "families/*/family.yaml#faq_ids/F1.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.2.a",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F1.2.a",
+      "families/*/family.yaml#faq_ids/F1.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.2.a",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "families/*/defaults.yaml#F1.2.a",
+      "families/*/family.yaml#faq_ids/F1.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.2.b",
+    "intervention_id": "I.ITEM.F1.2.b.wacc_shift",
+    "missing": [
+      "families/*/defaults.yaml#F1.2.b",
+      "families/*/family.yaml#faq_ids/F1.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.2.b",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "families/*/defaults.yaml#F1.2.b",
+      "families/*/family.yaml#faq_ids/F1.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.3.a",
+    "intervention_id": "I.F.revisions",
+    "missing": [
+      "families/*/defaults.yaml#F1.3.a",
+      "families/*/family.yaml#faq_ids/F1.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.3.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F1.3.a",
+      "families/*/family.yaml#faq_ids/F1.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F1.3.a",
+    "intervention_id": "I.TIME.date",
+    "missing": [
+      "families/*/defaults.yaml#F1.3.a",
+      "families/*/family.yaml#faq_ids/F1.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.a",
+    "intervention_id": "I.F.leverage",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.a",
+      "families/*/family.yaml#faq_ids/F2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.a",
+    "intervention_id": "I.ID.country",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.a",
+      "families/*/family.yaml#faq_ids/F2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.a",
+      "families/*/family.yaml#faq_ids/F2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.a",
+      "families/*/family.yaml#faq_ids/F2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.b",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.b",
+      "families/*/family.yaml#faq_ids/F2.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.b",
+    "intervention_id": "I.PRES.distractor",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.b",
+      "families/*/family.yaml#faq_ids/F2.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.1.b",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "families/*/defaults.yaml#F2.1.b",
+      "families/*/family.yaml#faq_ids/F2.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.2.a",
+    "intervention_id": "I.F.margin",
+    "missing": [
+      "families/*/defaults.yaml#F2.2.a",
+      "families/*/family.yaml#faq_ids/F2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.2.a",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F2.2.a",
+      "families/*/family.yaml#faq_ids/F2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.3.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F2.3.a",
+      "families/*/family.yaml#faq_ids/F2.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.3.a",
+    "intervention_id": "I.ITEM.F2.3.a.volatility_shift",
+    "missing": [
+      "families/*/defaults.yaml#F2.3.a",
+      "families/*/family.yaml#faq_ids/F2.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.4.a",
+    "intervention_id": "I.F.accruals",
+    "missing": [
+      "families/*/defaults.yaml#F2.4.a",
+      "families/*/family.yaml#faq_ids/F2.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.4.a",
+    "intervention_id": "I.ID.ceo",
+    "missing": [
+      "families/*/defaults.yaml#F2.4.a",
+      "families/*/family.yaml#faq_ids/F2.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.4.a",
+    "intervention_id": "I.ITEM.F2.4.a.auditor_change",
+    "missing": [
+      "families/*/defaults.yaml#F2.4.a",
+      "families/*/family.yaml#faq_ids/F2.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.4.a",
+    "intervention_id": "I.ITEM.F2.4.a.related_party_note",
+    "missing": [
+      "families/*/defaults.yaml#F2.4.a",
+      "families/*/family.yaml#faq_ids/F2.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.4.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "families/*/defaults.yaml#F2.4.a",
+      "families/*/family.yaml#faq_ids/F2.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F2.4.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#F2.4.a",
+      "families/*/family.yaml#faq_ids/F2.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.1.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#F3.1.a",
+      "families/*/family.yaml#faq_ids/F3.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.1.a",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F3.1.a",
+      "families/*/family.yaml#faq_ids/F3.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.1.a",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "families/*/defaults.yaml#F3.1.a",
+      "families/*/family.yaml#faq_ids/F3.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.1.b",
+    "intervention_id": "I.F.growth",
+    "missing": [
+      "families/*/defaults.yaml#F3.1.b",
+      "families/*/family.yaml#faq_ids/F3.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.1.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#F3.1.b",
+      "families/*/family.yaml#faq_ids/F3.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.1.b",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F3.1.b",
+      "families/*/family.yaml#faq_ids/F3.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.2.a",
+    "intervention_id": "I.F.accruals",
+    "missing": [
+      "families/fundamental_judgement/defaults.yaml#F3.2.a",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/I.F.accruals",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/budget",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/controls",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/data_classification",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/feature_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/hypothesis",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/mandate",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/paraphrase_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/prompt_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/research_question",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/response_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/sampling_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/scenario_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/seeds",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/statistical_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/task",
+      "families/fundamental_judgement/family.yaml#interventions/I.F.accruals"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.2.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "base_design",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/I.F.accruals",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/budget",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/controls",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/data_classification",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/feature_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/hypothesis",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/mandate",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/paraphrase_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/prompt_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/research_question",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/response_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/sampling_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/scenario_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/seeds",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/statistical_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/task",
+      "families/fundamental_judgement/family.yaml#interventions/I.F.accruals"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.2.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "base_design",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/I.F.accruals",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/budget",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/controls",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/data_classification",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/feature_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/hypothesis",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/mandate",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/paraphrase_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/prompt_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/research_question",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/response_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/sampling_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/scenario_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/seeds",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/statistical_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/task",
+      "families/fundamental_judgement/family.yaml#interventions/I.F.accruals"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/I.F.accruals",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/budget",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/controls",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/data_classification",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/feature_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/hypothesis",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/mandate",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/paraphrase_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/prompt_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/research_question",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/response_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/sampling_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/scenario_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/seeds",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/statistical_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.2.a/task",
+      "families/fundamental_judgement/family.yaml#interventions/I.F.accruals"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.2.b",
+    "intervention_id": "I.ITEM.F3.2.b.one_off_items_recurring",
+    "missing": [
+      "families/*/defaults.yaml#F3.2.b",
+      "families/*/family.yaml#faq_ids/F3.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.2.b",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F3.2.b",
+      "families/*/family.yaml#faq_ids/F3.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.3.a",
+    "intervention_id": "I.ITEM.F3.3.a.shift_in_one_cost_line",
+    "missing": [
+      "families/*/defaults.yaml#F3.3.a",
+      "families/*/family.yaml#faq_ids/F3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.3.a",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F3.3.a",
+      "families/*/family.yaml#faq_ids/F3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.3.a",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F3.3.a",
+      "families/*/family.yaml#faq_ids/F3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.4.a",
+    "intervention_id": "I.F.wc",
+    "missing": [
+      "families/fundamental_extraction/defaults.yaml#F3.4.a",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/I.F.wc",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/hypothesis",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/task",
+      "families/fundamental_extraction/family.yaml#interventions/I.F.wc"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.4.a",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "base_design",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/I.F.wc",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/hypothesis",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.4.a/task",
+      "families/fundamental_extraction/family.yaml#interventions/I.F.wc"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.4.b",
+    "intervention_id": "I.ITEM.F3.4.b.receivables_growth_vs_revenue",
+    "missing": [
+      "families/*/defaults.yaml#F3.4.b",
+      "families/*/family.yaml#faq_ids/F3.4.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.4.b",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F3.4.b",
+      "families/*/family.yaml#faq_ids/F3.4.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.5.a",
+    "intervention_id": "I.ITEM.F3.5.a.capex_d",
+    "missing": [
+      "families/*/defaults.yaml#F3.5.a",
+      "families/*/family.yaml#faq_ids/F3.5.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.5.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F3.5.a",
+      "families/*/family.yaml#faq_ids/F3.5.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.6.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/fundamental_extraction/defaults.yaml#F3.6.a",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/correctness_feature",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.6.a",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "base_design",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/correctness_feature",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.6.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.6.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#F3.6.b",
+      "families/*/family.yaml#faq_ids/F3.6.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.6.b",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F3.6.b",
+      "families/*/family.yaml#faq_ids/F3.6.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.6.b",
+    "intervention_id": "I.ITEM.F3.6.b.roic_wacc",
+    "missing": [
+      "families/*/defaults.yaml#F3.6.b",
+      "families/*/family.yaml#faq_ids/F3.6.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.6.c",
+    "intervention_id": "I.ITEM.F3.6.c.equity_multiplier_vs_margin",
+    "missing": [
+      "families/fundamental_judgement/defaults.yaml#F3.6.c",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/I.ITEM.F3.6.c.equity_multiplier_vs_margin",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/budget",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/controls",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/data_classification",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/feature_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/hypothesis",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/mandate",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/paraphrase_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/prompt_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/research_question",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/response_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/sampling_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/scenario_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/seeds",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/statistical_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/task",
+      "families/fundamental_judgement/family.yaml#interventions/I.ITEM.F3.6.c.equity_multiplier_vs_margin"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.6.c",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "base_design",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/I.ITEM.F3.6.c.equity_multiplier_vs_margin",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/budget",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/controls",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/data_classification",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/feature_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/hypothesis",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/mandate",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/paraphrase_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/prompt_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/research_question",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/response_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/sampling_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/scenario_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/seeds",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/statistical_spec",
+      "families/fundamental_judgement/defaults.yaml#F3.6.c/task",
+      "families/fundamental_judgement/family.yaml#interventions/I.ITEM.F3.6.c.equity_multiplier_vs_margin"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.7.a",
+    "intervention_id": "I.ITEM.F3.7.a.planted_unusual_items",
+    "missing": [
+      "families/fundamental_extraction/defaults.yaml#F3.7.a",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/I.ITEM.F3.7.a.planted_unusual_items",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/hypothesis",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/task",
+      "families/fundamental_extraction/family.yaml#interventions/I.ITEM.F3.7.a.planted_unusual_items"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.7.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "base_design",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/I.ITEM.F3.7.a.planted_unusual_items",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/hypothesis",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F3.7.a/task",
+      "families/fundamental_extraction/family.yaml#interventions/I.ITEM.F3.7.a.planted_unusual_items"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F3.7.b",
+    "intervention_id": "I.ITEM.F3.7.b.gain_size_with_operating",
+    "missing": [
+      "families/*/defaults.yaml#F3.7.b",
+      "families/*/family.yaml#faq_ids/F3.7.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F3.7.b",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F3.7.b",
+      "families/*/family.yaml#faq_ids/F3.7.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.1.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F4.1.a",
+      "families/*/family.yaml#faq_ids/F4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.1.a",
+    "intervention_id": "I.ITEM.F4.1.a.payout_and_fcf_cover",
+    "missing": [
+      "families/*/defaults.yaml#F4.1.a",
+      "families/*/family.yaml#faq_ids/F4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.1.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F4.1.a",
+      "families/*/family.yaml#faq_ids/F4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.1.b",
+    "intervention_id": "I.ITEM.F4.1.b.cut_to_fund_deleveraging",
+    "missing": [
+      "families/*/defaults.yaml#F4.1.b",
+      "families/*/family.yaml#faq_ids/F4.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.1.b",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F4.1.b",
+      "families/*/family.yaml#faq_ids/F4.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.2.a",
+    "intervention_id": "I.F.capital_return",
+    "missing": [
+      "families/corporate_action/defaults.yaml#F4.2.a",
+      "families/corporate_action/defaults.yaml#F4.2.a/I.F.capital_return",
+      "families/corporate_action/defaults.yaml#F4.2.a/budget",
+      "families/corporate_action/defaults.yaml#F4.2.a/controls",
+      "families/corporate_action/defaults.yaml#F4.2.a/data_classification",
+      "families/corporate_action/defaults.yaml#F4.2.a/feature_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/hypothesis",
+      "families/corporate_action/defaults.yaml#F4.2.a/mandate",
+      "families/corporate_action/defaults.yaml#F4.2.a/paraphrase_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/prompt_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/research_question",
+      "families/corporate_action/defaults.yaml#F4.2.a/response_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/sampling_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/scenario_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/seeds",
+      "families/corporate_action/defaults.yaml#F4.2.a/statistical_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/task",
+      "families/corporate_action/family.yaml#interventions/I.F.capital_return"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F4.2.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/corporate_action/defaults.yaml#F4.2.a",
+      "families/corporate_action/defaults.yaml#F4.2.a/I.F.capital_return",
+      "families/corporate_action/defaults.yaml#F4.2.a/budget",
+      "families/corporate_action/defaults.yaml#F4.2.a/controls",
+      "families/corporate_action/defaults.yaml#F4.2.a/data_classification",
+      "families/corporate_action/defaults.yaml#F4.2.a/feature_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/hypothesis",
+      "families/corporate_action/defaults.yaml#F4.2.a/mandate",
+      "families/corporate_action/defaults.yaml#F4.2.a/paraphrase_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/prompt_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/research_question",
+      "families/corporate_action/defaults.yaml#F4.2.a/response_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/sampling_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/scenario_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/seeds",
+      "families/corporate_action/defaults.yaml#F4.2.a/statistical_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/task",
+      "families/corporate_action/family.yaml#interventions/I.F.capital_return"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F4.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/corporate_action/defaults.yaml#F4.2.a",
+      "families/corporate_action/defaults.yaml#F4.2.a/I.F.capital_return",
+      "families/corporate_action/defaults.yaml#F4.2.a/budget",
+      "families/corporate_action/defaults.yaml#F4.2.a/controls",
+      "families/corporate_action/defaults.yaml#F4.2.a/data_classification",
+      "families/corporate_action/defaults.yaml#F4.2.a/feature_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/hypothesis",
+      "families/corporate_action/defaults.yaml#F4.2.a/mandate",
+      "families/corporate_action/defaults.yaml#F4.2.a/paraphrase_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/prompt_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/research_question",
+      "families/corporate_action/defaults.yaml#F4.2.a/response_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/sampling_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/scenario_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/seeds",
+      "families/corporate_action/defaults.yaml#F4.2.a/statistical_spec",
+      "families/corporate_action/defaults.yaml#F4.2.a/task",
+      "families/corporate_action/family.yaml#interventions/I.F.capital_return"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F4.2.b",
+    "intervention_id": "I.ITEM.F4.2.b.net_share_count_change",
+    "missing": [
+      "families/*/defaults.yaml#F4.2.b",
+      "families/*/family.yaml#faq_ids/F4.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.2.b",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F4.2.b",
+      "families/*/family.yaml#faq_ids/F4.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.3.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F4.3.a",
+      "families/*/family.yaml#faq_ids/F4.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.3.a",
+    "intervention_id": "I.ITEM.F4.3.a.leverage_vs_target",
+    "missing": [
+      "families/*/defaults.yaml#F4.3.a",
+      "families/*/family.yaml#faq_ids/F4.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.3.a",
+    "intervention_id": "I.ITEM.F4.3.a.rate_spread",
+    "missing": [
+      "families/*/defaults.yaml#F4.3.a",
+      "families/*/family.yaml#faq_ids/F4.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.4.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#F4.4.a",
+      "families/*/family.yaml#faq_ids/F4.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.4.a",
+    "intervention_id": "I.ITEM.F4.4.a.stated_returns_on_each_use",
+    "missing": [
+      "families/*/defaults.yaml#F4.4.a",
+      "families/*/family.yaml#faq_ids/F4.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F4.4.a",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F4.4.a",
+      "families/*/family.yaml#faq_ids/F4.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.a",
+      "families/*/family.yaml#faq_ids/F5.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.a",
+    "intervention_id": "I.ITEM.F5.1.a.financing_mix_premium",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.a",
+      "families/*/family.yaml#faq_ids/F5.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.a",
+      "families/*/family.yaml#faq_ids/F5.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.b",
+      "families/*/family.yaml#faq_ids/F5.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.b",
+    "intervention_id": "I.ITEM.F5.1.b.premium_vs_npv_of_synergies",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.b",
+      "families/*/family.yaml#faq_ids/F5.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.b",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.b",
+      "families/*/family.yaml#faq_ids/F5.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.c",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.c",
+      "families/*/family.yaml#faq_ids/F5.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.1.c",
+    "intervention_id": "I.ITEM.F5.1.c.stock_vs_cash_consideration",
+    "missing": [
+      "families/*/defaults.yaml#F5.1.c",
+      "families/*/family.yaml#faq_ids/F5.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.2.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/fundamental_extraction/defaults.yaml#F5.2.a",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/correctness_feature",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F5.2.a",
+    "intervention_id": "I.PRES.units",
+    "missing": [
+      "base_design",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/budget",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/controls",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/correctness_feature",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/data_classification",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/feature_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/mandate",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/paraphrase_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/prompt_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/research_question",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/response_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/sampling_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/scenario_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/seeds",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/statistical_spec",
+      "families/fundamental_extraction/defaults.yaml#F5.2.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F5.2.b",
+    "intervention_id": "I.ITEM.F5.2.b.use_of_proceeds_growth",
+    "missing": [
+      "families/*/defaults.yaml#F5.2.b",
+      "families/*/family.yaml#faq_ids/F5.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.2.b",
+    "intervention_id": "I.PRES.frame",
+    "missing": [
+      "families/*/defaults.yaml#F5.2.b",
+      "families/*/family.yaml#faq_ids/F5.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.2.b",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F5.2.b",
+      "families/*/family.yaml#faq_ids/F5.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F5.3.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#F5.3.a",
+      "families/*/family.yaml#faq_ids/F5.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V3"
+  },
+  {
+    "faq_id": "F5.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#F5.3.a",
+      "families/*/family.yaml#faq_ids/F5.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V3"
+  },
+  {
+    "faq_id": "F6.1.a",
+    "intervention_id": "I.F.guidance",
+    "missing": [
+      "families/call_analysis/defaults.yaml#F6.1.a",
+      "families/call_analysis/defaults.yaml#F6.1.a/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.1.a/budget",
+      "families/call_analysis/defaults.yaml#F6.1.a/controls",
+      "families/call_analysis/defaults.yaml#F6.1.a/data_classification",
+      "families/call_analysis/defaults.yaml#F6.1.a/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.1.a/mandate",
+      "families/call_analysis/defaults.yaml#F6.1.a/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/research_question",
+      "families/call_analysis/defaults.yaml#F6.1.a/response_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/seeds",
+      "families/call_analysis/defaults.yaml#F6.1.a/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.1.a",
+    "intervention_id": "I.PRES.distractor",
+    "missing": [
+      "base_design",
+      "families/call_analysis/defaults.yaml#F6.1.a",
+      "families/call_analysis/defaults.yaml#F6.1.a/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.1.a/budget",
+      "families/call_analysis/defaults.yaml#F6.1.a/controls",
+      "families/call_analysis/defaults.yaml#F6.1.a/data_classification",
+      "families/call_analysis/defaults.yaml#F6.1.a/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.1.a/mandate",
+      "families/call_analysis/defaults.yaml#F6.1.a/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/research_question",
+      "families/call_analysis/defaults.yaml#F6.1.a/response_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/seeds",
+      "families/call_analysis/defaults.yaml#F6.1.a/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.1.a",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "base_design",
+      "families/call_analysis/defaults.yaml#F6.1.a",
+      "families/call_analysis/defaults.yaml#F6.1.a/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.1.a/budget",
+      "families/call_analysis/defaults.yaml#F6.1.a/controls",
+      "families/call_analysis/defaults.yaml#F6.1.a/data_classification",
+      "families/call_analysis/defaults.yaml#F6.1.a/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.1.a/mandate",
+      "families/call_analysis/defaults.yaml#F6.1.a/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/research_question",
+      "families/call_analysis/defaults.yaml#F6.1.a/response_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/seeds",
+      "families/call_analysis/defaults.yaml#F6.1.a/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.1.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "base_design",
+      "families/call_analysis/defaults.yaml#F6.1.a",
+      "families/call_analysis/defaults.yaml#F6.1.a/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.1.a/budget",
+      "families/call_analysis/defaults.yaml#F6.1.a/controls",
+      "families/call_analysis/defaults.yaml#F6.1.a/data_classification",
+      "families/call_analysis/defaults.yaml#F6.1.a/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.1.a/mandate",
+      "families/call_analysis/defaults.yaml#F6.1.a/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/research_question",
+      "families/call_analysis/defaults.yaml#F6.1.a/response_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/seeds",
+      "families/call_analysis/defaults.yaml#F6.1.a/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.1.a/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.2.a",
+    "intervention_id": "I.ITEM.F6.2.a.tone_dial_with_numbers_fixed",
+    "missing": [
+      "families/*/defaults.yaml#F6.2.a",
+      "families/*/family.yaml#faq_ids/F6.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F6.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#F6.2.a",
+      "families/*/family.yaml#faq_ids/F6.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F6.2.b",
+    "intervention_id": "I.ITEM.F6.2.b.finance_neutral_words",
+    "missing": [
+      "families/*/defaults.yaml#F6.2.b",
+      "families/*/family.yaml#faq_ids/F6.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F6.2.b",
+    "intervention_id": "I.ITEM.F6.2.b.tone_dial",
+    "missing": [
+      "families/*/defaults.yaml#F6.2.b",
+      "families/*/family.yaml#faq_ids/F6.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F6.2.b",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#F6.2.b",
+      "families/*/family.yaml#faq_ids/F6.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F6.2.c",
+    "intervention_id": "I.F.guidance",
+    "missing": [
+      "families/call_analysis/defaults.yaml#F6.2.c",
+      "families/call_analysis/defaults.yaml#F6.2.c/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.2.c/budget",
+      "families/call_analysis/defaults.yaml#F6.2.c/controls",
+      "families/call_analysis/defaults.yaml#F6.2.c/data_classification",
+      "families/call_analysis/defaults.yaml#F6.2.c/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.2.c/mandate",
+      "families/call_analysis/defaults.yaml#F6.2.c/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/research_question",
+      "families/call_analysis/defaults.yaml#F6.2.c/response_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/seeds",
+      "families/call_analysis/defaults.yaml#F6.2.c/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.2.c",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "base_design",
+      "families/call_analysis/defaults.yaml#F6.2.c",
+      "families/call_analysis/defaults.yaml#F6.2.c/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.2.c/budget",
+      "families/call_analysis/defaults.yaml#F6.2.c/controls",
+      "families/call_analysis/defaults.yaml#F6.2.c/data_classification",
+      "families/call_analysis/defaults.yaml#F6.2.c/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.2.c/mandate",
+      "families/call_analysis/defaults.yaml#F6.2.c/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/research_question",
+      "families/call_analysis/defaults.yaml#F6.2.c/response_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/seeds",
+      "families/call_analysis/defaults.yaml#F6.2.c/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.2.c",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/call_analysis/defaults.yaml#F6.2.c",
+      "families/call_analysis/defaults.yaml#F6.2.c/I.F.guidance",
+      "families/call_analysis/defaults.yaml#F6.2.c/budget",
+      "families/call_analysis/defaults.yaml#F6.2.c/controls",
+      "families/call_analysis/defaults.yaml#F6.2.c/data_classification",
+      "families/call_analysis/defaults.yaml#F6.2.c/feature_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/hypothesis",
+      "families/call_analysis/defaults.yaml#F6.2.c/mandate",
+      "families/call_analysis/defaults.yaml#F6.2.c/paraphrase_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/prompt_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/research_question",
+      "families/call_analysis/defaults.yaml#F6.2.c/response_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/sampling_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/scenario_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/seeds",
+      "families/call_analysis/defaults.yaml#F6.2.c/statistical_spec",
+      "families/call_analysis/defaults.yaml#F6.2.c/task",
+      "families/call_analysis/family.yaml#interventions/I.F.guidance"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F6.3.a",
+    "intervention_id": "I.ITEM.F6.3.a.planted_evasive_answers",
+    "missing": [
+      "families/*/defaults.yaml#F6.3.a",
+      "families/*/family.yaml#faq_ids/F6.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F6.3.a",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F6.3.a",
+      "families/*/family.yaml#faq_ids/F6.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.1.a",
+    "intervention_id": "I.ITEM.F7.1.a.materiality_ranked_items",
+    "missing": [
+      "families/*/defaults.yaml#F7.1.a",
+      "families/*/family.yaml#faq_ids/F7.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.1.a",
+    "intervention_id": "I.PRES.length",
+    "missing": [
+      "families/*/defaults.yaml#F7.1.a",
+      "families/*/family.yaml#faq_ids/F7.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.1.a",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F7.1.a",
+      "families/*/family.yaml#faq_ids/F7.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.1.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "families/*/defaults.yaml#F7.1.a",
+      "families/*/family.yaml#faq_ids/F7.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.2.a",
+    "intervention_id": "I.ITEM.F7.2.a.planted_polarity_counts",
+    "missing": [
+      "families/*/defaults.yaml#F7.2.a",
+      "families/*/family.yaml#faq_ids/F7.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.2.a",
+    "intervention_id": "I.PRES.tone",
+    "missing": [
+      "families/*/defaults.yaml#F7.2.a",
+      "families/*/family.yaml#faq_ids/F7.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.2.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "families/*/defaults.yaml#F7.2.a",
+      "families/*/family.yaml#faq_ids/F7.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.2.b",
+    "intervention_id": "I.ITEM.F7.2.b.planted_items_per_quadrant",
+    "missing": [
+      "families/*/defaults.yaml#F7.2.b",
+      "families/*/family.yaml#faq_ids/F7.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.2.b",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F7.2.b",
+      "families/*/family.yaml#faq_ids/F7.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.3.a",
+    "intervention_id": "I.ITEM.F7.3.a.planted_differences",
+    "missing": [
+      "families/*/defaults.yaml#F7.3.a",
+      "families/*/family.yaml#faq_ids/F7.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.3.a",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "families/*/defaults.yaml#F7.3.a",
+      "families/*/family.yaml#faq_ids/F7.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.3.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "families/*/defaults.yaml#F7.3.a",
+      "families/*/family.yaml#faq_ids/F7.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.3.b",
+    "intervention_id": "I.ITEM.F7.3.b.planted_inaccuracies",
+    "missing": [
+      "families/broker_synthesis/defaults.yaml#F7.3.b",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/I.ITEM.F7.3.b.planted_inaccuracies",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.b.planted_inaccuracies"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.3.b",
+    "intervention_id": "I.ITEM.F7.3.b.prestige_of_the_erring_broker",
+    "missing": [
+      "families/broker_synthesis/defaults.yaml#F7.3.b",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/I.ITEM.F7.3.b.prestige_of_the_erring_broker",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.b.prestige_of_the_erring_broker"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.3.b",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "base_design",
+      "families/broker_synthesis/defaults.yaml#F7.3.b",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/I.ITEM.F7.3.b.planted_inaccuracies",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.b.planted_inaccuracies"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.3.b",
+    "intervention_id": "I.SRC.consensus_label",
+    "missing": [
+      "base_design",
+      "families/broker_synthesis/defaults.yaml#F7.3.b",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/I.ITEM.F7.3.b.planted_inaccuracies",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.b.planted_inaccuracies"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.3.b",
+    "intervention_id": "I.SRC.seniority",
+    "missing": [
+      "base_design",
+      "families/broker_synthesis/defaults.yaml#F7.3.b",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/I.ITEM.F7.3.b.planted_inaccuracies",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.b/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.b.planted_inaccuracies"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.3.c",
+    "intervention_id": "I.ITEM.F7.3.c.planted_ambiguities",
+    "missing": [
+      "families/*/defaults.yaml#F7.3.c",
+      "families/*/family.yaml#faq_ids/F7.3.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.3.c",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#F7.3.c",
+      "families/*/family.yaml#faq_ids/F7.3.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.3.d",
+    "intervention_id": "I.ITEM.F7.3.d.planted_novel_observations",
+    "missing": [
+      "families/broker_synthesis/defaults.yaml#F7.3.d",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/I.ITEM.F7.3.d.planted_novel_observations",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.d.planted_novel_observations"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.3.d",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "base_design",
+      "families/broker_synthesis/defaults.yaml#F7.3.d",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/I.ITEM.F7.3.d.planted_novel_observations",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/budget",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/controls",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/data_classification",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/feature_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/hypothesis",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/mandate",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/paraphrase_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/prompt_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/research_question",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/response_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/sampling_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/scenario_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/seeds",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/statistical_spec",
+      "families/broker_synthesis/defaults.yaml#F7.3.d/task",
+      "families/broker_synthesis/family.yaml#interventions/I.ITEM.F7.3.d.planted_novel_observations"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "F7.4.a",
+    "intervention_id": "I.ITEM.F7.4.a.estimate_dispersion",
+    "missing": [
+      "families/*/defaults.yaml#F7.4.a",
+      "families/*/family.yaml#faq_ids/F7.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "F7.4.a",
+    "intervention_id": "I.SRC.broker_tier",
+    "missing": [
+      "families/*/defaults.yaml#F7.4.a",
+      "families/*/family.yaml#faq_ids/F7.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.1",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.F.1",
+      "families/*/family.yaml#faq_ids/K.F.1"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.1",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.F.1",
+      "families/*/family.yaml#faq_ids/K.F.1"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.1",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.F.1",
+      "families/*/family.yaml#faq_ids/K.F.1"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.2",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.F.2",
+      "families/*/family.yaml#faq_ids/K.F.2"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.2",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.F.2",
+      "families/*/family.yaml#faq_ids/K.F.2"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.2",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.F.2",
+      "families/*/family.yaml#faq_ids/K.F.2"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.3",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.F.3",
+      "families/*/family.yaml#faq_ids/K.F.3"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.3",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.F.3",
+      "families/*/family.yaml#faq_ids/K.F.3"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.F.3",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.F.3",
+      "families/*/family.yaml#faq_ids/K.F.3"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.2",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.2",
+      "families/code_task/defaults.yaml#K.M.2/budget",
+      "families/code_task/defaults.yaml#K.M.2/controls",
+      "families/code_task/defaults.yaml#K.M.2/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.2/data_classification",
+      "families/code_task/defaults.yaml#K.M.2/feature_spec",
+      "families/code_task/defaults.yaml#K.M.2/mandate",
+      "families/code_task/defaults.yaml#K.M.2/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.2/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.2/research_question",
+      "families/code_task/defaults.yaml#K.M.2/response_spec",
+      "families/code_task/defaults.yaml#K.M.2/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.2/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.2/seeds",
+      "families/code_task/defaults.yaml#K.M.2/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.2/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.2",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.2",
+      "families/code_task/defaults.yaml#K.M.2/budget",
+      "families/code_task/defaults.yaml#K.M.2/controls",
+      "families/code_task/defaults.yaml#K.M.2/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.2/data_classification",
+      "families/code_task/defaults.yaml#K.M.2/feature_spec",
+      "families/code_task/defaults.yaml#K.M.2/mandate",
+      "families/code_task/defaults.yaml#K.M.2/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.2/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.2/research_question",
+      "families/code_task/defaults.yaml#K.M.2/response_spec",
+      "families/code_task/defaults.yaml#K.M.2/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.2/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.2/seeds",
+      "families/code_task/defaults.yaml#K.M.2/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.2/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.2",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.M.2",
+      "families/code_task/defaults.yaml#K.M.2/budget",
+      "families/code_task/defaults.yaml#K.M.2/controls",
+      "families/code_task/defaults.yaml#K.M.2/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.2/data_classification",
+      "families/code_task/defaults.yaml#K.M.2/feature_spec",
+      "families/code_task/defaults.yaml#K.M.2/mandate",
+      "families/code_task/defaults.yaml#K.M.2/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.2/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.2/research_question",
+      "families/code_task/defaults.yaml#K.M.2/response_spec",
+      "families/code_task/defaults.yaml#K.M.2/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.2/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.2/seeds",
+      "families/code_task/defaults.yaml#K.M.2/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.2/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.3",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.3",
+      "families/code_task/defaults.yaml#K.M.3/budget",
+      "families/code_task/defaults.yaml#K.M.3/controls",
+      "families/code_task/defaults.yaml#K.M.3/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.3/data_classification",
+      "families/code_task/defaults.yaml#K.M.3/feature_spec",
+      "families/code_task/defaults.yaml#K.M.3/mandate",
+      "families/code_task/defaults.yaml#K.M.3/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.3/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.3/research_question",
+      "families/code_task/defaults.yaml#K.M.3/response_spec",
+      "families/code_task/defaults.yaml#K.M.3/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.3/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.3/seeds",
+      "families/code_task/defaults.yaml#K.M.3/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.3/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.3",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.3",
+      "families/code_task/defaults.yaml#K.M.3/budget",
+      "families/code_task/defaults.yaml#K.M.3/controls",
+      "families/code_task/defaults.yaml#K.M.3/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.3/data_classification",
+      "families/code_task/defaults.yaml#K.M.3/feature_spec",
+      "families/code_task/defaults.yaml#K.M.3/mandate",
+      "families/code_task/defaults.yaml#K.M.3/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.3/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.3/research_question",
+      "families/code_task/defaults.yaml#K.M.3/response_spec",
+      "families/code_task/defaults.yaml#K.M.3/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.3/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.3/seeds",
+      "families/code_task/defaults.yaml#K.M.3/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.3/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.3",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.M.3",
+      "families/code_task/defaults.yaml#K.M.3/budget",
+      "families/code_task/defaults.yaml#K.M.3/controls",
+      "families/code_task/defaults.yaml#K.M.3/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.3/data_classification",
+      "families/code_task/defaults.yaml#K.M.3/feature_spec",
+      "families/code_task/defaults.yaml#K.M.3/mandate",
+      "families/code_task/defaults.yaml#K.M.3/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.3/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.3/research_question",
+      "families/code_task/defaults.yaml#K.M.3/response_spec",
+      "families/code_task/defaults.yaml#K.M.3/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.3/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.3/seeds",
+      "families/code_task/defaults.yaml#K.M.3/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.3/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.4",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.4",
+      "families/code_task/defaults.yaml#K.M.4/budget",
+      "families/code_task/defaults.yaml#K.M.4/controls",
+      "families/code_task/defaults.yaml#K.M.4/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.4/data_classification",
+      "families/code_task/defaults.yaml#K.M.4/feature_spec",
+      "families/code_task/defaults.yaml#K.M.4/mandate",
+      "families/code_task/defaults.yaml#K.M.4/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.4/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.4/research_question",
+      "families/code_task/defaults.yaml#K.M.4/response_spec",
+      "families/code_task/defaults.yaml#K.M.4/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.4/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.4/seeds",
+      "families/code_task/defaults.yaml#K.M.4/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.4/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.4",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.4",
+      "families/code_task/defaults.yaml#K.M.4/budget",
+      "families/code_task/defaults.yaml#K.M.4/controls",
+      "families/code_task/defaults.yaml#K.M.4/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.4/data_classification",
+      "families/code_task/defaults.yaml#K.M.4/feature_spec",
+      "families/code_task/defaults.yaml#K.M.4/mandate",
+      "families/code_task/defaults.yaml#K.M.4/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.4/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.4/research_question",
+      "families/code_task/defaults.yaml#K.M.4/response_spec",
+      "families/code_task/defaults.yaml#K.M.4/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.4/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.4/seeds",
+      "families/code_task/defaults.yaml#K.M.4/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.4/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.4",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.M.4",
+      "families/code_task/defaults.yaml#K.M.4/budget",
+      "families/code_task/defaults.yaml#K.M.4/controls",
+      "families/code_task/defaults.yaml#K.M.4/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.4/data_classification",
+      "families/code_task/defaults.yaml#K.M.4/feature_spec",
+      "families/code_task/defaults.yaml#K.M.4/mandate",
+      "families/code_task/defaults.yaml#K.M.4/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.4/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.4/research_question",
+      "families/code_task/defaults.yaml#K.M.4/response_spec",
+      "families/code_task/defaults.yaml#K.M.4/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.4/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.4/seeds",
+      "families/code_task/defaults.yaml#K.M.4/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.4/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.5",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.M.5",
+      "families/*/family.yaml#faq_ids/K.M.5"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.5",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.M.5",
+      "families/*/family.yaml#faq_ids/K.M.5"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.5",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.M.5",
+      "families/*/family.yaml#faq_ids/K.M.5"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.6",
+    "intervention_id": "I.CODE.bug",
+    "missing": [
+      "families/*/defaults.yaml#K.M.6",
+      "families/*/family.yaml#faq_ids/K.M.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.6",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.M.6",
+      "families/*/family.yaml#faq_ids/K.M.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.6",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.M.6",
+      "families/*/family.yaml#faq_ids/K.M.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.6",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.M.6",
+      "families/*/family.yaml#faq_ids/K.M.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.M.7",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.7",
+      "families/code_task/defaults.yaml#K.M.7/budget",
+      "families/code_task/defaults.yaml#K.M.7/controls",
+      "families/code_task/defaults.yaml#K.M.7/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.7/data_classification",
+      "families/code_task/defaults.yaml#K.M.7/feature_spec",
+      "families/code_task/defaults.yaml#K.M.7/mandate",
+      "families/code_task/defaults.yaml#K.M.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.7/research_question",
+      "families/code_task/defaults.yaml#K.M.7/response_spec",
+      "families/code_task/defaults.yaml#K.M.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.7/seeds",
+      "families/code_task/defaults.yaml#K.M.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.7",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.M.7",
+      "families/code_task/defaults.yaml#K.M.7/budget",
+      "families/code_task/defaults.yaml#K.M.7/controls",
+      "families/code_task/defaults.yaml#K.M.7/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.7/data_classification",
+      "families/code_task/defaults.yaml#K.M.7/feature_spec",
+      "families/code_task/defaults.yaml#K.M.7/mandate",
+      "families/code_task/defaults.yaml#K.M.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.7/research_question",
+      "families/code_task/defaults.yaml#K.M.7/response_spec",
+      "families/code_task/defaults.yaml#K.M.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.7/seeds",
+      "families/code_task/defaults.yaml#K.M.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.M.7",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.M.7",
+      "families/code_task/defaults.yaml#K.M.7/budget",
+      "families/code_task/defaults.yaml#K.M.7/controls",
+      "families/code_task/defaults.yaml#K.M.7/correctness_feature",
+      "families/code_task/defaults.yaml#K.M.7/data_classification",
+      "families/code_task/defaults.yaml#K.M.7/feature_spec",
+      "families/code_task/defaults.yaml#K.M.7/mandate",
+      "families/code_task/defaults.yaml#K.M.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.M.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.M.7/research_question",
+      "families/code_task/defaults.yaml#K.M.7/response_spec",
+      "families/code_task/defaults.yaml#K.M.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.M.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.M.7/seeds",
+      "families/code_task/defaults.yaml#K.M.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.M.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.1",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.Q.1",
+      "families/code_task/defaults.yaml#K.Q.1/budget",
+      "families/code_task/defaults.yaml#K.Q.1/controls",
+      "families/code_task/defaults.yaml#K.Q.1/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.1/data_classification",
+      "families/code_task/defaults.yaml#K.Q.1/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.1/mandate",
+      "families/code_task/defaults.yaml#K.Q.1/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.1/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.1/research_question",
+      "families/code_task/defaults.yaml#K.Q.1/response_spec",
+      "families/code_task/defaults.yaml#K.Q.1/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.1/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.1/seeds",
+      "families/code_task/defaults.yaml#K.Q.1/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.1/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.1",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.Q.1",
+      "families/code_task/defaults.yaml#K.Q.1/budget",
+      "families/code_task/defaults.yaml#K.Q.1/controls",
+      "families/code_task/defaults.yaml#K.Q.1/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.1/data_classification",
+      "families/code_task/defaults.yaml#K.Q.1/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.1/mandate",
+      "families/code_task/defaults.yaml#K.Q.1/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.1/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.1/research_question",
+      "families/code_task/defaults.yaml#K.Q.1/response_spec",
+      "families/code_task/defaults.yaml#K.Q.1/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.1/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.1/seeds",
+      "families/code_task/defaults.yaml#K.Q.1/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.1/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.1",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.Q.1",
+      "families/code_task/defaults.yaml#K.Q.1/budget",
+      "families/code_task/defaults.yaml#K.Q.1/controls",
+      "families/code_task/defaults.yaml#K.Q.1/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.1/data_classification",
+      "families/code_task/defaults.yaml#K.Q.1/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.1/mandate",
+      "families/code_task/defaults.yaml#K.Q.1/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.1/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.1/research_question",
+      "families/code_task/defaults.yaml#K.Q.1/response_spec",
+      "families/code_task/defaults.yaml#K.Q.1/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.1/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.1/seeds",
+      "families/code_task/defaults.yaml#K.Q.1/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.1/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.2",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.2",
+      "families/*/family.yaml#faq_ids/K.Q.2"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.2",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.2",
+      "families/*/family.yaml#faq_ids/K.Q.2"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.2",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.2",
+      "families/*/family.yaml#faq_ids/K.Q.2"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.3",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.3",
+      "families/*/family.yaml#faq_ids/K.Q.3"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.3",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.3",
+      "families/*/family.yaml#faq_ids/K.Q.3"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.3",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.3",
+      "families/*/family.yaml#faq_ids/K.Q.3"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.4",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.Q.4",
+      "families/code_task/defaults.yaml#K.Q.4/budget",
+      "families/code_task/defaults.yaml#K.Q.4/controls",
+      "families/code_task/defaults.yaml#K.Q.4/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.4/data_classification",
+      "families/code_task/defaults.yaml#K.Q.4/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.4/mandate",
+      "families/code_task/defaults.yaml#K.Q.4/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.4/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.4/research_question",
+      "families/code_task/defaults.yaml#K.Q.4/response_spec",
+      "families/code_task/defaults.yaml#K.Q.4/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.4/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.4/seeds",
+      "families/code_task/defaults.yaml#K.Q.4/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.4/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.4",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.Q.4",
+      "families/code_task/defaults.yaml#K.Q.4/budget",
+      "families/code_task/defaults.yaml#K.Q.4/controls",
+      "families/code_task/defaults.yaml#K.Q.4/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.4/data_classification",
+      "families/code_task/defaults.yaml#K.Q.4/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.4/mandate",
+      "families/code_task/defaults.yaml#K.Q.4/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.4/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.4/research_question",
+      "families/code_task/defaults.yaml#K.Q.4/response_spec",
+      "families/code_task/defaults.yaml#K.Q.4/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.4/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.4/seeds",
+      "families/code_task/defaults.yaml#K.Q.4/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.4/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.4",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.Q.4",
+      "families/code_task/defaults.yaml#K.Q.4/budget",
+      "families/code_task/defaults.yaml#K.Q.4/controls",
+      "families/code_task/defaults.yaml#K.Q.4/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.4/data_classification",
+      "families/code_task/defaults.yaml#K.Q.4/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.4/mandate",
+      "families/code_task/defaults.yaml#K.Q.4/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.4/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.4/research_question",
+      "families/code_task/defaults.yaml#K.Q.4/response_spec",
+      "families/code_task/defaults.yaml#K.Q.4/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.4/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.4/seeds",
+      "families/code_task/defaults.yaml#K.Q.4/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.4/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.5",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.5",
+      "families/*/family.yaml#faq_ids/K.Q.5"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.5",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.5",
+      "families/*/family.yaml#faq_ids/K.Q.5"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.5",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.5",
+      "families/*/family.yaml#faq_ids/K.Q.5"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.6",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.6",
+      "families/*/family.yaml#faq_ids/K.Q.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.6",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.6",
+      "families/*/family.yaml#faq_ids/K.Q.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.6",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.6",
+      "families/*/family.yaml#faq_ids/K.Q.6"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.7",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.Q.7",
+      "families/code_task/defaults.yaml#K.Q.7/I.Q.purpose",
+      "families/code_task/defaults.yaml#K.Q.7/budget",
+      "families/code_task/defaults.yaml#K.Q.7/controls",
+      "families/code_task/defaults.yaml#K.Q.7/data_classification",
+      "families/code_task/defaults.yaml#K.Q.7/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.7/hypothesis",
+      "families/code_task/defaults.yaml#K.Q.7/mandate",
+      "families/code_task/defaults.yaml#K.Q.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.7/research_question",
+      "families/code_task/defaults.yaml#K.Q.7/response_spec",
+      "families/code_task/defaults.yaml#K.Q.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.7/seeds",
+      "families/code_task/defaults.yaml#K.Q.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.7",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/code_task/defaults.yaml#K.Q.7",
+      "families/code_task/defaults.yaml#K.Q.7/I.Q.purpose",
+      "families/code_task/defaults.yaml#K.Q.7/budget",
+      "families/code_task/defaults.yaml#K.Q.7/controls",
+      "families/code_task/defaults.yaml#K.Q.7/data_classification",
+      "families/code_task/defaults.yaml#K.Q.7/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.7/hypothesis",
+      "families/code_task/defaults.yaml#K.Q.7/mandate",
+      "families/code_task/defaults.yaml#K.Q.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.7/research_question",
+      "families/code_task/defaults.yaml#K.Q.7/response_spec",
+      "families/code_task/defaults.yaml#K.Q.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.7/seeds",
+      "families/code_task/defaults.yaml#K.Q.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.7",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/code_task/defaults.yaml#K.Q.7",
+      "families/code_task/defaults.yaml#K.Q.7/budget",
+      "families/code_task/defaults.yaml#K.Q.7/controls",
+      "families/code_task/defaults.yaml#K.Q.7/correctness_feature",
+      "families/code_task/defaults.yaml#K.Q.7/data_classification",
+      "families/code_task/defaults.yaml#K.Q.7/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.7/mandate",
+      "families/code_task/defaults.yaml#K.Q.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.7/research_question",
+      "families/code_task/defaults.yaml#K.Q.7/response_spec",
+      "families/code_task/defaults.yaml#K.Q.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.7/seeds",
+      "families/code_task/defaults.yaml#K.Q.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.7",
+    "intervention_id": "I.Q.purpose",
+    "missing": [
+      "families/code_task/defaults.yaml#K.Q.7",
+      "families/code_task/defaults.yaml#K.Q.7/I.Q.purpose",
+      "families/code_task/defaults.yaml#K.Q.7/budget",
+      "families/code_task/defaults.yaml#K.Q.7/controls",
+      "families/code_task/defaults.yaml#K.Q.7/data_classification",
+      "families/code_task/defaults.yaml#K.Q.7/feature_spec",
+      "families/code_task/defaults.yaml#K.Q.7/hypothesis",
+      "families/code_task/defaults.yaml#K.Q.7/mandate",
+      "families/code_task/defaults.yaml#K.Q.7/paraphrase_spec",
+      "families/code_task/defaults.yaml#K.Q.7/prompt_spec",
+      "families/code_task/defaults.yaml#K.Q.7/research_question",
+      "families/code_task/defaults.yaml#K.Q.7/response_spec",
+      "families/code_task/defaults.yaml#K.Q.7/sampling_spec",
+      "families/code_task/defaults.yaml#K.Q.7/scenario_spec",
+      "families/code_task/defaults.yaml#K.Q.7/seeds",
+      "families/code_task/defaults.yaml#K.Q.7/statistical_spec",
+      "families/code_task/defaults.yaml#K.Q.7/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "K.Q.8",
+    "intervention_id": "I.CODE.comment",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.8",
+      "families/*/family.yaml#faq_ids/K.Q.8"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.8",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.8",
+      "families/*/family.yaml#faq_ids/K.Q.8"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.8",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.8",
+      "families/*/family.yaml#faq_ids/K.Q.8"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "K.Q.8",
+    "intervention_id": "I.Q.purpose",
+    "missing": [
+      "families/*/defaults.yaml#K.Q.8",
+      "families/*/family.yaml#faq_ids/K.Q.8"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M1.1.a",
+      "families/*/family.yaml#faq_ids/M1.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.1.a",
+    "intervention_id": "I.ITEM.M1.1.a.feature_count",
+    "missing": [
+      "families/*/defaults.yaml#M1.1.a",
+      "families/*/family.yaml#faq_ids/M1.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.1.a",
+    "intervention_id": "I.M.data_size",
+    "missing": [
+      "families/*/defaults.yaml#M1.1.a",
+      "families/*/family.yaml#faq_ids/M1.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.1.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M1.1.a",
+      "families/*/family.yaml#faq_ids/M1.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.1.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M1.1.b",
+      "families/*/family.yaml#faq_ids/M1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.1.b",
+    "intervention_id": "I.Q.snr",
+    "missing": [
+      "families/*/defaults.yaml#M1.1.b",
+      "families/*/family.yaml#faq_ids/M1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M1.3.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#M1.3.a",
+      "families/*/family.yaml#faq_ids/M1.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V3"
+  },
+  {
+    "faq_id": "M1.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M1.3.a",
+      "families/*/family.yaml#faq_ids/M1.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V3"
+  },
+  {
+    "faq_id": "M2.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M2.1.a",
+      "families/*/family.yaml#faq_ids/M2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M2.1.a",
+    "intervention_id": "I.ITEM.M2.1.a.whether_sequence_information",
+    "missing": [
+      "families/*/defaults.yaml#M2.1.a",
+      "families/*/family.yaml#faq_ids/M2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M2.1.a",
+    "intervention_id": "I.M.data_size",
+    "missing": [
+      "families/*/defaults.yaml#M2.1.a",
+      "families/*/family.yaml#faq_ids/M2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M2.2.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M2.2.a",
+      "families/*/family.yaml#faq_ids/M2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M2.2.a",
+    "intervention_id": "I.M.data_size",
+    "missing": [
+      "families/*/defaults.yaml#M2.2.a",
+      "families/*/family.yaml#faq_ids/M2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M2.3.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M2.3.a",
+      "families/*/family.yaml#faq_ids/M2.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M2.3.a",
+    "intervention_id": "I.ITEM.M2.3.a.label_availability",
+    "missing": [
+      "families/*/defaults.yaml#M2.3.a",
+      "families/*/family.yaml#faq_ids/M2.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M3.1.a",
+      "families/*/family.yaml#faq_ids/M3.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.1.a",
+    "intervention_id": "I.ITEM.M3.1.a.objective_ranked_portfolio",
+    "missing": [
+      "families/*/defaults.yaml#M3.1.a",
+      "families/*/family.yaml#faq_ids/M3.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.2.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/ml_design/defaults.yaml#M3.2.a",
+      "families/ml_design/defaults.yaml#M3.2.a/budget",
+      "families/ml_design/defaults.yaml#M3.2.a/controls",
+      "families/ml_design/defaults.yaml#M3.2.a/correctness_feature",
+      "families/ml_design/defaults.yaml#M3.2.a/data_classification",
+      "families/ml_design/defaults.yaml#M3.2.a/feature_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/mandate",
+      "families/ml_design/defaults.yaml#M3.2.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/research_question",
+      "families/ml_design/defaults.yaml#M3.2.a/response_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/seeds",
+      "families/ml_design/defaults.yaml#M3.2.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M3.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M3.2.a",
+      "families/ml_design/defaults.yaml#M3.2.a/budget",
+      "families/ml_design/defaults.yaml#M3.2.a/controls",
+      "families/ml_design/defaults.yaml#M3.2.a/correctness_feature",
+      "families/ml_design/defaults.yaml#M3.2.a/data_classification",
+      "families/ml_design/defaults.yaml#M3.2.a/feature_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/mandate",
+      "families/ml_design/defaults.yaml#M3.2.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/research_question",
+      "families/ml_design/defaults.yaml#M3.2.a/response_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/seeds",
+      "families/ml_design/defaults.yaml#M3.2.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M3.2.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M3.3.a",
+    "intervention_id": "I.M.data_size",
+    "missing": [
+      "families/*/defaults.yaml#M3.3.a",
+      "families/*/family.yaml#faq_ids/M3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.3.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#M3.3.a",
+      "families/*/family.yaml#faq_ids/M3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M3.3.a",
+      "families/*/family.yaml#faq_ids/M3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.3.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M3.3.b",
+      "families/*/family.yaml#faq_ids/M3.3.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.3.b",
+    "intervention_id": "I.ITEM.M3.3.b.cross_horizon_label",
+    "missing": [
+      "families/*/defaults.yaml#M3.3.b",
+      "families/*/family.yaml#faq_ids/M3.3.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.4.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M3.4.a",
+      "families/*/family.yaml#faq_ids/M3.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M3.4.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#M3.4.a",
+      "families/*/family.yaml#faq_ids/M3.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M4.1.a",
+      "families/*/family.yaml#faq_ids/M4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.1.a",
+    "intervention_id": "I.ITEM.M4.1.a.objective_stock_selection_net",
+    "missing": [
+      "families/*/defaults.yaml#M4.1.a",
+      "families/*/family.yaml#faq_ids/M4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.1.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M4.1.a",
+      "families/*/family.yaml#faq_ids/M4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.2.a",
+    "intervention_id": "I.ITEM.M4.2.a.fat_tails_or_outliers",
+    "missing": [
+      "families/*/defaults.yaml#M4.2.a",
+      "families/*/family.yaml#faq_ids/M4.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M4.2.a",
+      "families/*/family.yaml#faq_ids/M4.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.3.a",
+    "intervention_id": "I.M.horizon",
+    "missing": [
+      "families/ml_design/defaults.yaml#M4.3.a",
+      "families/ml_design/defaults.yaml#M4.3.a/I.M.horizon",
+      "families/ml_design/defaults.yaml#M4.3.a/budget",
+      "families/ml_design/defaults.yaml#M4.3.a/controls",
+      "families/ml_design/defaults.yaml#M4.3.a/data_classification",
+      "families/ml_design/defaults.yaml#M4.3.a/feature_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/hypothesis",
+      "families/ml_design/defaults.yaml#M4.3.a/mandate",
+      "families/ml_design/defaults.yaml#M4.3.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/research_question",
+      "families/ml_design/defaults.yaml#M4.3.a/response_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/seeds",
+      "families/ml_design/defaults.yaml#M4.3.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/task",
+      "families/ml_design/family.yaml#interventions/I.M.horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M4.3.a",
+    "intervention_id": "I.PRES.purpose_wording",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M4.3.a",
+      "families/ml_design/defaults.yaml#M4.3.a/I.M.horizon",
+      "families/ml_design/defaults.yaml#M4.3.a/budget",
+      "families/ml_design/defaults.yaml#M4.3.a/controls",
+      "families/ml_design/defaults.yaml#M4.3.a/data_classification",
+      "families/ml_design/defaults.yaml#M4.3.a/feature_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/hypothesis",
+      "families/ml_design/defaults.yaml#M4.3.a/mandate",
+      "families/ml_design/defaults.yaml#M4.3.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/research_question",
+      "families/ml_design/defaults.yaml#M4.3.a/response_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/seeds",
+      "families/ml_design/defaults.yaml#M4.3.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M4.3.a/task",
+      "families/ml_design/family.yaml#interventions/I.M.horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M4.4.a",
+    "intervention_id": "I.ITEM.M4.4.a.delistings_present",
+    "missing": [
+      "families/*/defaults.yaml#M4.4.a",
+      "families/*/family.yaml#faq_ids/M4.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.4.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M4.4.a",
+      "families/*/family.yaml#faq_ids/M4.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.5.a",
+    "intervention_id": "I.ITEM.M4.5.a.publication_lag_stated",
+    "missing": [
+      "families/*/defaults.yaml#M4.5.a",
+      "families/*/family.yaml#faq_ids/M4.5.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M4.5.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M4.5.a",
+      "families/*/family.yaml#faq_ids/M4.5.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M5.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M5.1.a",
+      "families/ml_design/defaults.yaml#M5.1.a/budget",
+      "families/ml_design/defaults.yaml#M5.1.a/controls",
+      "families/ml_design/defaults.yaml#M5.1.a/correctness_feature",
+      "families/ml_design/defaults.yaml#M5.1.a/data_classification",
+      "families/ml_design/defaults.yaml#M5.1.a/feature_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/mandate",
+      "families/ml_design/defaults.yaml#M5.1.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/research_question",
+      "families/ml_design/defaults.yaml#M5.1.a/response_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/seeds",
+      "families/ml_design/defaults.yaml#M5.1.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.1.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/ml_design/defaults.yaml#M5.1.a",
+      "families/ml_design/defaults.yaml#M5.1.a/budget",
+      "families/ml_design/defaults.yaml#M5.1.a/controls",
+      "families/ml_design/defaults.yaml#M5.1.a/correctness_feature",
+      "families/ml_design/defaults.yaml#M5.1.a/data_classification",
+      "families/ml_design/defaults.yaml#M5.1.a/feature_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/mandate",
+      "families/ml_design/defaults.yaml#M5.1.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/research_question",
+      "families/ml_design/defaults.yaml#M5.1.a/response_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/seeds",
+      "families/ml_design/defaults.yaml#M5.1.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.1.a/task"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.1.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M5.1.b",
+      "families/ml_design/defaults.yaml#M5.1.b/I.ITEM.M5.1.b.planted_half_life",
+      "families/ml_design/defaults.yaml#M5.1.b/budget",
+      "families/ml_design/defaults.yaml#M5.1.b/controls",
+      "families/ml_design/defaults.yaml#M5.1.b/data_classification",
+      "families/ml_design/defaults.yaml#M5.1.b/feature_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/hypothesis",
+      "families/ml_design/defaults.yaml#M5.1.b/mandate",
+      "families/ml_design/defaults.yaml#M5.1.b/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/research_question",
+      "families/ml_design/defaults.yaml#M5.1.b/response_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/seeds",
+      "families/ml_design/defaults.yaml#M5.1.b/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/task",
+      "families/ml_design/family.yaml#interventions/I.ITEM.M5.1.b.planted_half_life"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.1.b",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M5.1.b",
+      "families/ml_design/defaults.yaml#M5.1.b/I.ITEM.M5.1.b.planted_half_life",
+      "families/ml_design/defaults.yaml#M5.1.b/budget",
+      "families/ml_design/defaults.yaml#M5.1.b/controls",
+      "families/ml_design/defaults.yaml#M5.1.b/data_classification",
+      "families/ml_design/defaults.yaml#M5.1.b/feature_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/hypothesis",
+      "families/ml_design/defaults.yaml#M5.1.b/mandate",
+      "families/ml_design/defaults.yaml#M5.1.b/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/research_question",
+      "families/ml_design/defaults.yaml#M5.1.b/response_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/seeds",
+      "families/ml_design/defaults.yaml#M5.1.b/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/task",
+      "families/ml_design/family.yaml#interventions/I.ITEM.M5.1.b.planted_half_life"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.1.b",
+    "intervention_id": "I.ITEM.M5.1.b.planted_half_life",
+    "missing": [
+      "families/ml_design/defaults.yaml#M5.1.b",
+      "families/ml_design/defaults.yaml#M5.1.b/I.ITEM.M5.1.b.planted_half_life",
+      "families/ml_design/defaults.yaml#M5.1.b/budget",
+      "families/ml_design/defaults.yaml#M5.1.b/controls",
+      "families/ml_design/defaults.yaml#M5.1.b/data_classification",
+      "families/ml_design/defaults.yaml#M5.1.b/feature_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/hypothesis",
+      "families/ml_design/defaults.yaml#M5.1.b/mandate",
+      "families/ml_design/defaults.yaml#M5.1.b/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/research_question",
+      "families/ml_design/defaults.yaml#M5.1.b/response_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/seeds",
+      "families/ml_design/defaults.yaml#M5.1.b/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.1.b/task",
+      "families/ml_design/family.yaml#interventions/I.ITEM.M5.1.b.planted_half_life"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.2.a",
+    "intervention_id": "I.M.horizon",
+    "missing": [
+      "families/ml_design/defaults.yaml#M5.2.a",
+      "families/ml_design/defaults.yaml#M5.2.a/I.M.horizon",
+      "families/ml_design/defaults.yaml#M5.2.a/budget",
+      "families/ml_design/defaults.yaml#M5.2.a/controls",
+      "families/ml_design/defaults.yaml#M5.2.a/data_classification",
+      "families/ml_design/defaults.yaml#M5.2.a/feature_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/hypothesis",
+      "families/ml_design/defaults.yaml#M5.2.a/mandate",
+      "families/ml_design/defaults.yaml#M5.2.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/research_question",
+      "families/ml_design/defaults.yaml#M5.2.a/response_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/seeds",
+      "families/ml_design/defaults.yaml#M5.2.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/task",
+      "families/ml_design/family.yaml#interventions/I.M.horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M5.2.a",
+      "families/ml_design/defaults.yaml#M5.2.a/I.M.horizon",
+      "families/ml_design/defaults.yaml#M5.2.a/budget",
+      "families/ml_design/defaults.yaml#M5.2.a/controls",
+      "families/ml_design/defaults.yaml#M5.2.a/data_classification",
+      "families/ml_design/defaults.yaml#M5.2.a/feature_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/hypothesis",
+      "families/ml_design/defaults.yaml#M5.2.a/mandate",
+      "families/ml_design/defaults.yaml#M5.2.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/research_question",
+      "families/ml_design/defaults.yaml#M5.2.a/response_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/seeds",
+      "families/ml_design/defaults.yaml#M5.2.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M5.2.a/task",
+      "families/ml_design/family.yaml#interventions/I.M.horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M5.2.b",
+    "intervention_id": "I.M.horizon",
+    "missing": [
+      "families/*/defaults.yaml#M5.2.b",
+      "families/*/family.yaml#faq_ids/M5.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M5.2.b",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M5.2.b",
+      "families/*/family.yaml#faq_ids/M5.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M5.3.a",
+    "intervention_id": "I.M.costs",
+    "missing": [
+      "families/*/defaults.yaml#M5.3.a",
+      "families/*/family.yaml#faq_ids/M5.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M5.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M5.3.a",
+      "families/*/family.yaml#faq_ids/M5.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M5.4.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#M5.4.a",
+      "families/*/family.yaml#faq_ids/M5.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M5.4.a",
+    "intervention_id": "I.M.costs",
+    "missing": [
+      "families/*/defaults.yaml#M5.4.a",
+      "families/*/family.yaml#faq_ids/M5.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M6.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M6.1.a",
+      "families/ml_design/defaults.yaml#M6.1.a/I.ITEM.M6.1.a.label_horizon",
+      "families/ml_design/defaults.yaml#M6.1.a/budget",
+      "families/ml_design/defaults.yaml#M6.1.a/controls",
+      "families/ml_design/defaults.yaml#M6.1.a/data_classification",
+      "families/ml_design/defaults.yaml#M6.1.a/feature_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/hypothesis",
+      "families/ml_design/defaults.yaml#M6.1.a/mandate",
+      "families/ml_design/defaults.yaml#M6.1.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/research_question",
+      "families/ml_design/defaults.yaml#M6.1.a/response_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/seeds",
+      "families/ml_design/defaults.yaml#M6.1.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/task",
+      "families/ml_design/family.yaml#interventions/I.ITEM.M6.1.a.label_horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M6.1.a",
+    "intervention_id": "I.ITEM.M6.1.a.label_horizon",
+    "missing": [
+      "families/ml_design/defaults.yaml#M6.1.a",
+      "families/ml_design/defaults.yaml#M6.1.a/I.ITEM.M6.1.a.label_horizon",
+      "families/ml_design/defaults.yaml#M6.1.a/budget",
+      "families/ml_design/defaults.yaml#M6.1.a/controls",
+      "families/ml_design/defaults.yaml#M6.1.a/data_classification",
+      "families/ml_design/defaults.yaml#M6.1.a/feature_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/hypothesis",
+      "families/ml_design/defaults.yaml#M6.1.a/mandate",
+      "families/ml_design/defaults.yaml#M6.1.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/research_question",
+      "families/ml_design/defaults.yaml#M6.1.a/response_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/seeds",
+      "families/ml_design/defaults.yaml#M6.1.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/task",
+      "families/ml_design/family.yaml#interventions/I.ITEM.M6.1.a.label_horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M6.1.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/ml_design/defaults.yaml#M6.1.a",
+      "families/ml_design/defaults.yaml#M6.1.a/I.ITEM.M6.1.a.label_horizon",
+      "families/ml_design/defaults.yaml#M6.1.a/budget",
+      "families/ml_design/defaults.yaml#M6.1.a/controls",
+      "families/ml_design/defaults.yaml#M6.1.a/data_classification",
+      "families/ml_design/defaults.yaml#M6.1.a/feature_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/hypothesis",
+      "families/ml_design/defaults.yaml#M6.1.a/mandate",
+      "families/ml_design/defaults.yaml#M6.1.a/paraphrase_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/prompt_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/research_question",
+      "families/ml_design/defaults.yaml#M6.1.a/response_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/sampling_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/scenario_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/seeds",
+      "families/ml_design/defaults.yaml#M6.1.a/statistical_spec",
+      "families/ml_design/defaults.yaml#M6.1.a/task",
+      "families/ml_design/family.yaml#interventions/I.ITEM.M6.1.a.label_horizon"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "M6.2.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#M6.2.a",
+      "families/*/family.yaml#faq_ids/M6.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M6.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M6.2.a",
+      "families/*/family.yaml#faq_ids/M6.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M6.3.a",
+    "intervention_id": "I.ITEM.M6.3.a.number_of_trials",
+    "missing": [
+      "families/*/defaults.yaml#M6.3.a",
+      "families/*/family.yaml#faq_ids/M6.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "M6.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#M6.3.a",
+      "families/*/family.yaml#faq_ids/M6.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q1.1.a",
+      "families/*/family.yaml#faq_ids/Q1.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.1.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q1.1.a",
+      "families/*/family.yaml#faq_ids/Q1.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.1.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q1.1.b",
+      "families/*/family.yaml#faq_ids/Q1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.1.b",
+    "intervention_id": "I.ITEM.Q1.1.b.breadth",
+    "missing": [
+      "families/*/defaults.yaml#Q1.1.b",
+      "families/*/family.yaml#faq_ids/Q1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.1.b",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q1.1.b",
+      "families/*/family.yaml#faq_ids/Q1.1.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.1.c",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "base_design",
+      "families/quant_dgp/defaults.yaml#Q1.1.c",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/I.Q.n_tested",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/budget",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/controls",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/data_classification",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/feature_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/hypothesis",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/mandate",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/paraphrase_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/prompt_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/research_question",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/response_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/sampling_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/scenario_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/seeds",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/statistical_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/task",
+      "families/quant_dgp/family.yaml#interventions/I.Q.n_tested"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q1.1.c",
+    "intervention_id": "I.ITEM.Q1.1.c.planted_true_signals",
+    "missing": [
+      "families/quant_dgp/defaults.yaml#Q1.1.c",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/I.ITEM.Q1.1.c.planted_true_signals",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/budget",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/controls",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/data_classification",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/feature_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/hypothesis",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/mandate",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/paraphrase_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/prompt_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/research_question",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/response_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/sampling_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/scenario_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/seeds",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/statistical_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/task",
+      "families/quant_dgp/family.yaml#interventions/I.ITEM.Q1.1.c.planted_true_signals"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q1.1.c",
+    "intervention_id": "I.PRES.order",
+    "missing": [
+      "base_design",
+      "families/quant_dgp/defaults.yaml#Q1.1.c",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/I.Q.n_tested",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/budget",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/controls",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/data_classification",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/feature_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/hypothesis",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/mandate",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/paraphrase_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/prompt_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/research_question",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/response_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/sampling_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/scenario_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/seeds",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/statistical_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/task",
+      "families/quant_dgp/family.yaml#interventions/I.Q.n_tested"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q1.1.c",
+    "intervention_id": "I.Q.n_tested",
+    "missing": [
+      "families/quant_dgp/defaults.yaml#Q1.1.c",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/I.Q.n_tested",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/budget",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/controls",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/data_classification",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/feature_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/hypothesis",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/mandate",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/paraphrase_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/prompt_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/research_question",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/response_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/sampling_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/scenario_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/seeds",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/statistical_spec",
+      "families/quant_dgp/defaults.yaml#Q1.1.c/task",
+      "families/quant_dgp/family.yaml#interventions/I.Q.n_tested"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q1.2.a",
+    "intervention_id": "I.ITEM.Q1.2.a.cross_sectional_correlation",
+    "missing": [
+      "families/*/defaults.yaml#Q1.2.a",
+      "families/*/family.yaml#faq_ids/Q1.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.2.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q1.2.a",
+      "families/*/family.yaml#faq_ids/Q1.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.2.b",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q1.2.b",
+      "families/*/family.yaml#faq_ids/Q1.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.2.b",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q1.2.b",
+      "families/*/family.yaml#faq_ids/Q1.2.b"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.3.a",
+    "intervention_id": "I.Q.n_tested",
+    "missing": [
+      "families/quant_method_choice/defaults.yaml#Q1.3.a",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/I.Q.n_tested",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/budget",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/controls",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/data_classification",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/feature_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/hypothesis",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/mandate",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/paraphrase_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/prompt_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/research_question",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/response_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/sampling_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/scenario_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/seeds",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/statistical_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/task",
+      "families/quant_method_choice/family.yaml#interventions/I.Q.n_tested"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q1.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/I.Q.n_tested",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/budget",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/controls",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/data_classification",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/feature_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/hypothesis",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/mandate",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/paraphrase_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/prompt_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/research_question",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/response_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/sampling_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/scenario_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/seeds",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/statistical_spec",
+      "families/quant_method_choice/defaults.yaml#Q1.3.a/task",
+      "families/quant_method_choice/family.yaml#interventions/I.Q.n_tested"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q1.4.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q1.4.a",
+      "families/*/family.yaml#faq_ids/Q1.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.4.a",
+    "intervention_id": "I.ITEM.Q1.4.a.planted_confounder",
+    "missing": [
+      "families/*/defaults.yaml#Q1.4.a",
+      "families/*/family.yaml#faq_ids/Q1.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.5.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#Q1.5.a",
+      "families/*/family.yaml#faq_ids/Q1.5.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q1.5.a",
+    "intervention_id": "I.ITEM.Q1.5.a.planted_spanned_vs_unspanned",
+    "missing": [
+      "families/*/defaults.yaml#Q1.5.a",
+      "families/*/family.yaml#faq_ids/Q1.5.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q2.1.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q2.1.a",
+      "families/*/family.yaml#faq_ids/Q2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q2.1.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q2.1.a",
+      "families/*/family.yaml#faq_ids/Q2.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q2.2.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q2.2.a",
+      "families/*/family.yaml#faq_ids/Q2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q2.2.a",
+    "intervention_id": "I.ITEM.Q2.2.a.purpose_risk_vs_attribution",
+    "missing": [
+      "families/*/defaults.yaml#Q2.2.a",
+      "families/*/family.yaml#faq_ids/Q2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q2.2.a",
+    "intervention_id": "I.Q.tn",
+    "missing": [
+      "families/*/defaults.yaml#Q2.2.a",
+      "families/*/family.yaml#faq_ids/Q2.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q2.2.b",
+    "intervention_id": "I.ITEM.Q2.2.b.marchenko_pastur_edge",
+    "missing": [
+      "families/quant_dgp/defaults.yaml#Q2.2.b",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/I.ITEM.Q2.2.b.marchenko_pastur_edge",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/budget",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/controls",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/data_classification",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/feature_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/hypothesis",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/mandate",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/paraphrase_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/prompt_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/research_question",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/response_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/sampling_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/scenario_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/seeds",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/statistical_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/task",
+      "families/quant_dgp/family.yaml#interventions/I.ITEM.Q2.2.b.marchenko_pastur_edge"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q2.2.b",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "base_design",
+      "families/quant_dgp/defaults.yaml#Q2.2.b",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/I.ITEM.Q2.2.b.marchenko_pastur_edge",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/budget",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/controls",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/data_classification",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/feature_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/hypothesis",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/mandate",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/paraphrase_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/prompt_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/research_question",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/response_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/sampling_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/scenario_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/seeds",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/statistical_spec",
+      "families/quant_dgp/defaults.yaml#Q2.2.b/task",
+      "families/quant_dgp/family.yaml#interventions/I.ITEM.Q2.2.b.marchenko_pastur_edge"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q3.2.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q3.2.a",
+      "families/*/family.yaml#faq_ids/Q3.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q3.2.a",
+    "intervention_id": "I.ITEM.Q3.2.a.n_t",
+    "missing": [
+      "families/*/defaults.yaml#Q3.2.a",
+      "families/*/family.yaml#faq_ids/Q3.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q3.3.a",
+    "intervention_id": "I.ITEM.Q3.3.a.n_t",
+    "missing": [
+      "families/*/defaults.yaml#Q3.3.a",
+      "families/*/family.yaml#faq_ids/Q3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q3.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q3.3.a",
+      "families/*/family.yaml#faq_ids/Q3.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q3.4.a",
+    "intervention_id": "I.ITEM.Q3.4.a.condition_number",
+    "missing": [
+      "families/*/defaults.yaml#Q3.4.a",
+      "families/*/family.yaml#faq_ids/Q3.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q3.4.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q3.4.a",
+      "families/*/family.yaml#faq_ids/Q3.4.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q4.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q4.1.a",
+      "families/*/family.yaml#faq_ids/Q4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q4.1.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q4.1.a",
+      "families/*/family.yaml#faq_ids/Q4.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q4.2.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q4.2.a",
+      "families/*/family.yaml#faq_ids/Q4.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q4.2.a",
+    "intervention_id": "I.ITEM.Q4.2.a.estimation_noise",
+    "missing": [
+      "families/*/defaults.yaml#Q4.2.a",
+      "families/*/family.yaml#faq_ids/Q4.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q4.2.a",
+    "intervention_id": "I.Q.tn",
+    "missing": [
+      "families/*/defaults.yaml#Q4.2.a",
+      "families/*/family.yaml#faq_ids/Q4.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q4.3.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "families/*/defaults.yaml#Q4.3.a",
+      "families/*/family.yaml#faq_ids/Q4.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V3"
+  },
+  {
+    "faq_id": "Q4.3.a",
+    "intervention_id": "I.ITEM.Q4.3.a.planted_cluster_structure",
+    "missing": [
+      "families/*/defaults.yaml#Q4.3.a",
+      "families/*/family.yaml#faq_ids/Q4.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V3"
+  },
+  {
+    "faq_id": "Q5.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q5.1.a",
+      "families/*/family.yaml#faq_ids/Q5.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q5.1.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q5.1.a",
+      "families/*/family.yaml#faq_ids/Q5.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q5.1.b",
+    "intervention_id": "I.ITEM.Q5.1.b.filtered_vs_smoothed",
+    "missing": [
+      "families/quant_method_choice/defaults.yaml#Q5.1.b",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/I.ITEM.Q5.1.b.filtered_vs_smoothed",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/budget",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/controls",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/data_classification",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/feature_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/hypothesis",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/mandate",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/paraphrase_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/prompt_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/research_question",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/response_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/sampling_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/scenario_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/seeds",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/statistical_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/task",
+      "families/quant_method_choice/family.yaml#interventions/I.ITEM.Q5.1.b.filtered_vs_smoothed"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q5.1.b",
+    "intervention_id": "I.PRES.purpose_wording",
+    "missing": [
+      "base_design",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/I.ITEM.Q5.1.b.filtered_vs_smoothed",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/budget",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/controls",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/data_classification",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/feature_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/hypothesis",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/mandate",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/paraphrase_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/prompt_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/research_question",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/response_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/sampling_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/scenario_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/seeds",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/statistical_spec",
+      "families/quant_method_choice/defaults.yaml#Q5.1.b/task",
+      "families/quant_method_choice/family.yaml#interventions/I.ITEM.Q5.1.b.filtered_vs_smoothed"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V1.1"
+  },
+  {
+    "faq_id": "Q5.1.c",
+    "intervention_id": "I.ITEM.Q5.1.c.t",
+    "missing": [
+      "families/*/defaults.yaml#Q5.1.c",
+      "families/*/family.yaml#faq_ids/Q5.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q5.1.c",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q5.1.c",
+      "families/*/family.yaml#faq_ids/Q5.1.c"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.1.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q6.1.a",
+      "families/*/family.yaml#faq_ids/Q6.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.1.a",
+    "intervention_id": "I.M.data_size",
+    "missing": [
+      "families/*/defaults.yaml#Q6.1.a",
+      "families/*/family.yaml#faq_ids/Q6.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.1.a",
+    "intervention_id": "I.Q.snr",
+    "missing": [
+      "families/*/defaults.yaml#Q6.1.a",
+      "families/*/family.yaml#faq_ids/Q6.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.1.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q6.1.a",
+      "families/*/family.yaml#faq_ids/Q6.1.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.2.a",
+    "intervention_id": "I.HYPE.label",
+    "missing": [
+      "families/*/defaults.yaml#Q6.2.a",
+      "families/*/family.yaml#faq_ids/Q6.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.2.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q6.2.a",
+      "families/*/family.yaml#faq_ids/Q6.2.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.3.a",
+    "intervention_id": "I.NONE",
+    "missing": [
+      "families/*/defaults.yaml#Q6.3.a",
+      "families/*/family.yaml#faq_ids/Q6.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  },
+  {
+    "faq_id": "Q6.3.a",
+    "intervention_id": "I.USER.stance",
+    "missing": [
+      "families/*/defaults.yaml#Q6.3.a",
+      "families/*/family.yaml#faq_ids/Q6.3.a"
+    ],
+    "reason": "item_not_implemented",
+    "variant_id": "base",
+    "wave": "V2"
+  }
+]

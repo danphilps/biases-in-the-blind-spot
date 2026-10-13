@@ -1,0 +1,50 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: distractor_items
+description: >-
+  Immaterial call items for the I.PRES.distractor cue (spec §T4.4, §35 S2): routine
+  remarks about matters outside the case's twelve item types, with no figures and no
+  mention of guidance or of any cut, reduction or lowering. Agent placeholders (D-14).
+entries:
+  - "The company thanked employees for their work on the new intranet."
+  - "Management noted that the head-office car park has been resurfaced."
+  - "The annual staff volunteering day was held in the spring."
+  - "The visitor centre at the main site reopened after redecoration."
+  - "The company updated its internal travel booking system."
+  - "A new canteen supplier started at the regional offices."
+  - "Management mentioned that the corporate website has a new design."
+  - "The firm renewed its sponsorship of a local youth football league."
+  - "Employees can now use a new mobile app for expense claims."
+  - "The board held one of its meetings at a regional site this quarter."
+  - "The company introduced a cycle-to-work scheme for staff."
+  - "A new reception area opened at the research campus."
+  - "Management said the internal newsletter is now published monthly."
+  - "The firm updated the branding on its delivery vans."
+  - "A staff photography competition was run across the offices."
+  - "The company switched its email provider during the quarter."
+  - "Management noted that the annual report has a new layout."
+  - "The firm planted trees around the warehouse perimeter."
+  - "A new parent-and-baby room opened at headquarters."
+  - "The company hosted a careers fair for local students."
+  - "Management mentioned that the meeting rooms now have new video screens."
+  - "The firm now buys its office stationery from a different supplier."
+  - "The company celebrated a long-service milestone for several employees."
+  - "A new shuttle bus links the two main office buildings."
+  - "The investor relations page was moved to a new web address."
+  - "The company held its first internal hackathon."
+  - "Management said the staff handbook was rewritten in plain English."
+  - "The firm repainted the exterior of its oldest warehouse."
+  - "A new coffee bar opened in the lobby of the main office."
+  - "The company renamed two of its internal working groups."
+  - "Management noted the switch to recycled paper for internal printing."
+  - "The firm sponsored a charity run organised by employees."
+  - "A refreshed onboarding programme started for new joiners."
+  - "The company moved its annual staff party to a new venue."
+  - "Management mentioned the installation of water fountains on each floor."
+  - "The firm introduced a new dress code for summer months."
+  - "The company rearranged the desks in its open-plan offices."
+  - "A wellbeing room opened at the customer service centre."
+  - "Management said the archive of old product brochures was digitised."
+  - "The firm hosted a team from a partner university for a site visit."

@@ -1,0 +1,76 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+family_id: broker_synthesis
+description: F7 S and D items (spec §34); contexts C1, C5, C5k (§T9.1).
+contexts:
+- C1
+- C5
+- C5k
+faq_ids:
+- F7.3.b
+- F7.3.d
+battery_slots:
+  preamble: preamble
+scenario_schema:
+  nodes:
+    k_notes:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+      relevant: true
+    noise:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+    d:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+    k:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+    a:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+    n:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+    difference_offset:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+    inaccuracy_offset:
+      kind: primitive
+      type: numeric
+      precision: 2
+      display: pct
+    rounding:
+      kind: primitive
+      type: numeric
+      precision: 3
+      display: pct
+    set_seed:
+      kind: primitive
+      type: numeric
+      precision: 0
+      display: int
+interventions: {}
+response_contracts: []
+features: {}
+oracles: {}
+scorers: {}

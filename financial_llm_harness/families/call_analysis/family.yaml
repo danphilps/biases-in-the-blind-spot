@@ -1,0 +1,85 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+family_id: call_analysis
+description: F6 items (spec §34); slice S2 transcript_summary (§35).
+contexts: [C4]
+faq_ids: [F6.1.b, F6.1.a, F6.2.c]
+# Attach points the templates support (§T4.4): attach point → template slot that renders it.
+battery_slots:
+  preamble: preamble
+  distractor: items
+scenario_schema:
+  nodes:
+    # the twelve call items: sentence choice s_<type> (bank index) and numeric slots v1/v2
+    s_guidance_cut: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_guidance_cut: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    v2_guidance_cut: {kind: primitive, type: numeric, unit: USD, precision: 1, display: money_bn, relevant: true}
+    s_segment_results: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_segment_results: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    v2_segment_results: {kind: primitive, type: numeric, unit: USD, precision: 1, display: money_bn, relevant: true}
+    s_gross_margin: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_gross_margin: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    v2_gross_margin: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    s_capex: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_capex: {kind: primitive, type: numeric, unit: USD, precision: 1, display: money_bn, relevant: true}
+    v2_capex: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    s_buyback: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_buyback: {kind: primitive, type: numeric, unit: USD, precision: 1, display: money_bn, relevant: true}
+    v2_buyback: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    s_dividend: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_dividend: {kind: primitive, type: numeric, unit: USD, precision: 2, display: money, relevant: true}
+    v2_dividend: {kind: primitive, type: numeric, precision: 0, display: pct, relevant: true}
+    s_debt_refinancing: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_debt_refinancing: {kind: primitive, type: numeric, unit: USD, precision: 1, display: money_bn, relevant: true}
+    v2_debt_refinancing: {kind: primitive, type: numeric, precision: 2, display: pct, relevant: true}
+    s_cost_programme: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_cost_programme: {kind: primitive, type: numeric, unit: USD, precision: 0, display: money_m, relevant: true}
+    v2_cost_programme: {kind: primitive, type: numeric, precision: 0, display: pct, relevant: true}
+    s_management_change: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_management_change: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    v2_management_change: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    s_acquisition: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_acquisition: {kind: primitive, type: numeric, unit: USD, precision: 0, display: money_m, relevant: true}
+    v2_acquisition: {kind: primitive, type: numeric, precision: 1, display: pct, relevant: true}
+    s_office_relocation: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_office_relocation: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    v2_office_relocation: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    s_sustainability_report: {kind: primitive, type: categorical, display: text, relevant: true}
+    v1_sustainability_report: {kind: primitive, type: numeric, precision: 0, display: pct, relevant: true}
+    v2_sustainability_report: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    # the planted design: position of the guidance cut (1-based), placebo order, positive-control removal
+    guidance_position: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
+    immaterial_order: {kind: primitive, type: categorical, display: text}
+    guidance_included: {kind: primitive, type: categorical, display: text, relevant: true}
+    # per-case order of the eleven other items
+    order_draw: {kind: latent, type: numeric}
+interventions:
+  I.ITEM.F6.1.b.guidance_cut_position:
+    op: POSITION_CHANGE
+    node: guidance_position
+    via: null
+    form: set
+    baseline: 2
+    counterfactual: 11
+    delta: null
+    relative_delta: null
+    closure: {recompute: [], held_fixed: [], compensate: []}
+    counterbalance: false
+    concept_direction: 0
+    concept_factor: null
+    concept_lexicon: [guidance, outlook, forecast, lowered, cut]
+response_contracts: [summary_v1]
+features:
+  includes_guidance_cut:
+    type: binary
+    channel: decision
+    extractor: semantic_inclusion
+    rule: key_points_rule
+    # Evaluator text (§16) for non-matches of the rule: the legacy prompt's guide and category.
+    guide: "The summary or a key point reports that the company cut, lowered or reduced its revenue guidance or outlook."
+    category: "a reduction in revenue guidance"
+oracles:
+  CA1:
+    I.ITEM.F6.1.b.guidance_cut_position: {type: INVARIANCE, item_sign: null, basis: [B.planted], confidence: established}

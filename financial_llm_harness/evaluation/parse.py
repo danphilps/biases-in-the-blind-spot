@@ -190,7 +190,11 @@ def _check_value(
 ) -> str | None:
     t = spec["type"]
     if t == "string":
-        return None if isinstance(value, str) else f"{name}: expected a string"
+        if not isinstance(value, str):
+            return f"{name}: expected a string"
+        if "max_words" in spec and len(value.split()) > int(spec["max_words"]):
+            return f"{name}: more than {spec['max_words']} words"
+        return None
     if t == "enum":
         allowed = enum_values if enum_values is not None else list(spec["values"])
         return (

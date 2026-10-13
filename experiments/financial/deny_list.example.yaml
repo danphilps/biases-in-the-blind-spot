@@ -1,0 +1,10 @@
+# Format of the §7 deny-list (copy to deny_list.yaml and fill it from a licensed or official
+# source of listed-company names and tickers). Every rendered company, CEO, broker and
+# analyst name is screened against it at `validate`; a live (non-fake) target refuses to
+# validate without experiments/financial/deny_list.yaml. Matching: a name equal to a listed
+# name, containing a listed name of two or more words, or carrying an upper-case token equal
+# to a listed ticker (financial_llm_harness/generation/deny_list.py).
+version: null        # e.g. the source's snapshot date
+source: null         # where the list comes from, and its licence
+names: []            # real listed-company names
+tickers: []          # their tickers

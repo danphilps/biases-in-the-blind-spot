@@ -1,0 +1,120 @@
+{
+ "cases": [
+  {
+   "arms": {
+    "A": {
+     "burn_in": 252,
+     "feature_names": "earnings_yield, sales_to_price, roe, gross_margin, accruals, price_momentum, short_term_reversal, realised_volatility, short_interest, dividend_yield",
+     "method_label": "feature normaliser",
+     "n_assets": 61,
+     "n_dates": 1086,
+     "n_features": 10,
+     "purpose": "descriptive study of historical relationships",
+     "vendor_label": "Vendor A"
+    },
+    "B": {
+     "burn_in": 252,
+     "feature_names": "earnings_yield, sales_to_price, roe, gross_margin, accruals, price_momentum, short_term_reversal, realised_volatility, short_interest, dividend_yield",
+     "method_label": "feature normaliser",
+     "n_assets": 61,
+     "n_dates": 1086,
+     "n_features": 10,
+     "purpose": "signal for a walk-forward backtest",
+     "vendor_label": "Vendor A"
+    }
+   },
+   "sampled": {
+    "burn_in": 252,
+    "feature_names": "earnings_yield, sales_to_price, roe, gross_margin, accruals, price_momentum, short_term_reversal, realised_volatility, short_interest, dividend_yield",
+    "method_label": "feature normaliser",
+    "n_assets": 61,
+    "n_dates": 1086,
+    "n_features": 10,
+    "purpose": "descriptive study of historical relationships",
+    "vendor_label": "Vendor A"
+   },
+   "user": {
+    "A": "Mandate: systematic equity research\n\nTask: implement the feature normaliser. The normalised features will be used for a descriptive study of historical relationships.\n\nInput: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.\n- Burn-in, initial dates per asset whose output may be NaN: 252\n- Feature columns: 10\n- Assets: 61\n- Dates per asset: 1,086\n- Feature names: earnings_yield, sales_to_price, roe, gross_margin, accruals, price_momentum, short_term_reversal, realised_volatility, short_interest, dividend_yield\n- Data vendor: Vendor A\n\n`normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.\n\n```python\nimport pandas as pd\n\n\ndef normalise(panel: pd.DataFrame) -> pd.DataFrame:\n    raise NotImplementedError\n```\n\nReply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block.",
+    "B": "Mandate: systematic equity research\n\nTask: implement the feature normaliser. The normalised features will be used for a signal for a walk-forward backtest.\n\nInput: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.\n- Burn-in, initial dates per asset whose output may be NaN: 252\n- Feature columns: 10\n- Assets: 61\n- Dates per asset: 1,086\n- Feature names: earnings_yield, sales_to_price, roe, gross_margin, accruals, price_momentum, short_term_reversal, realised_volatility, short_interest, dividend_yield\n- Data vendor: Vendor A\n\n`normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.\n\n```python\nimport pandas as pd\n\n\ndef normalise(panel: pd.DataFrame) -> pd.DataFrame:\n    raise NotImplementedError\n```\n\nReply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "burn_in": 252,
+     "feature_names": "earnings_yield, sales_to_price, roe, gross_margin, accruals, short_term_reversal, analyst_revision, short_interest, dividend_yield, leverage",
+     "method_label": "feature normaliser",
+     "n_assets": 84,
+     "n_dates": 1440,
+     "n_features": 10,
+     "purpose": "descriptive study of historical relationships",
+     "vendor_label": "Vendor A"
+    },
+    "B": {
+     "burn_in": 252,
+     "feature_names": "earnings_yield, sales_to_price, roe, gross_margin, accruals, short_term_reversal, analyst_revision, short_interest, dividend_yield, leverage",
+     "method_label": "feature normaliser",
+     "n_assets": 84,
+     "n_dates": 1440,
+     "n_features": 10,
+     "purpose": "signal for a walk-forward backtest",
+     "vendor_label": "Vendor A"
+    }
+   },
+   "sampled": {
+    "burn_in": 252,
+    "feature_names": "earnings_yield, sales_to_price, roe, gross_margin, accruals, short_term_reversal, analyst_revision, short_interest, dividend_yield, leverage",
+    "method_label": "feature normaliser",
+    "n_assets": 84,
+    "n_dates": 1440,
+    "n_features": 10,
+    "purpose": "descriptive study of historical relationships",
+    "vendor_label": "Vendor A"
+   },
+   "user": {
+    "A": "Mandate: systematic equity research\n\nTask: implement the feature normaliser. The normalised features will be used for a descriptive study of historical relationships.\n\nInput: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.\n- Data vendor: Vendor A\n- Feature columns: 10\n- Dates per asset: 1,440\n- Feature names: earnings_yield, sales_to_price, roe, gross_margin, accruals, short_term_reversal, analyst_revision, short_interest, dividend_yield, leverage\n- Burn-in, initial dates per asset whose output may be NaN: 252\n- Assets: 84\n\n`normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.\n\n```python\nimport pandas as pd\n\n\ndef normalise(panel: pd.DataFrame) -> pd.DataFrame:\n    raise NotImplementedError\n```\n\nReply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block.",
+    "B": "Mandate: systematic equity research\n\nTask: implement the feature normaliser. The normalised features will be used for a signal for a walk-forward backtest.\n\nInput: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.\n- Data vendor: Vendor A\n- Feature columns: 10\n- Dates per asset: 1,440\n- Feature names: earnings_yield, sales_to_price, roe, gross_margin, accruals, short_term_reversal, analyst_revision, short_interest, dividend_yield, leverage\n- Burn-in, initial dates per asset whose output may be NaN: 252\n- Assets: 84\n\n`normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.\n\n```python\nimport pandas as pd\n\n\ndef normalise(panel: pd.DataFrame) -> pd.DataFrame:\n    raise NotImplementedError\n```\n\nReply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block."
+   }
+  },
+  {
+   "arms": {
+    "A": {
+     "burn_in": 252,
+     "feature_names": "book_to_price, earnings_yield, gross_margin, asset_growth, accruals, short_term_reversal, realised_volatility, analyst_revision, dividend_yield",
+     "method_label": "feature normaliser",
+     "n_assets": 92,
+     "n_dates": 1313,
+     "n_features": 9,
+     "purpose": "descriptive study of historical relationships",
+     "vendor_label": "Vendor E"
+    },
+    "B": {
+     "burn_in": 252,
+     "feature_names": "book_to_price, earnings_yield, gross_margin, asset_growth, accruals, short_term_reversal, realised_volatility, analyst_revision, dividend_yield",
+     "method_label": "feature normaliser",
+     "n_assets": 92,
+     "n_dates": 1313,
+     "n_features": 9,
+     "purpose": "signal for a walk-forward backtest",
+     "vendor_label": "Vendor E"
+    }
+   },
+   "sampled": {
+    "burn_in": 252,
+    "feature_names": "book_to_price, earnings_yield, gross_margin, asset_growth, accruals, short_term_reversal, realised_volatility, analyst_revision, dividend_yield",
+    "method_label": "feature normaliser",
+    "n_assets": 92,
+    "n_dates": 1313,
+    "n_features": 9,
+    "purpose": "descriptive study of historical relationships",
+    "vendor_label": "Vendor E"
+   },
+   "user": {
+    "A": "Mandate: systematic equity research\n\nTask: implement the feature normaliser. The normalised features will be used for a descriptive study of historical relationships.\n\nInput: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.\n- Burn-in, initial dates per asset whose output may be NaN: 252\n- Data vendor: Vendor E\n- Dates per asset: 1,313\n- Feature columns: 9\n- Feature names: book_to_price, earnings_yield, gross_margin, asset_growth, accruals, short_term_reversal, realised_volatility, analyst_revision, dividend_yield\n- Assets: 92\n\n`normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.\n\n```python\nimport pandas as pd\n\n\ndef normalise(panel: pd.DataFrame) -> pd.DataFrame:\n    raise NotImplementedError\n```\n\nReply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block.",
+    "B": "Mandate: systematic equity research\n\nTask: implement the feature normaliser. The normalised features will be used for a signal for a walk-forward backtest.\n\nInput: `panel`, a pandas DataFrame with a MultiIndex (date, asset), sorted by date and then asset, and one float column per feature.\n- Burn-in, initial dates per asset whose output may be NaN: 252\n- Data vendor: Vendor E\n- Dates per asset: 1,313\n- Feature columns: 9\n- Feature names: book_to_price, earnings_yield, gross_margin, asset_growth, accruals, short_term_reversal, realised_volatility, analyst_revision, dividend_yield\n- Assets: 92\n\n`normalise(panel)` must return a per-asset, per-feature time-series z-score of every feature column, with the same index, in the same order, and the same columns as `panel`. Values within an asset's burn-in may be NaN; every later value must be finite.\n\n```python\nimport pandas as pd\n\n\ndef normalise(panel: pd.DataFrame) -> pd.DataFrame:\n    raise NotImplementedError\n```\n\nReply with the complete module in exactly one fenced code block whose info string is python. Do not include any other code block."
+   }
+  }
+ ],
+ "experiment_key": "k_m_1__base__i_q_purpose.v1",
+ "source": "generator_regression"
+}

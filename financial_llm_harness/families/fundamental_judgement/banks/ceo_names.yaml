@@ -3,7 +3,7 @@ provenance:
   approved_by: []
   approved_on: null
 id: ceo_names
-description: "Synthetic chief-executive names."
+description: "Synthetic chief-executive names (agent placeholders). A person name can coincide with a real person; human authors must check them before live use (spec \u00a7T4.4: no real person)."
 entries:
   - "Daniel Hartley"
   - "Priya Raman"

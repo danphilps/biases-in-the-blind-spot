@@ -21,7 +21,6 @@ from typing import Any
 
 from financial_llm_harness.core import bundle as B
 from financial_llm_harness.core import ids, yaml_io
-from financial_llm_harness.core.paths import repo_root
 from financial_llm_harness.oracles import (
     ATTRIBUTION_ELIGIBLE,
     Oracle,
@@ -429,15 +428,19 @@ def question_rows(
 
 
 def _registry() -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None]:
-    faq_path = repo_root() / "financial_llm_harness" / "taxonomy" / "faq.yaml"
-    rep_path = (
-        repo_root() / "experiments" / "financial" / "generated" / "expand_report.json"
+    from financial_llm_harness.taxonomy.registry import (
+        generated_dir,
+        load_registry,
+        taxonomy_dir,
     )
+
+    rep_path = generated_dir() / "expand_report.json"
     faq = None
-    if faq_path.exists():
-        data = yaml_io.load(faq_path)
-        items = data.get("items") if isinstance(data, dict) else data
-        faq = {str(i["faq_id"]): i for i in items or []}
+    if (taxonomy_dir() / "faq.yaml").exists():
+        faq = {
+            fid: {**item.data, "wave": item.wave}
+            for fid, item in load_registry().items.items()
+        }
     report = (
         json.loads(rep_path.read_text(encoding="utf-8")) if rep_path.exists() else None
     )

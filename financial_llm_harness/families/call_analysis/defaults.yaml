@@ -1,0 +1,11 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+entries:
+  F6.1.b:
+    mandate: CA1
+    base_design: experiments/financial/specs/transcript_summary.yaml

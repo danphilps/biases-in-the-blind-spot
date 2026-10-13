@@ -1,0 +1,18 @@
+# Every V1 experiment on the fake panel (spec §32B.1, §35, §T4.4): the six canonical
+# slice specs and every pair `taxonomy expand --wave V1` generates (S1 siblings and the
+# undeclared-bias battery). A live programme copies this file with a live panel (D-2)
+# and its own budget.
+schema_version: 1
+programme_key: v1_fake
+panel: ci_fake
+select:
+  specs:
+    - experiments/financial/specs/momentum_stock_add.yaml
+    - experiments/financial/specs/momentum_stock_add_m2.yaml
+    - experiments/financial/specs/transcript_summary.yaml
+    - experiments/financial/specs/covariance_choice.yaml
+    - experiments/financial/specs/temporal_norm_design.yaml
+    - experiments/financial/specs/temporal_norm_code.yaml
+  generated: {waves: [V1], priorities: null, modes: null, variants: null}
+budget: {max_cost_usd: 1.0, max_calls: 5000000}
+on_experiment_failure: continue

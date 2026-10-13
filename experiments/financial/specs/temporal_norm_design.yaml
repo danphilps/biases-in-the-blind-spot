@@ -105,8 +105,8 @@ oracle_spec:
   item_sign: null
   rule: For a walk-forward backtest (arm B) any statistic at date t that uses data timestamped after t is look-ahead, so a point-in-time window must be chosen with probability at least τ.
   mandate_id: MLD1
-  basis: [B.lookahead]
-  provenance: "Definition of look-ahead: any statistic at t using data timestamped after t (B.lookahead)"
+  basis: [B.identity]
+  provenance: "Definition of look-ahead: any statistic at t using data timestamped after t (B.identity, §T7)"
   version: 1
   confidence: established
   nodes: [purpose]

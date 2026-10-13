@@ -1,0 +1,16 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: transcript_summary_v1.terse
+template_family_id: transcript_summary_v1
+paraphrase_family: terse
+user: |-
+  {preamble}Mandate: {mandate}
+
+  Points from the company's quarterly earnings call, in the order they were discussed:
+  {items}
+
+  Summarise the call for the portfolio manager.
+
+  {note}{contract}

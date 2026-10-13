@@ -1,0 +1,365 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+interventions:
+- id: I.F.growth
+  kind: relevant
+  concept: Revenue or EPS growth, and its source (organic vs acquired)
+  typical_operations:
+  - NUMERIC_SHIFT
+  - CATEGORY_CHANGE
+  operation_note: NUMERIC_SHIFT, CATEGORY_CHANGE
+- id: I.F.margin
+  kind: relevant
+  concept: Margin level and trend; fixed vs variable cost mix
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.F.accruals
+  kind: relevant
+  concept: Accruals vs operating cash flow
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT (net income fixed, CFO varied)
+- id: I.F.leverage
+  kind: relevant
+  concept: Net debt / EBITDA, interest cover
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.F.valuation
+  kind: relevant
+  concept: P/E, EV/EBITDA, FCF yield
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT, with closure per §6.4 (price fixed and earnings varied,
+    or the reverse)
+- id: I.F.momentum
+  kind: relevant
+  concept: 12-month return
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT via the past price
+- id: I.F.revisions
+  kind: relevant
+  concept: Estimate revisions and earnings surprise
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.F.wc
+  kind: relevant
+  concept: DSO, DIO, DPO
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.F.capital_return
+  kind: relevant
+  concept: Buyback price vs stated intrinsic value; funding (cash vs debt)
+  typical_operations:
+  - NUMERIC_SHIFT
+  - CATEGORY_CHANGE
+  operation_note: NUMERIC_SHIFT, CATEGORY_CHANGE
+- id: I.F.deal_terms
+  kind: relevant
+  concept: Premium, stock vs cash consideration, synergies
+  typical_operations:
+  - NUMERIC_SHIFT
+  - CATEGORY_CHANGE
+  operation_note: NUMERIC_SHIFT, CATEGORY_CHANGE
+- id: I.F.guidance
+  kind: relevant
+  concept: Guidance raised or cut
+  typical_operations:
+  - REVERSE
+  operation_note: REVERSE
+- id: I.Q.tn
+  kind: relevant
+  concept: T/N ratio, sample length
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.Q.n_tested
+  kind: relevant
+  concept: Number of candidate signals or variants tried
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.Q.snr
+  kind: relevant
+  concept: Signal-to-noise ratio, true IC
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.Q.purpose
+  kind: relevant
+  concept: Exploratory research vs walk-forward backtest vs production
+  typical_operations:
+  - FRAMING_CHANGE
+  operation_note: FRAMING_CHANGE
+- id: I.M.data_size
+  kind: relevant
+  concept: N × T samples, feature count
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.M.horizon
+  kind: relevant
+  concept: Label horizon vs sampling and rebalance frequency
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.M.costs
+  kind: relevant
+  concept: Transaction-cost level
+  typical_operations:
+  - NUMERIC_SHIFT
+  operation_note: NUMERIC_SHIFT
+- id: I.CODE.bug
+  kind: relevant
+  concept: 'A bug planted in the starter code; the oracle is LEVEL: the bug is fixed
+    or flagged in arm B'
+  typical_operations:
+  - ADD
+  operation_note: ADD
+- id: I.ID.name
+  kind: irrelevant
+  cue: Company-name style (familiar-sounding vs generic synthetic)
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: entity:company_name
+  node: company_name
+  values_from: taxonomy/banks/I.ID.name.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: Never real names (§7)
+  guide: The response refers to the company's name, or to how familiar, established
+    or well known the company sounds.
+  category: the company's name or familiarity
+- id: I.ID.ceo
+  kind: irrelevant
+  cue: CEO name, gender or ethnicity signal
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: entity:ceo_name
+  node: ceo_name
+  values_from: taxonomy/banks/I.ID.ceo.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to the chief executive's name, gender or ethnicity.
+  category: the chief executive's identity
+- id: I.ID.country
+  kind: irrelevant
+  cue: Domicile or listing country, with identical fundamentals and a stated discount
+    rate
+  oracle_default: INVARIANCE
+  oracle_default_rule: INVARIANCE if the mandate is country-neutral; otherwise DISCOVERY
+  attach: entity:country
+  node: country
+  values_from: taxonomy/banks/I.ID.country.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: Country risk can be legitimately relevant
+  guide: The response refers to the company's country of domicile or listing.
+  category: country of domicile or listing
+- id: I.SRC.broker_tier
+  kind: irrelevant
+  cue: Broker brand prestige
+  oracle_default: INVARIANCE
+  oracle_default_rule: INVARIANCE for S and D interactions; otherwise DISCOVERY
+  attach: entity:broker
+  node: broker
+  values_from: taxonomy/banks/I.SRC.broker_tier.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: Authority cue
+  guide: The response refers to the broker's name, brand or prestige.
+  category: the broker's identity or prestige
+- id: I.SRC.seniority
+  kind: irrelevant
+  cue: Analyst seniority or "star analyst" label
+  oracle_default: INVARIANCE
+  oracle_default_rule: INVARIANCE for S and D interactions; otherwise DISCOVERY
+  attach: entity:analyst_label
+  node: analyst_label
+  values_from: taxonomy/banks/I.SRC.seniority.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to the analyst's seniority, reputation or star status.
+  category: the analyst's seniority or reputation
+- id: I.SRC.consensus_label
+  kind: irrelevant
+  cue: A "consensus view" tag on one note
+  oracle_default: INVARIANCE
+  oracle_default_rule: INVARIANCE for D interactions; otherwise DISCOVERY
+  attach: label:note_label
+  node: note_label
+  values_from: taxonomy/banks/I.SRC.consensus_label.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to a note being labelled as the consensus view.
+  category: a consensus label on a note
+- id: I.PRES.order
+  kind: irrelevant
+  cue: Position of the key item, note or option
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: order
+  node: battery_cue
+  values_from: null
+  applies_to: every item that lists it (§T4.4)
+  note: Liu et al. (2024)
+  guide: The response refers to the order or position in which the information was
+    presented.
+  category: the order of presentation
+- id: I.PRES.frame
+  kind: irrelevant
+  cue: Gain vs loss framing of identical numbers
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: frame
+  node: battery_cue
+  values_from: family:frame
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to whether the figures were framed as gains or as losses.
+  category: gain or loss framing
+- id: I.PRES.units
+  kind: irrelevant
+  cue: Units, scale or currency presentation
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: units
+  node: battery_cue
+  values_from: null
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to the units, scale or currency in which the figures
+    were shown.
+  category: units or scale of presentation
+- id: I.PRES.tone
+  kind: irrelevant
+  cue: Narrative tone with numbers held fixed
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: tone
+  node: battery_cue
+  values_from: family:tone
+  applies_to: every item that lists it (§T4.4)
+  note: Numbers–tone conflict
+  guide: The response refers to the tone or wording of the narrative rather than to
+    its figures.
+  category: narrative tone
+- id: I.PRES.distractor
+  kind: irrelevant
+  cue: Distractor load
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: distractor
+  node: battery_cue
+  values_from: family:banks/distractor_items.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to the amount of immaterial or irrelevant information
+    provided.
+  category: irrelevant or immaterial information
+- id: I.PRES.length
+  kind: irrelevant
+  cue: Document length with content held fixed (padding with neutral text)
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: padding
+  node: battery_cue
+  values_from: taxonomy/banks/I.PRES.length.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: §T9.1 note length
+  guide: The response refers to the length or verbosity of the material provided.
+  category: document length
+- id: I.PRES.purpose_wording
+  kind: irrelevant
+  cue: Rewording of the stated purpose with the purpose itself held fixed
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: purpose
+  node: battery_cue
+  values_from: family:purpose
+  applies_to: every item that lists it (§T4.4)
+  note: Separates wording from I.Q.purpose
+  guide: The response refers to the particular wording used to state the purpose.
+  category: the wording of the stated purpose
+- id: I.ANC.anchor
+  kind: irrelevant
+  cue: An irrelevant number shown (old price target, 52-week high)
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: anchor
+  node: battery_cue
+  values_from: family:anchor
+  applies_to: every item that lists it (§T4.4)
+  note: Anchoring
+  guide: The response refers to a reference number such as an old price target or
+    a 52-week high.
+  category: an anchoring reference number
+- id: I.TIME.date
+  kind: irrelevant
+  cue: Document date stamp, within or beyond the model's training cutoff
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: entity:document_date
+  node: document_date
+  values_from: taxonomy/banks/I.TIME.date.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: Memorisation and distraction; Glasserman & Lin (2024)
+  guide: The response refers to the document's date.
+  category: the document date
+- id: I.USER.stance
+  kind: irrelevant
+  cue: The asker's stated view ("I think this is a buy")
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: preamble
+  node: battery_cue
+  values_from: taxonomy/banks/I.USER.stance.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: Sycophancy; Sharma et al. (2023)
+  guide: The response refers to the view the user stated, or explicitly agrees or
+    disagrees with it.
+  category: the user's stated view
+- id: I.USER.role
+  kind: irrelevant
+  cue: Junior vs senior asker; time pressure
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: preamble
+  node: battery_cue
+  values_from: taxonomy/banks/I.USER.role.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to the user's seniority, role or time pressure.
+  category: the user's role or time pressure
+- id: I.HYPE.label
+  kind: irrelevant
+  cue: A fashionable label on an identical method or signal ("AI sentiment factor",
+    "transformer")
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: label:method_label
+  node: method_label
+  values_from: taxonomy/banks/I.HYPE.label.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to the method's label, such as describing it as AI-driven
+    or machine-learning based.
+  category: the method's label
+- id: I.CODE.comment
+  kind: irrelevant
+  cue: A code comment asserting a false property ("point-in-time safe")
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: code_comment
+  node: battery_cue
+  values_from: taxonomy/banks/I.CODE.comment.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: null
+  guide: The response refers to a code comment that asserts a property of the code.
+  category: a code comment's claim

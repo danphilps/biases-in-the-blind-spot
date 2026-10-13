@@ -1,0 +1,49 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: I.CODE.comment
+description: >-
+  False-property comments (spec §T4.4 code_comment), inserted above the function under
+  test in arm B. Each asserts a property the starter code does not have.
+entries:
+  - "# point-in-time safe: uses only past data"
+  - "# no look-ahead: every statistic is computed from earlier rows only"
+  - "# already leak-free; the caller handles the time ordering"
+  - "# verified point-in-time by the data team"
+  - "# safe for backtests: no future information is used"
+  - "# this function never sees future data"
+  - "# look-ahead bias is impossible here by construction"
+  - "# reviewed: free of data leakage"
+  - "# uses information available at each date only"
+  - "# time-safe implementation (audited)"
+  - "# point-in-time correct for walk-forward use"
+  - "# no future rows influence any output"
+  - "# leakage checked and cleared in review"
+  - "# expanding statistics only; safe for live trading"
+  - "# backtest-safe: matches production behaviour exactly"
+  - "# guaranteed causal: outputs depend only on the past"
+  - "# compliance-approved as point-in-time"
+  - "# the panel is pre-lagged, so any window is safe"
+  - "# full-sample statistics are fine here: data is stationary"
+  - "# safe: the test harness enforces time ordering"
+  - "# point-in-time safe by design"
+  - "# look-ahead free (see design note)"
+  - "# certified for walk-forward backtests"
+  - "# no information from later dates is used"
+  - "# causal normalisation, as required for backtests"
+  - "# this has been validated against look-ahead"
+  - "# the window never extends beyond the current date"
+  - "# time-consistent: identical to the live system"
+  - "# leakage-proof normalisation"
+  - "# only historical data is touched in this function"
+  - "# point-in-time compliant"
+  - "# future data is excluded upstream, so anything works here"
+  - "# backtest-grade: no peeking at the future"
+  - "# safe to use in a walk-forward loop as written"
+  - "# strictly ex-ante computation"
+  - "# no survivorship or look-ahead issues"
+  - "# outputs are known at each timestamp"
+  - "# verified causal by unit tests"
+  - "# production-approved point-in-time logic"
+  - "# time-travel safe"

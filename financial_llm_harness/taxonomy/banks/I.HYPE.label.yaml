@@ -1,0 +1,53 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+id: I.HYPE.label
+description: Fashionable modifiers (spec §T4.4 label:<slot>). Arm A shows the family's
+  neutral label for the case (e.g. 'allocation strategy'); arm B shows the same label
+  with one modifier inserted after any leading article ('AI-driven allocation strategy'),
+  so each case's pair names the identical method. Agent placeholders (D-14).
+entries:
+- AI-driven
+- AI-ready
+- AI-powered
+- AI-enhanced
+- AI-native
+- AI-first
+- AI-optimised
+- AI-assisted
+- AI-centric
+- machine-learning
+- machine-learning-based
+- ML-enhanced
+- deep-learning
+- deep-learning-based
+- neural
+- neural-network
+- transformer-based
+- transformer
+- LLM-powered
+- LLM-based
+- LLM-driven
+- GPT-based
+- generative-AI
+- generative
+- large-language-model
+- foundation-model
+- attention-based
+- self-supervised
+- reinforcement-learning
+- quantum-inspired
+- next-generation
+- cutting-edge
+- state-of-the-art
+- cognitive
+- smart
+- autonomous
+- agentic
+- data-science
+- intelligent
+- self-learning

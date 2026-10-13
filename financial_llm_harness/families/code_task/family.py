@@ -37,6 +37,26 @@ DATASET_GENERATORS = ("panel_v1",)
 FIRST_DATE = "2000-01-03"
 PROVENANCE_FILE = "PROVENANCE.yaml"
 N_CUTS = 5
+# the code_comment block (§T4.4): empty unless the I.CODE.comment cue adds a comment
+BLOCK_NODES: dict[str, list[str]] = {"code_comment": []}
+
+
+def render_blocks(
+    state: Mapping[str, Any], nodes: Mapping[str, Any]
+) -> dict[str, list[tuple[str, str | None]]]:
+    """The base design shows no comment above the function under test."""
+    del state, nodes
+    return {"code_comment": []}
+
+
+def primary_checks(spec: Mapping[str, Any]) -> list[str]:
+    """The §T6.1 hidden-test IDs a spec's primary feature conjoins (§32B.2 step 1a skip rule)."""
+    primary = spec["hypothesis"]["primary_feature"]
+    feat = next(f for f in spec["feature_spec"] if f["feature_id"] == primary)
+    if feat.get("extractor") != "code_all":
+        return []
+    fx = load_fixture(spec["task"])
+    return sorted(fx.hidden_test_ids[t] for t in feat["tests"])
 
 
 def draw_feature_names(rng: np.random.Generator, drawn: Mapping[str, Any]) -> str:
@@ -333,7 +353,12 @@ def validate_code_design(
     starter = fx.starter_text().strip()
     for logical in manifest["paraphrase_spec"]["template_files"]:
         data = yaml_io.load(package_dir() / logical)
-        if not isinstance(data, Mapping) or starter not in str(data.get("user", "")):
+        user = (
+            str(data.get("user", "")).replace("{code_comment}", "")
+            if isinstance(data, Mapping)
+            else ""
+        )
+        if starter not in user:
             raise HarnessValidationError(
                 f"{logical}: the prompt does not show starter/{fx.allowed_file} verbatim (§13.1)"
             )

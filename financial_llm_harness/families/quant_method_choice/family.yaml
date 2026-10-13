@@ -5,7 +5,7 @@ provenance:
 family_id: quant_method_choice
 description: Q1–Q6 items whose context is a research brief (spec §34); context C6.
 contexts: [C6]
-faq_ids: [Q3.1.a]
+faq_ids: [Q3.1.a, Q1.3.a, Q5.1.b]
 # Attach points the templates support (§T4.4): attach point → template slot that renders it.
 battery_slots:
   preamble: preamble

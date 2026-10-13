@@ -1,0 +1,56 @@
+# Practitioner survey instrument (spec §T10.2), transcribed from §T10.1–§T10.2. Respondent-
+# facing, not model-facing. The purpose statement, retention period and distribution
+# channel are the user's (§T10.5, D-12) and stay null until supplied; the channel question's
+# wording is an agent placeholder.
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+survey_version: "1"
+purpose:
+  statement: null
+  retention_period: null
+  aggregate_publication: "Aggregate results may be published."
+closed_questions:
+  - id: frequency
+    text: "How often do you, or people in your role, ask an LLM or coding agent this kind of question?"
+    answers:
+      - {label: never, asks_per_month: 0.0}
+      - {label: yearly, asks_per_month: 0.08333333333333333}
+      - {label: quarterly, asks_per_month: 0.3333333333333333}
+      - {label: monthly, asks_per_month: 1.0}
+      - {label: weekly, asks_per_month: 4.33}
+      - {label: daily, asks_per_month: 21.7}
+  - id: stakes
+    text: "If the answer were wrong and acted on, how costly would it be?"
+    answers:
+      - {label: "1 (trivial)", value: 1}
+      - {label: "2", value: 2}
+      - {label: "3", value: 3}
+      - {label: "4", value: 4}
+      - {label: "5 (severe: capital loss, or client or regulatory consequences)", value: 5}
+  - id: channel
+    text: "Where do you ask this kind of question?"
+    answers:
+      - {label: chat LLM}
+      - {label: coding agent}
+      - {label: both}
+      - {label: neither}
+open_questions:
+  - {id: phrasing, text: "Write the question the way you would actually type it."}
+  - {id: missing, text: "What do you ask that is missing here?"}
+profile:
+  - {id: role, required: true}
+  - {id: experience_band, required: true}
+  - {id: firm_type, required: true, answers: [asset manager, asset owner, hedge fund, bank, education, other]}
+  - {id: aum_band, required: false}
+# §T10.1: the items each role rates
+routing:
+  quant_analyst: [Q, M5, M6, "§T6"]
+  quant_pm: [Q, M, F1]
+  fundamental_analyst: [F]
+  fundamental_pm: [F]
+  curriculum_author: [F, Q]
+  pension_cio: [F1, F4, Q3, Q5, Q6]
+  ml_architect: [M, Q6]
+  ml_developer: [M, "§T6"]

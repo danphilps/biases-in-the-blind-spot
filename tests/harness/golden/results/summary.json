@@ -3,9 +3,9 @@
   "run": {
     "run_id": "00000000-0000-4000-8000-000000000001",
     "experiment_key": "f1_1_a__m1__i_f_momentum.v1",
-    "experiment_id": "4c272108-6ed6-5cd7-bc13-c5267f46ff9c",
-    "design_hash": "6e6008d7e4a808a4253da13ad47730be5590c43eb7414af03c84ef830665604d",
-    "manifest_hash": "c549ba730c031338fcf28fbbf62479c92fbb8a3ad14348cb85debe8317b792f5",
+    "experiment_id": "b5768906-77f3-562e-90b3-753d66badff3",
+    "design_hash": "3e0d8c3092f6e7466213dff36d1a4e406b375bb543bf4618701c93172a336980",
+    "manifest_hash": "ec581ef0f8ceb10ea5798f61ae1e80daa1b4b0e54ab963cc73e846a762503e30",
     "faq_id": "F1.1.a",
     "variant_id": "m1",
     "intervention_id": "I.F.momentum",
@@ -73,16 +73,16 @@
       "region": null,
       "serving": "in_process",
       "primary": {
-        "theta": -0.28489583333333335,
+        "theta": -0.30711805555555555,
         "ci": [
-          -0.3018437845033925,
-          -0.2679478821632742
+          -0.32467001626894554,
+          -0.28956609484216556
         ],
         "ci2a": [
-          -0.29911478695174726,
-          -0.27067687971491944
+          -0.321843759730159,
+          -0.2923923513809521
         ],
-        "p_dev": 4.195278592724486e-160,
+        "p_dev": 3.7400635718328156e-169,
         "p_eq": 1.0,
         "zone": "Z-",
         "sensitivity_label": "JUSTIFIED_SENSITIVITY",
@@ -98,8 +98,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.019791666666666666,
-        "invalid_rate_b": 0.019791666666666666,
+        "invalid_rate_a": 0.019097222222222224,
+        "invalid_rate_b": 0.019097222222222224,
         "bounds_change_zone": false
       },
       "drift": {
@@ -111,8 +111,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "4018c4a7-1359-5231-b9ec-a2724cab5bb7",
-        "label": "7712d2c1-9a6d-5e0c-bd58-34dae4a2711a"
+        "effect": "b8d8dcfd-acdb-5345-8363-0f95116848c0",
+        "label": "2b3b89fd-9c0c-54d9-bbd9-61eb2cf9f8c5"
       }
     },
     {
@@ -146,8 +146,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.019097222222222224,
-        "invalid_rate_b": 0.019097222222222224,
+        "invalid_rate_a": 0.022916666666666665,
+        "invalid_rate_b": 0.022916666666666665,
         "bounds_change_zone": false
       },
       "drift": {
@@ -159,8 +159,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "3788901f-17ec-52b0-8e07-f6f8023c7fcf",
-        "label": "e63335e8-6346-5e31-8cab-4ffd0c84b29c"
+        "effect": "93758ca1-c14f-56a3-9ad0-be476b7fb51e",
+        "label": "cc7ceed5-6ad4-574a-aa0b-e488db3bab59"
       }
     }
   ],

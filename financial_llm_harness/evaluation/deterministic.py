@@ -61,10 +61,13 @@ def evaluate_deterministic(ctx: Any, *, execute_code: bool = True) -> None:
     family = load_family(manifest["task_family"])
     concept_factor = concept_factor_for(manifest)
     features = [f for f in manifest["feature_spec"] if not is_semantic(f)]
-    semantic_with_rule = [
-        f for f in manifest["feature_spec"] if f.get("extractor") == "key_points_rule"
+    # a semantic feature with a deterministic rule: the rule decides TRUE first, and only
+    # its non-matches (DEFERRED) reach the semantic evaluator (§16, §35 S2)
+    features += [
+        {**f, "extractor": f["rule"]}
+        for f in manifest["feature_spec"]
+        if is_semantic(f) and f.get("rule")
     ]
-    features += [f for f in semantic_with_rule if f not in features]
     code_task = manifest["task_family"] == "code_task"
     rows = ctx.db.execute(
         "SELECT t.trial_id, t.arm, t.case_idx, t.status, t.used_attempt_id, r.text_artifact, r.finish_reason "

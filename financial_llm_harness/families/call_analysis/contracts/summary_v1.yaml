@@ -1,0 +1,18 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+contract_id: summary_v1
+version: 1
+kind: json
+abstain_value: null
+fields:
+  summary: {type: string, max_words: 120}
+  key_points: {type: string_list, max_items: 5}
+decision_fields: [summary, key_points]
+free_text: {reasoning_before: null, rationale_after: null, none: null}
+instructions:
+  none: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "summary": a summary of the call in at most one hundred and twenty words, as a string;
+    "key_points": the most important points for the portfolio manager, as a list of at most five strings.

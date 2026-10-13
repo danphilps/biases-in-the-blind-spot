@@ -110,8 +110,8 @@ oracle_spec:
   item_sign: null
   rule: For a walk-forward backtest (arm B) a feature normaliser whose output at date t uses data timestamped after t is look-ahead, so the code must be a valid point-in-time normaliser (all four hidden tests pass) with probability at least τ.
   mandate_id: CT1
-  basis: [B.lookahead]
-  provenance: "Definition of look-ahead: any statistic at t using data timestamped after t (B.lookahead); checked by the §13.5 leakage oracle"
+  basis: [B.identity]
+  provenance: "Definition of look-ahead: any statistic at t using data timestamped after t (B.identity, §T7); checked by the §13.5 leakage oracle"
   version: 1
   confidence: established
   nodes: [purpose]

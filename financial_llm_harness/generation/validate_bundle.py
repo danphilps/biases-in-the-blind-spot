@@ -268,6 +268,11 @@ def validate_bundle(
         from financial_llm_harness.taxonomy.battery import validate_irrelevance
 
         validate_irrelevance(manifest)
+    # §7: synthetic entity names are screened against the deny-list of real listed
+    # companies and tickers; a live target needs the list
+    from financial_llm_harness.generation.deny_list import screen_cases
+
+    screen_cases(corpus.cases, live=non_fake)
     if manifest["task_family"] == "code_task":
         from financial_llm_harness.families.code_task.family import validate_code_design
 
@@ -388,9 +393,11 @@ def _basis_rule(manifest: Mapping[str, Any]) -> None:
         if conf == "established":
             continue
         if conf == "conventional":
-            from financial_llm_harness.taxonomy.registry import checklist_signed_off
+            from financial_llm_harness.taxonomy.expert_panel import (
+                checklist_signed_off,
+            )
 
-            if checklist_signed_off(entry):
+            if checklist_signed_off(entry, manifest["faq_id"]):
                 continue
         raise HarnessValidationError(
             f"confirmatory a_priori hypothesis cites basis {b!r} ({conf}) without a signed-off checklist (§27)"

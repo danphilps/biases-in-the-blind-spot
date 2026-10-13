@@ -103,16 +103,21 @@ def load_programme(path: Path) -> dict[str, Any]:
 
 def _generated_files(sel: Mapping[str, Any]) -> list[Path]:
     """``select.generated``: files under ``experiments/financial/generated/`` matching wave, priority, mode and variants."""
-    root = repo_root() / "experiments" / "financial" / "generated"
-    faq_path = repo_root() / "financial_llm_harness" / "taxonomy" / "faq.yaml"
-    if not faq_path.exists():
+    from financial_llm_harness.taxonomy.registry import (
+        generated_dir,
+        load_registry,
+        taxonomy_dir,
+    )
+
+    if not (taxonomy_dir() / "faq.yaml").exists():
         raise HarnessValidationError(
-            "select.generated needs the taxonomy registry (taxonomy/faq.yaml), which does not exist yet (M8)"
+            "select.generated needs the taxonomy registry (taxonomy/faq.yaml)"
         )
-    faq = yaml_io.load(faq_path)
+    root = generated_dir()
+    # wave and priority are read from faq.yaml, never from the §T8 table (§32B.1)
     items = {
-        str(i["faq_id"]): i
-        for i in (faq.get("items") if isinstance(faq, dict) else faq) or []
+        fid: {**item.data, "wave": item.wave}
+        for fid, item in load_registry().items.items()
     }
     waves = set(sel.get("waves") or [])
     prios = set(sel.get("priorities") or [])

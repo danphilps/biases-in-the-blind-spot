@@ -5,11 +5,12 @@ provenance:
 family_id: code_task
 description: Coding-agent tasks (spec §T6); V1 holds K.M.1, slice S5 temporal_norm_code (§35).
 contexts: [C7, C8]
-faq_ids: [K.M.1]
+faq_ids: [K.M.1, K.Q.1, K.Q.4, K.Q.7, K.M.2, K.M.3, K.M.4, K.M.7]
 # Attach points the templates support (§T4.4): attach point → template slot that renders it.
 battery_slots:
   preamble: preamble
   label:method_label: method_label
+  code_comment: code_comment
 scenario_schema:
   nodes:
     n_assets: {kind: primitive, type: numeric, precision: 0, display: int, relevant: true}
@@ -44,4 +45,24 @@ features:
   leak_free: {type: binary, channel: decision, extractor: code_outcome, test: leak_free}
 oracles:
   CT1:
-    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.lookahead], confidence: established}
+    I.Q.purpose: {type: LEVEL, item_sign: null, basis: [B.identity], confidence: established}
+# Correctness scorers (§32B.2 step 1a): a code item's checks are §T6.1 hidden tests. Twelve
+# run the generic engines of family/hidden_tests.py; the four of K.M.1 (S5) are its
+# fixture's tests. A task fixture supplies the data, tolerances and seeds (D-23).
+scorers:
+  HT.LEAK: {engine: fixture, note: §13.5 leakage oracle}
+  HT.NONTRIV: {engine: fixture}
+  HT.SHAPE: {engine: fixture}
+  HT.FINITE: {engine: fixture}
+  HT.ALIGN: {engine: ht_align}
+  HT.PERM: {engine: ht_perm}
+  HT.MONO: {engine: ht_mono}
+  HT.REF: {engine: ht_ref}
+  HT.PSD: {engine: ht_psd}
+  HT.ANTI: {engine: ht_anti}
+  HT.TRANS: {engine: ht_trans}
+  HT.SURV: {engine: ht_surv}
+  HT.PURGE: {engine: ht_purge}
+  HT.ANNUAL: {engine: ht_annual}
+  HT.COMPOUND: {engine: ht_compound}
+  HT.NAN: {engine: ht_nan}
