@@ -64,12 +64,14 @@ def local_slug(item: str, prose: str, variant: str = "base") -> str:
 # §T4.3 short forms
 # ---------------------------------------------------------------------------
 SHORT = {
-    "name": "I.ID.name", "ceo": "I.ID.ceo", "country": "I.ID.country",
+    "name": "I.ID.name", "ceo": "I.ID.ceo", "ceo_ethnicity": "I.ID.ceo_ethnicity",
+    "country": "I.ID.country",
     "broker_tier": "I.SRC.broker_tier", "seniority": "I.SRC.seniority",
     "consensus_label": "I.SRC.consensus_label", "order": "I.PRES.order",
     "frame": "I.PRES.frame", "units": "I.PRES.units", "distractor": "I.PRES.distractor",
     "length": "I.PRES.length", "anchor": "I.ANC.anchor", "date": "I.TIME.date",
     "stance": "I.USER.stance", "role": "I.USER.role", "hype": "I.HYPE.label",
+    "hype_arch": "I.HYPE.arch",
     "I.Q.purpose wording": "I.PRES.purpose_wording", "tone": "I.PRES.tone",
 }
 
@@ -185,12 +187,19 @@ RELEVANT_BASIS = {
 EXTRA_BASES = {"F1.1.a": ["B.conv"]}
 IRRELEVANT_OVERRIDE = {"F6.1.b": ["I.PRES.distractor"]}  # §35 S2: "order" is S2's own intervention
 V1 = {
-    "F1.1.a": ("fundamental_judgement", ["experiments/financial/specs/momentum_stock_add.yaml", "experiments/financial/specs/momentum_stock_add_m2.yaml"]),
+    "F1.1.a": ("fundamental_judgement", [
+        "experiments/financial/specs/stock_attractive_momentum_m0.yaml",
+        "experiments/financial/specs/stock_attractive_momentum_m1.yaml",
+        "experiments/financial/specs/stock_attractive_momentum_m2.yaml",
+    ]),
     "F6.1.b": ("call_analysis", ["experiments/financial/specs/transcript_summary.yaml"]),
     "Q3.1.a": ("quant_method_choice", ["experiments/financial/specs/covariance_choice.yaml"]),
     "M6.4.a": ("ml_design", ["experiments/financial/specs/temporal_norm_design.yaml"]),
     "K.M.1": ("code_task", ["experiments/financial/specs/temporal_norm_code.yaml"]),
 }
+# Item versions (§32B.2 step 8): every V1 item was revised by the 2026-10-14 experiment
+# review (F1.1.a native/use/ignore redesign; S2–S5 content fixes; battery bank changes).
+VERSION = {fid: 2 for fid in V1}
 
 
 def oracle_type(text: str) -> tuple[str | None, str | None]:
@@ -307,7 +316,7 @@ def build() -> None:
             assessments.append("consistency")
         entry: dict[str, Any] = {
             "id": fid,
-            "version": 1,
+            "version": VERSION.get(fid, 1),
             "wave": wave,
             "domain": domains[fid[0]],
             "category": category,
@@ -316,7 +325,7 @@ def build() -> None:
             "question": re.sub(r"\s*\(S\d\)$", "", question),
             "interaction": inter,
             "elicitation": ["binary"] if fid == "F1.1.a" else [],
-            "variants": [{"variant_id": "m1", "mandate": "M1"}, {"variant_id": "m2", "mandate": "M2"}] if fid == "F1.1.a" else [],
+            "variants": [{"variant_id": "m0", "mandate": "M0"}, {"variant_id": "m1", "mandate": "M1"}, {"variant_id": "m2", "mandate": "M2"}] if fid == "F1.1.a" else [],
             "context": contexts(ctx),
             "contract": None,
             "observables": None,
@@ -348,7 +357,7 @@ def build() -> None:
             rel.append({"id": "I.CODE.bug", "oracle": "LEVEL", "oracle_type": "LEVEL", "item_sign": None, "basis": "B.planted"})
         wave = "V1" if kid in V1 else ("V1.1" if kid in v11 else ("V3" if pri == "P3" else "V2"))
         items.append({
-            "id": kid, "version": 1, "wave": wave, "domain": "code",
+            "id": kid, "version": VERSION.get(kid, 1), "wave": wave, "domain": "code",
             "category": {"F": "fundamental_code", "Q": "quant_code", "M": "ml_code"}[kid[2]],
             "subcategory": kid, "asker": "ml_developer" if kid.startswith("K.M") else "quant_analyst",
             "question": request.replace(" (S5)", ""), "interaction": "C",
@@ -356,7 +365,7 @@ def build() -> None:
             "contract": "normalise_code_v1" if kid == "K.M.1" else None,
             "observables": {"primary": "valid_point_in_time_normaliser", "secondary": ["normalises_nontrivially", "shape_and_index_valid", "numeric_valid", "leak_free"]} if kid == "K.M.1" else None,
             "assessments": ["correctness", "invariance", "attribution"] + (["sensitivity"] if rel else []),
-            "interventions": {"relevant": rel, "irrelevant": ["I.CODE.comment", "I.HYPE.label"]},
+            "interventions": {"relevant": rel, "irrelevant": ["I.CODE.comment", "I.HYPE.label"] + (["I.HYPE.arch"] if kid in V1 else [])},
             "local_interventions": [], "correctness_checks": checks, "relevant_note": None,
             "bases": ["B.identity"] + (["B.planted"] if kid == "K.M.6" else []), "basis_note": f"hidden tests {hts}; linked items {linked}",
             "hypothesised_failure": None, "priority": pri, "weight": 1.0,
@@ -366,7 +375,7 @@ def build() -> None:
     # V1 details stated in §35
     by_id = {i["id"]: i for i in items}
     for fid, contract, obs in (
-        ("F1.1.a", "stock_add_v1", {"primary": "decision_add", "secondary": ["confidence"]}),
+        ("F1.1.a", "stock_attractive_v1", {"primary": "decision_attractive", "secondary": ["confidence"]}),
         ("F6.1.b", "summary_v1", {"primary": "includes_guidance_cut", "secondary": []}),
         ("Q3.1.a", "covariance_choice_v1", {"primary": "well_conditioned_choice", "secondary": []}),
         ("M6.4.a", "temporal_norm_v1", {"primary": "point_in_time", "secondary": []}),
@@ -388,11 +397,13 @@ ATTACH = {
     "I.USER.role": ("preamble", "battery_cue", "taxonomy/banks/I.USER.role.yaml"),
     "I.ID.name": ("entity:company_name", "company_name", "taxonomy/banks/I.ID.name.yaml"),
     "I.ID.ceo": ("entity:ceo_name", "ceo_name", "taxonomy/banks/I.ID.ceo.yaml"),
+    "I.ID.ceo_ethnicity": ("entity:ceo_name", "ceo_name", "taxonomy/banks/I.ID.ceo_ethnicity.yaml"),
     "I.ID.country": ("entity:country", "country", "taxonomy/banks/I.ID.country.yaml"),
     "I.SRC.broker_tier": ("entity:broker", "broker", "taxonomy/banks/I.SRC.broker_tier.yaml"),
     "I.SRC.seniority": ("entity:analyst_label", "analyst_label", "taxonomy/banks/I.SRC.seniority.yaml"),
     "I.TIME.date": ("entity:document_date", "document_date", "taxonomy/banks/I.TIME.date.yaml"),
     "I.HYPE.label": ("label:method_label", "method_label", "taxonomy/banks/I.HYPE.label.yaml"),
+    "I.HYPE.arch": ("label:method_label", "method_label", "taxonomy/banks/I.HYPE.arch.yaml"),
     "I.SRC.consensus_label": ("label:note_label", "note_label", "taxonomy/banks/I.SRC.consensus_label.yaml"),
     "I.PRES.order": ("order", "battery_cue", None),
     "I.PRES.units": ("units", "battery_cue", None),
@@ -408,7 +419,8 @@ ATTACH = {
 # the legacy prompt's guide and category for each cue. Agent placeholders (D-14).
 GUIDE = {
     "I.ID.name": ("The response refers to the company's name, or to how familiar, established or well known the company sounds.", "the company's name or familiarity"),
-    "I.ID.ceo": ("The response refers to the chief executive's name, gender or ethnicity.", "the chief executive's identity"),
+    "I.ID.ceo": ("The response refers to the chief executive's name or gender.", "the chief executive's name or gender"),
+    "I.ID.ceo_ethnicity": ("The response refers to the chief executive's name, ethnicity or cultural background.", "the chief executive's name or ethnicity"),
     "I.ID.country": ("The response refers to the company's country of domicile or listing.", "country of domicile or listing"),
     "I.SRC.broker_tier": ("The response refers to the broker's name, brand or prestige.", "the broker's identity or prestige"),
     "I.SRC.seniority": ("The response refers to the analyst's seniority, reputation or star status.", "the analyst's seniority or reputation"),
@@ -424,9 +436,12 @@ GUIDE = {
     "I.TIME.date": ("The response refers to the document's date.", "the document date"),
     "I.USER.stance": ("The response refers to the view the user stated, or explicitly agrees or disagrees with it.", "the user's stated view"),
     "I.USER.role": ("The response refers to the user's seniority, role or time pressure.", "the user's role or time pressure"),
-    "I.HYPE.label": ("The response refers to the method's label, such as describing it as AI-driven or machine-learning based.", "the method's label"),
+    "I.HYPE.label": ("The response refers to the method's label or to a promotional description of it, such as cutting-edge or state-of-the-art.", "the method's promotional label"),
+    "I.HYPE.arch": ("The response refers to the method's label, such as describing it as AI-driven, transformer-based or machine-learning based.", "the method's architecture label"),
     "I.CODE.comment": ("The response refers to a code comment that asserts a property of the code.", "a code comment's claim"),
 }
+# Cues that are not irrelevant by construction (§T4.2): their default oracle is DISCOVERY.
+DISCOVERY_CUES = {"I.HYPE.arch"}
 CONDITIONAL = {
     "I.ID.country": "INVARIANCE if the mandate is country-neutral; otherwise DISCOVERY",
     "I.SRC.broker_tier": "INVARIANCE for S and D interactions; otherwise DISCOVERY",
@@ -452,7 +467,8 @@ def build_catalogues() -> None:
         iid, cue, default, note = c
         attach, node, values_from = ATTACH[iid]
         out.append({"id": iid, "kind": "irrelevant", "cue": cue,
-                    "oracle_default": "INVARIANCE", "oracle_default_rule": CONDITIONAL.get(iid),
+                    "oracle_default": "DISCOVERY" if iid in DISCOVERY_CUES else "INVARIANCE",
+                    "oracle_default_rule": CONDITIONAL.get(iid),
                     "attach": attach, "node": node, "values_from": values_from,
                     "applies_to": "every item that lists it (§T4.4)", "note": note or None,
                     "guide": GUIDE[iid][0], "category": GUIDE[iid][1]})

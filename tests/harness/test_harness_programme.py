@@ -16,19 +16,18 @@ from financial_llm_harness.errors import HarnessValidationError
 from financial_llm_harness.execution import programme as PG
 from financial_llm_harness.reporting import programme as RP
 from tests.harness.helpers import (
+    F1_SPECS,
     FAKE_A,
     FAKE_B,
     FIXED_CODE_REF,
     ROOT,
-    S1_M2_SPEC,
-    S1_SPEC,
     small_spec,
 )
 
 CI_PROGRAMME = ROOT / "experiments" / "financial" / "programmes" / "ci_fake.yaml"
 PROGRAMME_RUN_ID = "99999999-0000-4000-8000-000000000001"
-M1_KEY = "f1_1_a__m1__i_f_momentum.v1"
-M2_KEY = "f1_1_a__m2__i_f_momentum.v1"
+M1_KEY = "f1_1_a__m1__i_f_momentum.v2"
+M2_KEY = "f1_1_a__m2__i_f_momentum.v2"
 RUN_IDS = {
     M1_KEY: "aaaaaaaa-0000-4000-8000-000000000001",
     M2_KEY: "bbbbbbbb-0000-4000-8000-000000000002",
@@ -103,7 +102,7 @@ def test_programme_acceptance(ci_programme: Path) -> None:
         eff = {
             (r["model_key"], r["feature_id"], r["contrast"]): r
             for r in _csv(run_dir / "results" / "effects.csv")
-        }[(a["model_key"], "decision_add", "B_vs_A")]
+        }[(a["model_key"], "decision_attractive", "B_vs_A")]
         lab = {r["row_id"]: r for r in _csv(run_dir / "results" / "labels.csv")}[
             a["run_label_row_id"]
         ]
@@ -266,8 +265,8 @@ def test_programme_results_validate_against_schemas(ci_programme: Path) -> None:
 def _small_programme(
     tmp: Path, budget_calls: int = 100_000, name: str = "p.yaml"
 ) -> Path:
-    s1 = small_spec(tmp, name="m1.yaml")
-    s2 = small_spec(tmp, name="m2.yaml", base=S1_M2_SPEC)
+    s1 = small_spec(tmp, name="m1.yaml", base=F1_SPECS["m1"])
+    s2 = small_spec(tmp, name="m2.yaml", base=F1_SPECS["m2"])
     panel = tmp / "panel.yaml"
     shutil.copyfile(
         ROOT / "experiments" / "financial" / "panels" / "ci_fake.yaml", panel
@@ -334,10 +333,15 @@ def test_changed_panel_makes_resume_exit_2(tmp_path: Path, harness_home: Path) -
 
 
 def test_selection_rules_exit_2(tmp_path: Path) -> None:
-    s1 = small_spec(tmp_path, name="a.yaml")
-    dup = small_spec(tmp_path, name="b.yaml")  # same experiment_key
+    s1 = small_spec(tmp_path, name="a.yaml", base=F1_SPECS["m1"])
+    dup = small_spec(
+        tmp_path, name="b.yaml", base=F1_SPECS["m1"]
+    )  # same experiment_key
     pair = small_spec(
-        tmp_path, name="c.yaml", experiment_key="f1_1_a__m1__i_f_momentum.v9"
+        tmp_path,
+        name="c.yaml",
+        base=F1_SPECS["m1"],
+        experiment_key="f1_1_a__m1__i_f_momentum.v9",
     )  # same pair
     for specs in (
         [str(s1), str(dup)],
@@ -443,11 +447,18 @@ def test_programme_plan_writes_nothing(tmp_path: Path, harness_home: Path) -> No
 
 
 def test_canonical_specs_are_paired() -> None:
-    m1 = yaml_io.load(S1_SPEC)
-    m2 = yaml_io.load(S1_M2_SPEC)
-    assert isinstance(m1, dict) and isinstance(m2, dict)
-    assert m1["scenario_spec"] == m2["scenario_spec"]
-    assert m1["seeds"]["generation"] == m2["seeds"]["generation"]
+    m0 = yaml_io.load(F1_SPECS["m0"])
+    m1 = yaml_io.load(F1_SPECS["m1"])
+    m2 = yaml_io.load(F1_SPECS["m2"])
+    assert isinstance(m0, dict) and isinstance(m1, dict) and isinstance(m2, dict)
+    # the three arms share their cases (§35 S1): same scenario, seeds and seed stream
+    assert m0["scenario_spec"] == m1["scenario_spec"] == m2["scenario_spec"]
+    assert m0["seeds"] == m1["seeds"] == m2["seeds"]
+    assert (m0["mandate"]["id"], m0["oracle_spec"]["type"], m0["mode"]) == (
+        "M0",
+        "DISCOVERY",
+        "discovery",
+    )
     assert (m2["experiment_key"], m2["variant_id"], m2["oracle_spec"]["type"]) == (
         M2_KEY,
         "m2",

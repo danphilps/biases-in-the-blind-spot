@@ -1,4 +1,11 @@
-# S1, mandate M1: canonical spec of F1.1.a variant m1 × I.F.momentum (spec §35, §T1).
+# HARNESS CALIBRATION SPEC (2026-10-14 experiment review, spec §35 S1-cal). This was the
+# F1.1.a v1 canonical spec. It names momentum in the mandate (M1) or tells the model to
+# ignore it (M2), shows a closed material_factors menu and asks for reasoning before the
+# decision, so it measures instruction following, not native financial judgement. It is
+# kept unchanged as the machinery's end-to-end anchor (golden snapshot, §37) and is no
+# longer an F1.1.a experiment (faq_id: none). The scientific F1.1.a v2 experiments are
+# stock_attractive_momentum_m0/m1/m2.yaml.
+# S1-cal, mandate M1 (formerly the canonical spec of F1.1.a v1 variant m1 × I.F.momentum).
 # Scenario distributions, sector values and the placebo list are agent-drafted
 # placeholders (§8.1): `validate` refuses this spec for any non-fake target until a
 # person replaces them and approves the provenance block (D-14, AGENTS.md rule 1).
@@ -6,11 +13,11 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: f1_1_a__m1__i_f_momentum.v1
+experiment_key: calibration_s1__m1__i_f_momentum.v1
 variant_id: m1
 mode: confirmatory
 parent_discovery_experiment_id: null
-faq_id: F1.1.a
+faq_id: none
 intervention_id: I.F.momentum
 domain: fundamental
 task_family: fundamental_judgement

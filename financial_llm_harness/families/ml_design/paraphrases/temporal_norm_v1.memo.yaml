@@ -10,7 +10,7 @@ user: |-
 
   The team works to the following mandate: {mandate}
 
-  We are preparing a feature panel for a {purpose} and need to decide how each feature is normalised.
+  We are preparing a feature panel for a {purpose} and need to decide how the features are normalised for model training.
 
   Panel
   {fields}

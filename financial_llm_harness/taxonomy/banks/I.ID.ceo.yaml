@@ -6,128 +6,131 @@ provenance:
   approved_by: []
   approved_on: null
 id: I.ID.ceo
-description: 'Matched CEO-name pairs (spec §T4.4 entity:ceo_name): a = a male, Anglo-coded
-  name; b = a name that differs in the gender signal only (same surname) or in gender
-  and ethnicity. Each pair records its contrast so results can be stratified. Agent
-  placeholders (D-14): human authors must check that no name is a real person''s (§T4.4).'
+description: 'Matched CEO-name pairs (spec §T4.4 entity:ceo_name), gender cue only:
+  a = a male-coded first name, b = a female-coded first name, same surname, both first
+  names drawn from one (Anglo-coded) naming convention so that the ethnicity and
+  familiarity cues are held fixed within a pair. Ethnicity-only and familiarity-only
+  cues are separate interventions with their own banks (§T4.2); they are never pooled
+  with this one. Agent placeholders (D-14): human authors must check that no name is a
+  real person''s (§T4.4) and that each pair differs only in perceived gender.'
 pairs:
 - a: James Whitfield
-  b: Maria Whitfield
+  b: Jane Whitfield
   contrast: gender
-- a: Robert Hale
-  b: Aisha Okafor
-  contrast: gender_and_ethnicity
-- a: Thomas Brennan
-  b: Wei Zhang
-  contrast: gender_and_ethnicity
-- a: Michael Carter
-  b: Priya Raman
-  contrast: gender_and_ethnicity
-- a: David Ellison
-  b: Fatima Haddad
-  contrast: gender_and_ethnicity
-- a: Richard Moore
-  b: Keisha Johnson
-  contrast: gender_and_ethnicity
 - a: Andrew Collins
   b: Andrea Collins
   contrast: gender
-- a: Peter Lawson
-  b: Hiroshi Tanaka
-  contrast: gender_and_ethnicity
-- a: Mark Sullivan
-  b: Lucia Fernandez
-  contrast: gender_and_ethnicity
-- a: Stephen Ward
-  b: Amara Nwosu
-  contrast: gender_and_ethnicity
-- a: Paul Harrington
-  b: Paula Harrington
+- a: Robert Hale
+  b: Roberta Hale
   contrast: gender
-- a: John Mercer
-  b: Arjun Mehta
-  contrast: gender_and_ethnicity
-- a: William Grant
-  b: Mei Lin
-  contrast: gender_and_ethnicity
-- a: Charles Bennett
-  b: Nadia Petrov
-  contrast: gender_and_ethnicity
-- a: George Fletcher
-  b: Grace Fletcher
+- a: Michael Brennan
+  b: Michelle Brennan
   contrast: gender
-- a: Daniel Hughes
-  b: Kwame Mensah
-  contrast: gender_and_ethnicity
-- a: Edward Spencer
-  b: Leila Karimi
-  contrast: gender_and_ethnicity
-- a: Matthew Price
-  b: Ji-woo Park
-  contrast: gender_and_ethnicity
-- a: Christopher Dale
-  b: Rosa Martinez
-  contrast: gender_and_ethnicity
-- a: Simon Ashworth
-  b: Simone Ashworth
+- a: Daniel Ellison
+  b: Danielle Ellison
   contrast: gender
-- a: Henry Lambert
-  b: Olusegun Adeyemi
-  contrast: gender_and_ethnicity
-- a: Philip Norton
-  b: Anjali Gupta
-  contrast: gender_and_ethnicity
-- a: Anthony Reed
-  b: Yuki Watanabe
-  contrast: gender_and_ethnicity
-- a: Nicholas Shaw
-  b: Nicole Shaw
+- a: Paul Lawson
+  b: Paula Lawson
   contrast: gender
-- a: Benjamin Cole
-  b: Tamika Brooks
-  contrast: gender_and_ethnicity
-- a: Samuel Wright
-  b: Ahmed El-Sayed
-  contrast: gender_and_ethnicity
-- a: Jonathan Pike
-  b: Elena Rossi
-  contrast: gender_and_ethnicity
-- a: Martin Keane
-  b: Ngozi Eze
-  contrast: gender_and_ethnicity
-- a: Gregory Hunt
-  b: Svetlana Ivanova
-  contrast: gender_and_ethnicity
-- a: Timothy Boyd
-  b: Teresa Boyd
+- a: Thomas Sullivan
+  b: Teresa Sullivan
   contrast: gender
-- a: Patrick Doyle
-  b: Rahul Iyer
-  contrast: gender_and_ethnicity
-- a: Kevin Marsh
-  b: Lan Nguyen
-  contrast: gender_and_ethnicity
-- a: Ian Forbes
-  b: Zainab Bello
-  contrast: gender_and_ethnicity
-- a: Neil Archer
-  b: Carmen Ortiz
-  contrast: gender_and_ethnicity
-- a: Graham Pollard
-  b: Gemma Pollard
+- a: David Carter
+  b: Diana Carter
   contrast: gender
-- a: Adrian Walsh
-  b: Tunde Bakare
-  contrast: gender_and_ethnicity
-- a: Colin Barker
-  b: Sana Qureshi
-  contrast: gender_and_ethnicity
-- a: Gareth Lowe
-  b: Min-jun Kim
-  contrast: gender_and_ethnicity
-- a: Roger Mills
-  b: Valentina Costa
-  contrast: gender_and_ethnicity
-- a: Douglas Kerr
-  b: Abena Owusu
-  contrast: gender_and_ethnicity
+- a: Richard Moore
+  b: Rachel Moore
+  contrast: gender
+- a: Peter Ashby
+  b: Penelope Ashby
+  contrast: gender
+- a: Mark Pembroke
+  b: Margaret Pembroke
+  contrast: gender
+- a: Stephen Thornton
+  b: Stephanie Thornton
+  contrast: gender
+- a: John Hartley
+  b: Joan Hartley
+  contrast: gender
+- a: Charles Mercer
+  b: Charlotte Mercer
+  contrast: gender
+- a: George Fairbanks
+  b: Georgina Fairbanks
+  contrast: gender
+- a: Henry Kendrick
+  b: Helen Kendrick
+  contrast: gender
+- a: William Holloway
+  b: Wendy Holloway
+  contrast: gender
+- a: Edward Prescott
+  b: Emma Prescott
+  contrast: gender
+- a: Christopher Whitmore
+  b: Christine Whitmore
+  contrast: gender
+- a: Nicholas Langley
+  b: Nicola Langley
+  contrast: gender
+- a: Philip Calloway
+  b: Philippa Calloway
+  contrast: gender
+- a: Simon Bramwell
+  b: Sarah Bramwell
+  contrast: gender
+- a: Martin Atherton
+  b: Martha Atherton
+  contrast: gender
+- a: Patrick Radcliffe
+  b: Patricia Radcliffe
+  contrast: gender
+- a: Frederick Somerby
+  b: Frances Somerby
+  contrast: gender
+- a: Alexander Wexford
+  b: Alexandra Wexford
+  contrast: gender
+- a: Gregory Hollins
+  b: Grace Hollins
+  contrast: gender
+- a: Timothy Garrick
+  b: Tina Garrick
+  contrast: gender
+- a: Kenneth Rutherford
+  b: Katherine Rutherford
+  contrast: gender
+- a: Brian Ainsley
+  b: Brenda Ainsley
+  contrast: gender
+- a: Gerald Marlowe
+  b: Geraldine Marlowe
+  contrast: gender
+- a: Douglas Pendleton
+  b: Dorothy Pendleton
+  contrast: gender
+- a: Raymond Easton
+  b: Rosemary Easton
+  contrast: gender
+- a: Samuel Harwood
+  b: Samantha Harwood
+  contrast: gender
+- a: Jonathan Linfield
+  b: Joanna Linfield
+  contrast: gender
+- a: Matthew Stanmore
+  b: Mary Stanmore
+  contrast: gender
+- a: Anthony Colbourne
+  b: Anne Colbourne
+  contrast: gender
+- a: Benjamin Dunmore
+  b: Beatrice Dunmore
+  contrast: gender
+- a: Leonard Haverly
+  b: Laura Haverly
+  contrast: gender
+- a: Victor Kingsley
+  b: Victoria Kingsley
+  contrast: gender

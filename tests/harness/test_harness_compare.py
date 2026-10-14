@@ -44,9 +44,9 @@ def test_matrix_rows_resolve_into_labels(
     with open(out / "matrix.csv", newline="") as fh:
         rows = list(csv.DictReader(fh))
     assert [(r["model_key"], r["experiment_key"]) for r in rows] == [
-        (FAKE_A, "f1_1_a__m1__i_f_momentum.v1"),
+        (FAKE_A, "calibration_s1__m1__i_f_momentum.v1"),
         (FAKE_A, "f1_1_a__m1__i_f_momentum.v9"),
-        (FAKE_B, "f1_1_a__m1__i_f_momentum.v1"),
+        (FAKE_B, "calibration_s1__m1__i_f_momentum.v1"),
         (FAKE_B, "f1_1_a__m1__i_f_momentum.v9"),
     ]
     run_dirs = {RID1: two_runs[0], RID2: two_runs[1]}

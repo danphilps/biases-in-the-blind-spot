@@ -7,7 +7,7 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: q3_1_a__base__i_q_tn.v1
+experiment_key: q3_1_a__base__i_q_tn.v2
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -17,7 +17,7 @@ domain: quant_models
 task_family: quant_method_choice
 task: covariance_choice
 concept: t_over_n
-research_question: When the number of observations per asset falls below one, does the model choose a well-conditioned covariance estimator?
+research_question: When the ratio of return observations to assets (T/N) falls below one, does the model choose a well-conditioned covariance estimator?
 data_classification: synthetic
 mandate: {id: QM1, version: 1, text: "long-only institutional equity portfolio construction"}
 hypothesis:
@@ -100,6 +100,11 @@ response_spec:
   abstain_allowed: false
 feature_spec:
   - {feature_id: well_conditioned_choice, type: binary, primary: true, analysis_role: primary, channel: decision, extractor: enum_in_set, extractor_version: 1, field: estimator, values: [ledoit_wolf_linear, nonlinear_shrinkage, factor_model], allowed_values: [0, 1]}
+  # `other` scores 0 in the primary, yet it can name a valid well-conditioned estimator
+  # (ridge / diagonal loading, other shrinkage targets, structured estimators). Its share is
+  # reported so the primary's lower bound can be read; classifying the justification of
+  # `other` answers needs a calibrated semantic evaluator (D-3) before it can count.
+  - {feature_id: chose_other, type: binary, primary: false, analysis_role: exploratory, channel: decision, extractor: contract_enum, extractor_version: 1, field: estimator, true_value: other, allowed_values: [0, 1]}
 oracle_spec:
   type: LEVEL
   sign: null

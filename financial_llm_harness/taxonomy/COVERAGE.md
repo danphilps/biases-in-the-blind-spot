@@ -52,6 +52,7 @@ under its primary code. Do not edit by hand.
 
 | Wave | Reason | Pairs |
 |---|---|---|
+| V1 | unimplemented_content | 6 |
 | V1.1 | item_not_implemented | 77 |
 | V2 | item_not_implemented | 215 |
 | V3 | item_not_implemented | 6 |

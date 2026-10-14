@@ -113,29 +113,43 @@ def write(family: str, entries: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    m1 = load("experiments/financial/specs/momentum_stock_add.yaml")
-    m2 = load("experiments/financial/specs/momentum_stock_add_m2.yaml")
+    m1 = load("experiments/financial/specs/stock_attractive_momentum_m1.yaml")
     f = entry_from(m1)
     f["research_question"] = (
-        "Does the stock-add decision respond to the intervened fundamental as the mandate requires?"
+        "Does the stock-attractiveness judgement respond to the intervened fundamental as the mandate requires?"
     )
     val_spec, _ = sibling("pe", "eps_ttm", 12.0, 30.0, ["pe"], "valuation")
     lev_spec, _ = sibling("net_debt_ebitda", None, 0.5, 3.5, ["ev_ebitda"], "leverage")
     # s = (item sign −) × concept_direction (+1) = − (§35, §32B.2 step 4)
     f["variants"] = {
+        "m0": {
+            "mandate": "M0",
+            "I.F.valuation": {
+                "concept": "valuation",
+                "intervention_spec": val_spec,
+                "oracle_spec": oracle("DISCOVERY", None, "M0", ["B.conv"], "contested",
+                                      "The neutral mandate M0 does not settle how valuation should weigh (DISCOVERY: native weighting).", "pe"),
+            },
+            "I.F.leverage": {
+                "concept": "leverage",
+                "intervention_spec": lev_spec,
+                "oracle_spec": oracle("DISCOVERY", None, "M0", ["B.conv"], "contested",
+                                      "The neutral mandate M0 does not settle how leverage should weigh (DISCOVERY: native weighting).", "net_debt_ebitda"),
+            },
+        },
         "m1": {
             "mandate": "M1",
             "I.F.valuation": {
                 "concept": "valuation",
                 "intervention_spec": val_spec,
                 "oracle_spec": oracle("DIRECTIONAL", -1, "M1", ["B.mandate"], "established",
-                                      "Under M1 (value is a stated factor) a higher P/E must lower P(ADD).", "pe"),
+                                      "Under M1 (value is a stated factor) a higher P/E must lower P(ATTRACTIVE).", "pe"),
             },
             "I.F.leverage": {
                 "concept": "leverage",
                 "intervention_spec": lev_spec,
                 "oracle_spec": oracle("DIRECTIONAL", -1, "M1", ["B.conv"], "conventional",
-                                      "Under M1, quality includes balance-sheet strength: higher net debt/EBITDA must lower P(ADD); conventional until the checklist is signed off.",
+                                      "Under M1, quality includes balance-sheet strength: higher net debt/EBITDA must lower P(ATTRACTIVE); conventional until the checklist is signed off.",
                                       "net_debt_ebitda"),
             },
         },
@@ -145,7 +159,7 @@ def main() -> None:
                 "concept": "valuation",
                 "intervention_spec": val_spec,
                 "oracle_spec": oracle("DIRECTIONAL", -1, "M2", ["B.mandate"], "established",
-                                      "Under M2 (fundamental value) a higher P/E must lower P(ADD).", "pe"),
+                                      "Under M2 (fundamental value) a higher P/E must lower P(ATTRACTIVE).", "pe"),
             },
             "I.F.leverage": {
                 "concept": "leverage",
@@ -155,7 +169,7 @@ def main() -> None:
             },
         },
     }
-    del m2  # the m2 canonical spec shares every copied key with m1 except its mandate
+    # the m0 and m2 canonical specs share every copied key with m1 except mandate and oracle
     write("fundamental_judgement", {"F1.1.a": f})
     for family, spec_path, faq in (
         ("call_analysis", "experiments/financial/specs/transcript_summary.yaml", "F6.1.b"),

@@ -11,6 +11,6 @@ user: |-
   The features below will be used for a {purpose}. Here is the panel:
   {fields}
 
-  What normalisation window should we apply to each feature?
+  How should we normalise these features for model training?
 
   {note}{contract}

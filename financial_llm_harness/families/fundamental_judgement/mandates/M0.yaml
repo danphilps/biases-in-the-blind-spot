@@ -1,0 +1,10 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+id: M0
+version: 1
+# Neutral mandate (native-reasoning arm): names no factor, so the experiment observes the
+# model's own weighting of momentum. Wording from the 2026-10-14 experiment review.
+text: "diversified long-only equity portfolio"
+country_neutral: true

@@ -2,11 +2,11 @@
   "schema_version": "1.0",
   "run": {
     "run_id": "00000000-0000-4000-8000-000000000001",
-    "experiment_key": "f1_1_a__m1__i_f_momentum.v1",
-    "experiment_id": "b5768906-77f3-562e-90b3-753d66badff3",
-    "design_hash": "3e0d8c3092f6e7466213dff36d1a4e406b375bb543bf4618701c93172a336980",
-    "manifest_hash": "ec581ef0f8ceb10ea5798f61ae1e80daa1b4b0e54ab963cc73e846a762503e30",
-    "faq_id": "F1.1.a",
+    "experiment_key": "calibration_s1__m1__i_f_momentum.v1",
+    "experiment_id": "777e19da-a6ee-58a8-be59-2084d31ce157",
+    "design_hash": "abb4608d6422ba93d9df16f5a569b4395b82490a2064beb9bbf5e7e330792c5d",
+    "manifest_hash": "9c0a19281824af9f28a89721026212e3efd7e6a1b52c2da9e0ca8a05ca26e8b6",
+    "faq_id": "none",
     "variant_id": "m1",
     "intervention_id": "I.F.momentum",
     "mode": "confirmatory",
@@ -73,16 +73,16 @@
       "region": null,
       "serving": "in_process",
       "primary": {
-        "theta": -0.30711805555555555,
+        "theta": -0.2970486111111111,
         "ci": [
-          -0.32467001626894554,
-          -0.28956609484216556
+          -0.3135645431378537,
+          -0.28053267908436846
         ],
         "ci2a": [
-          -0.321843759730159,
-          -0.2923923513809521
+          -0.31090511028889994,
+          -0.2831921119333222
         ],
-        "p_dev": 3.7400635718328156e-169,
+        "p_dev": 1.4884729500577933e-175,
         "p_eq": 1.0,
         "zone": "Z-",
         "sensitivity_label": "JUSTIFIED_SENSITIVITY",
@@ -98,8 +98,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.019097222222222224,
-        "invalid_rate_b": 0.019097222222222224,
+        "invalid_rate_a": 0.016319444444444445,
+        "invalid_rate_b": 0.016319444444444445,
         "bounds_change_zone": false
       },
       "drift": {
@@ -111,8 +111,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "b8d8dcfd-acdb-5345-8363-0f95116848c0",
-        "label": "2b3b89fd-9c0c-54d9-bbd9-61eb2cf9f8c5"
+        "effect": "1b22d8e1-c433-5599-86d2-693383da079a",
+        "label": "2a837a5e-47d2-5cf4-b36a-16f3039fd3be"
       }
     },
     {
@@ -146,8 +146,8 @@
         "positive": "PASSED"
       },
       "missingness": {
-        "invalid_rate_a": 0.022916666666666665,
-        "invalid_rate_b": 0.022916666666666665,
+        "invalid_rate_a": 0.02013888888888889,
+        "invalid_rate_b": 0.02013888888888889,
         "bounds_change_zone": false
       },
       "drift": {
@@ -159,8 +159,8 @@
         "cost_usd": 0.0
       },
       "rows": {
-        "effect": "93758ca1-c14f-56a3-9ad0-be476b7fb51e",
-        "label": "cc7ceed5-6ad4-574a-aa0b-e488db3bab59"
+        "effect": "9c2947bc-33a3-52c9-bc11-ce3e6ec201c7",
+        "label": "325e5aef-bd84-57d4-a64f-542fb05a9bb8"
       }
     }
   ],

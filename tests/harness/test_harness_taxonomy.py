@@ -104,8 +104,8 @@ def test_keys_follow_the_slug_rule_and_fit_sixty_characters(reg: R.Registry) -> 
 
 def test_pairs_include_variants_and_correctness(reg: R.Registry) -> None:
     f = reg.items["F1.1.a"]
-    assert [v["variant_id"] for v in f.variants] == ["m1", "m2"]
-    assert len(f.pairs()) == 2 * 7
+    assert [v["variant_id"] for v in f.variants] == ["m0", "m1", "m2"]
+    assert len(f.pairs()) == 3 * 8
     k = reg.items["K.M.1"]
     assert ("base", "I.NONE") in k.pairs()  # correctness_checks → an I.NONE pair (D-19)
     assert [v["variant_id"] for v in reg.items["F6.1.b"].variants] == ["base"]
@@ -123,11 +123,11 @@ def test_v1_items_are_canonical_and_implemented(reg: R.Registry) -> None:
 
 def test_canonical_spec_key_and_claim_rules(reg: R.Registry) -> None:
     # incrementing the version without updating the canonical spec's key fails
-    assert "experiment_key" in _errors(_with(reg, "Q3.1.a", version=2))
+    assert "experiment_key" in _errors(_with(reg, "Q3.1.a", version=3))
     # a spec that claims a pair but is not listed fails
     impl = {
         "kind": "canonical_spec",
-        "specs": ["experiments/financial/specs/momentum_stock_add.yaml"],
+        "specs": ["experiments/financial/specs/stock_attractive_momentum_m1.yaml"],
     }
     assert "not in its implementation.specs" in _errors(
         _with(reg, "F1.1.a", implementation=impl)
@@ -222,15 +222,16 @@ def test_orphan_generated_files_fail(
 
 def test_catalogues_cover_section_t4_and_t7(reg: R.Registry) -> None:
     irrelevant = {i for i, e in reg.interventions.items() if e["kind"] == "irrelevant"}
-    assert len(irrelevant) == 19 and "I.CODE.comment" in irrelevant
+    # §T4.2: the 19 original cues, I.ID.ceo split into gender and ethnicity cues and
+    # I.HYPE.label split into rhetorical and architecture labels (CR-8)
+    assert len(irrelevant) == 21 and "I.CODE.comment" in irrelevant
+    assert {"I.ID.ceo_ethnicity", "I.HYPE.arch"} <= irrelevant
     for iid in irrelevant:
         e = reg.interventions[iid]
-        assert (
-            e["oracle_default"] == "INVARIANCE"
-            and e["attach"]
-            and e["guide"]
-            and e["category"]
-        )
+        assert e["attach"] and e["guide"] and e["category"]
+        # architecture labels describe a method class, so they are not irrelevant by construction
+        want = "DISCOVERY" if iid == "I.HYPE.arch" else "INVARIANCE"
+        assert e["oracle_default"] == want, iid
     assert reg.bases["B.irrelevant"]["confidence"] == "established"
     assert reg.bases["B.lw2004"]["confidence"] == "established"
     assert reg.bases["B.bmt1997"]["confidence"] == "contested"

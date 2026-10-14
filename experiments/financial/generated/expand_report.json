@@ -1,5 +1,65 @@
 [
   {
+    "faq_id": "F1.1.a",
+    "intervention_id": "I.ID.ceo_ethnicity",
+    "missing": [
+      "taxonomy/banks/I.ID.ceo_ethnicity.yaml"
+    ],
+    "reason": "unimplemented_content",
+    "variant_id": "m0",
+    "wave": "V1"
+  },
+  {
+    "faq_id": "F1.1.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "taxonomy/banks/I.ID.name.yaml"
+    ],
+    "reason": "unimplemented_content",
+    "variant_id": "m0",
+    "wave": "V1"
+  },
+  {
+    "faq_id": "F1.1.a",
+    "intervention_id": "I.ID.ceo_ethnicity",
+    "missing": [
+      "taxonomy/banks/I.ID.ceo_ethnicity.yaml"
+    ],
+    "reason": "unimplemented_content",
+    "variant_id": "m1",
+    "wave": "V1"
+  },
+  {
+    "faq_id": "F1.1.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "taxonomy/banks/I.ID.name.yaml"
+    ],
+    "reason": "unimplemented_content",
+    "variant_id": "m1",
+    "wave": "V1"
+  },
+  {
+    "faq_id": "F1.1.a",
+    "intervention_id": "I.ID.ceo_ethnicity",
+    "missing": [
+      "taxonomy/banks/I.ID.ceo_ethnicity.yaml"
+    ],
+    "reason": "unimplemented_content",
+    "variant_id": "m2",
+    "wave": "V1"
+  },
+  {
+    "faq_id": "F1.1.a",
+    "intervention_id": "I.ID.name",
+    "missing": [
+      "taxonomy/banks/I.ID.name.yaml"
+    ],
+    "reason": "unimplemented_content",
+    "variant_id": "m2",
+    "wave": "V1"
+  },
+  {
     "faq_id": "F1.1.b",
     "intervention_id": "I.ANC.anchor",
     "missing": [

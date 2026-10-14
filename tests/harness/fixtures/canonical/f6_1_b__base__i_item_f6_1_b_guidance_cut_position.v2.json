@@ -26,7 +26,7 @@
      "v1_debt_refinancing": 4700000000.0,
      "v1_dividend": 1.79,
      "v1_gross_margin": 0.497,
-     "v1_guidance_cut": 0.071,
+     "v1_guidance_cut": 0.151,
      "v1_management_change": 18,
      "v1_office_relocation": 1435,
      "v1_segment_results": 0.052,
@@ -68,7 +68,7 @@
      "v1_debt_refinancing": 4700000000.0,
      "v1_dividend": 1.79,
      "v1_gross_margin": 0.497,
-     "v1_guidance_cut": 0.071,
+     "v1_guidance_cut": 0.151,
      "v1_management_change": 18,
      "v1_office_relocation": 1435,
      "v1_segment_results": 0.052,
@@ -111,7 +111,7 @@
     "v1_debt_refinancing": 4700000000.0,
     "v1_dividend": 1.79,
     "v1_gross_margin": 0.497,
-    "v1_guidance_cut": 0.071,
+    "v1_guidance_cut": 0.151,
     "v1_management_change": 18,
     "v1_office_relocation": 1435,
     "v1_segment_results": 0.052,
@@ -130,8 +130,8 @@
     "v2_sustainability_report": 67
    },
    "user": {
-    "A": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The board approved a buyback of $2.1bn, or 2.9% of shares in issue.\n- Guidance for full-year revenue came down by 7.1%; the new figure is $46.7bn.\n- The board lifted the quarterly dividend by 3% to $1.79 per share.\n- A better product mix took gross margin to 49.7%, up 12 basis points.\n- A new sustainability report was released, with emissions 7% lower at 67 sites.\n- Management issued $4.7bn of new bonds carrying a 3.07% coupon to repay maturing debt.\n- Spending on new capacity will total $3.7bn, close to 8.4% of revenue.\n- The company will consolidate 1,435 staff into one office over 22 months.\n- Management reported that the efficiency plan, worth $338m a year, is 51% done.\n- The company will buy a regional distributor for $1,068m, which adds about 5.6% to revenue.\n- Management highlighted that segment revenue increased 5.2% to $13.5bn.\n- The company announced the departure of its chief technology officer after 18 years, with a successor due in 11 months.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings.",
-    "B": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The board approved a buyback of $2.1bn, or 2.9% of shares in issue.\n- The board lifted the quarterly dividend by 3% to $1.79 per share.\n- A better product mix took gross margin to 49.7%, up 12 basis points.\n- A new sustainability report was released, with emissions 7% lower at 67 sites.\n- Management issued $4.7bn of new bonds carrying a 3.07% coupon to repay maturing debt.\n- Spending on new capacity will total $3.7bn, close to 8.4% of revenue.\n- The company will consolidate 1,435 staff into one office over 22 months.\n- Management reported that the efficiency plan, worth $338m a year, is 51% done.\n- The company will buy a regional distributor for $1,068m, which adds about 5.6% to revenue.\n- Management highlighted that segment revenue increased 5.2% to $13.5bn.\n- Guidance for full-year revenue came down by 7.1%; the new figure is $46.7bn.\n- The company announced the departure of its chief technology officer after 18 years, with a successor due in 11 months.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings."
+    "A": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The board approved a buyback of $2.1bn, or 2.9% of shares in issue.\n- Guidance for full-year revenue came down by 15.1%; the new figure is $46.7bn, reflecting weaker order intake.\n- The board lifted the quarterly dividend by 3% to $1.79 per share.\n- A better product mix took gross margin to 49.7%, up 12 basis points.\n- A new sustainability report was released, with emissions 7% lower at 67 sites.\n- Management issued $4.7bn of new bonds carrying a 3.07% coupon to repay maturing debt.\n- Spending on new capacity will total $3.7bn, close to 8.4% of revenue.\n- The company will consolidate 1,435 staff into one office over 22 months.\n- Management reported that the efficiency plan, worth $338m a year, is 51% done.\n- The company will buy a regional distributor for $1,068m, which adds about 5.6% to revenue.\n- Management highlighted that segment revenue increased 5.2% to $13.5bn.\n- The company announced the departure of its chief technology officer after 18 years, with a successor due in 11 months.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings.",
+    "B": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The board approved a buyback of $2.1bn, or 2.9% of shares in issue.\n- The board lifted the quarterly dividend by 3% to $1.79 per share.\n- A better product mix took gross margin to 49.7%, up 12 basis points.\n- A new sustainability report was released, with emissions 7% lower at 67 sites.\n- Management issued $4.7bn of new bonds carrying a 3.07% coupon to repay maturing debt.\n- Spending on new capacity will total $3.7bn, close to 8.4% of revenue.\n- The company will consolidate 1,435 staff into one office over 22 months.\n- Management reported that the efficiency plan, worth $338m a year, is 51% done.\n- The company will buy a regional distributor for $1,068m, which adds about 5.6% to revenue.\n- Management highlighted that segment revenue increased 5.2% to $13.5bn.\n- Guidance for full-year revenue came down by 15.1%; the new figure is $46.7bn, reflecting weaker order intake.\n- The company announced the departure of its chief technology officer after 18 years, with a successor due in 11 months.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings."
    }
   },
   {
@@ -160,7 +160,7 @@
      "v1_debt_refinancing": 2700000000.0,
      "v1_dividend": 0.17,
      "v1_gross_margin": 0.278,
-     "v1_guidance_cut": 0.118,
+     "v1_guidance_cut": 0.18,
      "v1_management_change": 28,
      "v1_office_relocation": 477,
      "v1_segment_results": 0.147,
@@ -202,7 +202,7 @@
      "v1_debt_refinancing": 2700000000.0,
      "v1_dividend": 0.17,
      "v1_gross_margin": 0.278,
-     "v1_guidance_cut": 0.118,
+     "v1_guidance_cut": 0.18,
      "v1_management_change": 28,
      "v1_office_relocation": 477,
      "v1_segment_results": 0.147,
@@ -245,7 +245,7 @@
     "v1_debt_refinancing": 2700000000.0,
     "v1_dividend": 0.17,
     "v1_gross_margin": 0.278,
-    "v1_guidance_cut": 0.118,
+    "v1_guidance_cut": 0.18,
     "v1_management_change": 28,
     "v1_office_relocation": 477,
     "v1_segment_results": 0.147,
@@ -264,8 +264,8 @@
     "v2_sustainability_report": 112
    },
    "user": {
-    "A": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The company will invest $1.7bn in capital projects this year, around 13.4% of sales.\n- The company now expects full-year revenue of $9.8bn, which lowers its earlier guidance by 11.8%.\n- Emissions fell 15% at the 112 sites covered by the sustainability report.\n- Gross margin rose to 27.8%, an increase of 242 basis points.\n- The core segment posted revenue growth of 14.7%, reaching $2.5bn.\n- The company is 20% of the way through a programme to lower costs by $255m a year.\n- The quarterly payout per share increases to $0.17, a rise of 6%.\n- About 477 staff will move to a refurbished head office in 6 months.\n- A new repurchase programme of $4.6bn was announced, equal to 5.6% of the share count.\n- The treasury team rolled over $2.7bn of borrowings at 3.23%.\n- The company announced the departure of its chief technology officer after 28 years, with a successor due in 3 months.\n- The board approved a $1,714m acquisition that should contribute 2.4% of revenue.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings.",
-    "B": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The company will invest $1.7bn in capital projects this year, around 13.4% of sales.\n- Emissions fell 15% at the 112 sites covered by the sustainability report.\n- Gross margin rose to 27.8%, an increase of 242 basis points.\n- The core segment posted revenue growth of 14.7%, reaching $2.5bn.\n- The company is 20% of the way through a programme to lower costs by $255m a year.\n- The quarterly payout per share increases to $0.17, a rise of 6%.\n- About 477 staff will move to a refurbished head office in 6 months.\n- A new repurchase programme of $4.6bn was announced, equal to 5.6% of the share count.\n- The treasury team rolled over $2.7bn of borrowings at 3.23%.\n- The company announced the departure of its chief technology officer after 28 years, with a successor due in 3 months.\n- The company now expects full-year revenue of $9.8bn, which lowers its earlier guidance by 11.8%.\n- The board approved a $1,714m acquisition that should contribute 2.4% of revenue.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings."
+    "A": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The company will invest $1.7bn in capital projects this year, around 13.4% of sales.\n- The company now expects full-year revenue of $9.8bn, which lowers its earlier guidance by 18.0%, on weaker order intake.\n- Emissions fell 15% at the 112 sites covered by the sustainability report.\n- Gross margin rose to 27.8%, an increase of 242 basis points.\n- The core segment posted revenue growth of 14.7%, reaching $2.5bn.\n- The company is 20% of the way through a programme to lower costs by $255m a year.\n- The quarterly payout per share increases to $0.17, a rise of 6%.\n- About 477 staff will move to a refurbished head office in 6 months.\n- A new repurchase programme of $4.6bn was announced, equal to 5.6% of the share count.\n- The treasury team rolled over $2.7bn of borrowings at 3.23%.\n- The company announced the departure of its chief technology officer after 28 years, with a successor due in 3 months.\n- The board approved a $1,714m acquisition that should contribute 2.4% of revenue.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings.",
+    "B": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The company will invest $1.7bn in capital projects this year, around 13.4% of sales.\n- Emissions fell 15% at the 112 sites covered by the sustainability report.\n- Gross margin rose to 27.8%, an increase of 242 basis points.\n- The core segment posted revenue growth of 14.7%, reaching $2.5bn.\n- The company is 20% of the way through a programme to lower costs by $255m a year.\n- The quarterly payout per share increases to $0.17, a rise of 6%.\n- About 477 staff will move to a refurbished head office in 6 months.\n- A new repurchase programme of $4.6bn was announced, equal to 5.6% of the share count.\n- The treasury team rolled over $2.7bn of borrowings at 3.23%.\n- The company announced the departure of its chief technology officer after 28 years, with a successor due in 3 months.\n- The company now expects full-year revenue of $9.8bn, which lowers its earlier guidance by 18.0%, on weaker order intake.\n- The board approved a $1,714m acquisition that should contribute 2.4% of revenue.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings."
    }
   },
   {
@@ -294,7 +294,7 @@
      "v1_debt_refinancing": 3800000000.0,
      "v1_dividend": 1.27,
      "v1_gross_margin": 0.398,
-     "v1_guidance_cut": 0.095,
+     "v1_guidance_cut": 0.166,
      "v1_management_change": 20,
      "v1_office_relocation": 131,
      "v1_segment_results": 0.071,
@@ -336,7 +336,7 @@
      "v1_debt_refinancing": 3800000000.0,
      "v1_dividend": 1.27,
      "v1_gross_margin": 0.398,
-     "v1_guidance_cut": 0.095,
+     "v1_guidance_cut": 0.166,
      "v1_management_change": 20,
      "v1_office_relocation": 131,
      "v1_segment_results": 0.071,
@@ -379,7 +379,7 @@
     "v1_debt_refinancing": 3800000000.0,
     "v1_dividend": 1.27,
     "v1_gross_margin": 0.398,
-    "v1_guidance_cut": 0.095,
+    "v1_guidance_cut": 0.166,
     "v1_management_change": 20,
     "v1_office_relocation": 131,
     "v1_segment_results": 0.071,
@@ -398,11 +398,11 @@
     "v2_sustainability_report": 158
    },
    "user": {
-    "A": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The quarter's gross margin was 39.8%, a gain of 85 basis points.\n- Annual revenue guidance was trimmed by 9.5%, with the new target set at $18.0bn.\n- The company extended $3.8bn of maturities at a coupon of 4.61%.\n- Management highlighted that segment revenue increased 7.1% to $10.2bn.\n- The company agreed to acquire a smaller competitor for $1,688m, adding about 4.7% to revenue.\n- The dividend rises 10% to $1.27 a share each quarter.\n- The head of the largest division leaves after 20 years; an internal candidate will take over within 7 months.\n- Headquarters staff of 131 will move to a new office within 13 months.\n- The board approved a buyback of $5.4bn, or 2.1% of shares in issue.\n- Management budgeted $2.4bn of capital spending, equal to 3.7% of sales.\n- Management reported a 13% reduction in emissions across 158 facilities.\n- The restructuring aims to save $63m a year and is 24% through.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings.",
-    "B": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The quarter's gross margin was 39.8%, a gain of 85 basis points.\n- The company extended $3.8bn of maturities at a coupon of 4.61%.\n- Management highlighted that segment revenue increased 7.1% to $10.2bn.\n- The company agreed to acquire a smaller competitor for $1,688m, adding about 4.7% to revenue.\n- The dividend rises 10% to $1.27 a share each quarter.\n- The head of the largest division leaves after 20 years; an internal candidate will take over within 7 months.\n- Headquarters staff of 131 will move to a new office within 13 months.\n- The board approved a buyback of $5.4bn, or 2.1% of shares in issue.\n- Management budgeted $2.4bn of capital spending, equal to 3.7% of sales.\n- Management reported a 13% reduction in emissions across 158 facilities.\n- Annual revenue guidance was trimmed by 9.5%, with the new target set at $18.0bn.\n- The restructuring aims to save $63m a year and is 24% through.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings."
+    "A": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The quarter's gross margin was 39.8%, a gain of 85 basis points.\n- Annual revenue guidance was cut by 16.6%, with the new target set at $18.0bn, as order intake slowed.\n- The company extended $3.8bn of maturities at a coupon of 4.61%.\n- Management highlighted that segment revenue increased 7.1% to $10.2bn.\n- The company agreed to acquire a smaller competitor for $1,688m, adding about 4.7% to revenue.\n- The dividend rises 10% to $1.27 a share each quarter.\n- The head of the largest division leaves after 20 years; an internal candidate will take over within 7 months.\n- Headquarters staff of 131 will move to a new office within 13 months.\n- The board approved a buyback of $5.4bn, or 2.1% of shares in issue.\n- Management budgeted $2.4bn of capital spending, equal to 3.7% of sales.\n- Management reported a 13% reduction in emissions across 158 facilities.\n- The restructuring aims to save $63m a year and is 24% through.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings.",
+    "B": "Mandate: long-only fundamental equity\n\nPoints from the company's quarterly earnings call, in the order they were discussed:\n- The quarter's gross margin was 39.8%, a gain of 85 basis points.\n- The company extended $3.8bn of maturities at a coupon of 4.61%.\n- Management highlighted that segment revenue increased 7.1% to $10.2bn.\n- The company agreed to acquire a smaller competitor for $1,688m, adding about 4.7% to revenue.\n- The dividend rises 10% to $1.27 a share each quarter.\n- The head of the largest division leaves after 20 years; an internal candidate will take over within 7 months.\n- Headquarters staff of 131 will move to a new office within 13 months.\n- The board approved a buyback of $5.4bn, or 2.1% of shares in issue.\n- Management budgeted $2.4bn of capital spending, equal to 3.7% of sales.\n- Management reported a 13% reduction in emissions across 158 facilities.\n- Annual revenue guidance was cut by 16.6%, with the new target set at $18.0bn, as order intake slowed.\n- The restructuring aims to save $63m a year and is 24% through.\n\nSummarise the call for the portfolio manager.\n\nReply with one JSON object and nothing else. Use these keys, in this order:\n\"summary\": a summary of the call in at most one hundred and twenty words, as a string;\n\"key_points\": the most important points for the portfolio manager, as a list of at most five strings."
    }
   }
  ],
- "experiment_key": "f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v1",
+ "experiment_key": "f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v2",
  "source": "generator_regression"
 }

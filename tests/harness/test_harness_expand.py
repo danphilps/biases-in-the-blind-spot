@@ -16,21 +16,31 @@ from financial_llm_harness.taxonomy import expand as X
 from financial_llm_harness.taxonomy import registry as R
 
 V1_FILES = {
-    "F1.1.a/m1/I.F.valuation.yaml",
-    "F1.1.a/m1/I.F.leverage.yaml",
-    "F1.1.a/m2/I.F.valuation.yaml",
-    "F1.1.a/m2/I.F.leverage.yaml",
     *(
         f"F1.1.a/{v}/{c}.yaml"
-        for v in ("m1", "m2")
-        for c in ("I.ID.name", "I.ID.ceo", "I.USER.stance", "I.PRES.order")
+        for v in ("m0", "m1", "m2")
+        for c in (
+            "I.F.valuation",
+            "I.F.leverage",
+            "I.ID.ceo",
+            "I.USER.stance",
+            "I.PRES.order",
+        )
     ),
     "F6.1.b/base/I.PRES.distractor.yaml",
     "Q3.1.a/base/I.HYPE.label.yaml",
+    "Q3.1.a/base/I.HYPE.arch.yaml",
     "Q3.1.a/base/I.USER.stance.yaml",
     "M6.4.a/base/I.USER.stance.yaml",
     "K.M.1/base/I.CODE.comment.yaml",
     "K.M.1/base/I.HYPE.label.yaml",
+    "K.M.1/base/I.HYPE.arch.yaml",
+}
+# The only V1 report rows: identity cues whose banks need validated data (D-25).
+V1_ROWS = {
+    ("F1.1.a", v, c, "unimplemented_content", f"taxonomy/banks/{c}.yaml")
+    for v in ("m0", "m1", "m2")
+    for c in ("I.ID.name", "I.ID.ceo_ethnicity")
 }
 
 
@@ -50,11 +60,19 @@ def _report(root: Path) -> list[dict[str, Any]]:
     return json.loads((root / X.REPORT_NAME).read_text(encoding="utf-8"))
 
 
-def test_expand_v1_writes_every_pair_and_reports_none(gen: Path) -> None:
-    assert main(["taxonomy", "expand", "--wave", "V1"]) == 0
+def test_expand_v1_writes_every_specified_pair_and_reports_d25(gen: Path) -> None:
+    # the D-25 rows belong to the selection, so the wave exits 2 without
+    # --allow-partial; every specified pair is still written (§32B.2 step 7)
+    assert main(["taxonomy", "expand", "--wave", "V1"]) == 2
+    assert _files(gen) == V1_FILES
+    assert main(["taxonomy", "expand", "--wave", "V1", "--allow-partial"]) == 0
     assert _files(gen) == V1_FILES
     report = _report(gen)
-    assert not [r for r in report if r["wave"] == "V1"]
+    assert {
+        (r["faq_id"], r["variant_id"], r["intervention_id"], r["reason"], *r["missing"])
+        for r in report
+        if r["wave"] == "V1"
+    } == V1_ROWS
     # canonical pairs are never generated nor reported (§32B.2 step 1b); K.M.1 has no I.NONE (skip rule)
     keys = {(r["faq_id"], r["intervention_id"]) for r in report}
     assert ("K.M.1", "I.NONE") not in keys
@@ -62,7 +80,7 @@ def test_expand_v1_writes_every_pair_and_reports_none(gen: Path) -> None:
         spec = yaml_io.load(gen / rel)
         faq, vid, fname = rel.split("/")
         iid = fname[: -len(".yaml")]
-        assert spec["experiment_key"] == R.experiment_key(faq, vid, iid, 1)
+        assert spec["experiment_key"] == R.experiment_key(faq, vid, iid, 2)
         assert (spec["faq_id"], spec["variant_id"], spec["intervention_id"]) == (
             faq,
             vid,
@@ -76,7 +94,7 @@ def test_expand_v1_writes_every_pair_and_reports_none(gen: Path) -> None:
 
 
 def test_sibling_signs_modes_and_mandates(gen: Path) -> None:
-    assert main(["taxonomy", "expand", "--item", "F1.1.a"]) == 0
+    assert main(["taxonomy", "expand", "--item", "F1.1.a", "--allow-partial"]) == 0
     m1v = yaml_io.load(gen / "F1.1.a/m1/I.F.valuation.yaml")
     # item sign − per unit increase of P/E, concept_direction +1 → s = −1 (§32B.2 step 4)
     assert m1v["oracle_spec"]["type"] == "DIRECTIONAL"
@@ -97,10 +115,17 @@ def test_sibling_signs_modes_and_mandates(gen: Path) -> None:
     assert m2l["mandate"]["id"] == "M2"
     m2v = yaml_io.load(gen / "F1.1.a/m2/I.F.valuation.yaml")
     assert m2v["oracle_spec"]["mandate_id"] == "M2" and m2v["oracle_spec"]["sign"] == -1
+    # M0 (neutral mandate) settles no factor's weight: every sibling is DISCOVERY
+    for iid in ("I.F.valuation", "I.F.leverage"):
+        m0 = yaml_io.load(gen / f"F1.1.a/m0/{iid}.yaml")
+        assert m0["oracle_spec"]["type"] == "DISCOVERY" and m0["mode"] == "discovery"
+        assert m0["mandate"]["id"] == "M0"
+        assert m0["response_spec"]["contract_id"] == "stock_attractive_v1"
+        assert m0["response_spec"]["reasoning_mode"] == "rationale_after"
 
 
 def test_report_covers_the_whole_registry(gen: Path) -> None:
-    assert main(["taxonomy", "expand", "--item", "F1.1.a"]) == 0
+    assert main(["taxonomy", "expand", "--item", "F1.1.a", "--allow-partial"]) == 0
     report = _report(gen)
     assert report == sorted(
         report, key=lambda r: (r["faq_id"], r["variant_id"], r["intervention_id"])
@@ -133,7 +158,12 @@ def test_missing_content_is_reported_never_invented(
     monkeypatch.setattr(families, "load_defaults", without_valuation)
     monkeypatch.setattr(X, "load_defaults", without_valuation)
     assert main(["taxonomy", "expand", "--item", "F1.1.a"]) == 2
-    rows = [r for r in _report(gen) if r["faq_id"] == "F1.1.a"]
+    rows = [
+        r
+        for r in _report(gen)
+        if r["faq_id"] == "F1.1.a"
+        and r["intervention_id"] not in ("I.ID.name", "I.ID.ceo_ethnicity")
+    ]
     assert rows == [
         {
             "faq_id": "F1.1.a",
@@ -162,7 +192,7 @@ def test_version_immutability(gen: Path, monkeypatch: pytest.MonkeyPatch) -> Non
     with pytest.raises(HarnessValidationError, match="unchanged version"):
         X.run_expand("Q3.1.a", None, force=True)
     # a file from a lower item version is overwritten only with --force
-    data["experiment_key"] = data["experiment_key"].replace(".v1", ".v0")
+    data["experiment_key"] = data["experiment_key"].replace(".v2", ".v1")
     path.write_text(yaml_io.dump(data), encoding="utf-8")
     with pytest.raises(HarnessValidationError, match="--force"):
         X.run_expand("Q3.1.a", None)
@@ -178,10 +208,10 @@ def test_unknown_selection_exits_2(gen: Path) -> None:
 def test_programme_selects_generated_files_by_registry_wave(gen: Path) -> None:
     from financial_llm_harness.execution.programme import resolve_selection
 
-    assert main(["taxonomy", "expand", "--wave", "V1"]) == 0
+    assert main(["taxonomy", "expand", "--wave", "V1", "--allow-partial"]) == 0
     sel = {
         "select": {
-            "specs": ["experiments/financial/specs/momentum_stock_add.yaml"],
+            "specs": ["experiments/financial/specs/stock_attractive_momentum_m1.yaml"],
             "generated": {
                 "waves": ["V1"],
                 "priorities": ["P1"],
@@ -193,25 +223,25 @@ def test_programme_selects_generated_files_by_registry_wave(gen: Path) -> None:
     chosen = resolve_selection(sel)
     keys = [c.experiment_key for c in chosen]
     assert keys == sorted(keys)
-    assert "f1_1_a__m1__i_f_momentum.v1" in keys  # the canonical spec, listed by path
+    assert "f1_1_a__m1__i_f_momentum.v2" in keys  # the canonical spec, listed by path
     generated = [
         c for c in chosen if c.spec.get("battery") or c.path.is_relative_to(gen)
     ]
     assert {c.spec["variant_id"] for c in generated} == {"m1"}
     assert all(c.spec["mode"] == "confirmatory" for c in generated)
     # m1 leverage is discovery (unsigned B.conv checklist), so a confirmatory selection omits it
-    assert "f1_1_a__m1__i_f_leverage.v1" not in keys
-    assert "f1_1_a__m1__i_f_valuation.v1" in keys
+    assert "f1_1_a__m1__i_f_leverage.v2" not in keys
+    assert "f1_1_a__m1__i_f_valuation.v2" in keys
 
 
 def test_a_higher_version_file_is_never_overwritten(gen: Path) -> None:
     assert main(["taxonomy", "expand", "--item", "M6.4.a"]) == 0
     path = gen / "M6.4.a/base/I.USER.stance.yaml"
     data = yaml_io.load(path)
-    data["experiment_key"] = data["experiment_key"].replace(".v1", ".v2")
+    data["experiment_key"] = data["experiment_key"].replace(".v2", ".v3")
     path.write_text(yaml_io.dump(data), encoding="utf-8")
     for force in (False, True):
-        with pytest.raises(HarnessValidationError, match="version 2"):
+        with pytest.raises(HarnessValidationError, match="version 3"):
             X.run_expand("M6.4.a", None, force=force)
 
 
@@ -287,7 +317,7 @@ def test_correctness_experiment_and_its_missing_inputs(
     )
     rows = {r.intervention_id: r for r in X.expand_item(reg, item, R.family_listing())}
     spec = rows["I.NONE"].spec
-    assert spec is not None and spec["experiment_key"] == "k_m_1__base__i_none.v1"
+    assert spec is not None and spec["experiment_key"] == "k_m_1__base__i_none.v2"
     assert derive_arms(spec) == ["A", "A0"]
     assert spec["controls"]["placebo"] is None and spec["controls"]["positive"] is None
     assert spec["oracle_spec"]["type"] == "LEVEL" and spec["oracle_spec"]["tau"] == 0.90

@@ -1,4 +1,4 @@
-experiment_key: m6_4_a__base__i_user_stance.v1
+experiment_key: m6_4_a__base__i_user_stance.v2
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -132,6 +132,30 @@ feature_spec:
   - expanding
   - rolling
   - cross_sectional_at_t
+  allowed_values:
+  - 0
+  - 1
+- feature_id: declares_no_future_data
+  type: binary
+  primary: false
+  analysis_role: exploratory
+  channel: decision
+  extractor: contract_enum
+  extractor_version: 1
+  field: uses_future_data
+  true_value: false
+  allowed_values:
+  - 0
+  - 1
+- feature_id: chose_full_sample
+  type: binary
+  primary: false
+  analysis_role: exploratory
+  channel: decision
+  extractor: contract_enum
+  extractor_version: 1
+  field: normalisation_window
+  true_value: full_sample
   allowed_values:
   - 0
   - 1

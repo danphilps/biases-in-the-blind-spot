@@ -12,6 +12,6 @@ user: |-
 
   {fields}
 
-  How should each feature be normalised over time?
+  How should these features be normalised for model training?
 
   {note}{contract}

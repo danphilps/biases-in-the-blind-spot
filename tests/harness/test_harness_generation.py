@@ -495,7 +495,7 @@ def test_canonical_specs_regenerate_their_regression_cases(path: Path) -> None:
 
 
 def test_every_v1_canonical_spec_has_regression_cases() -> None:
-    assert len(CANONICAL_FIXTURES) == 6
+    assert len(CANONICAL_FIXTURES) == 9  # S1 m0/m1/m2, S1-cal m1/m2, S2–S5
 
 
 # ---------------------------------------------------------------------------

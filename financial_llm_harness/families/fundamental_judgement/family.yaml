@@ -78,9 +78,10 @@ interventions:
     concept_direction: 1
     concept_factor: leverage
     concept_lexicon: [leverage, net debt, balance sheet, indebted, gearing]
-response_contracts: [stock_add_v1]
+response_contracts: [stock_add_v1, stock_attractive_v1]
 features:
   decision_add: {type: binary, channel: decision, extractor: contract_enum, field: decision, true_value: ADD}
+  decision_attractive: {type: binary, channel: decision, extractor: contract_enum, field: decision, true_value: ATTRACTIVE}
   confidence: {type: scalar, channel: decision, extractor: contract_value, field: confidence, range: [0.0, 1.0]}
   attributes_concept_factors: {type: binary, channel: factors, extractor: concept_factor}
   attributes_concept_reasoning:
@@ -115,6 +116,13 @@ features:
 # increase of the concept (§T1), basis and confidence. The experiment's oracle_spec
 # carries the manifest sign s = (item sign) × concept_direction (§32B.2 step 4).
 oracles:
+  # M0 (neutral) names no factor, so no mandate fixes how momentum, valuation or leverage
+  # should weigh: every M0 oracle is DISCOVERY. The M0 effect is the model's native
+  # weighting, read against the M1 (explicit use) and M2 (explicit ignore) controls.
+  M0:
+    I.F.momentum: {type: DISCOVERY, item_sign: null, basis: [B.conv], confidence: contested}
+    I.F.valuation: {type: DISCOVERY, item_sign: null, basis: [B.conv], confidence: contested}
+    I.F.leverage: {type: DISCOVERY, item_sign: null, basis: [B.conv], confidence: contested}
   M1:
     I.F.momentum: {type: DIRECTIONAL, item_sign: 1, basis: [B.mandate, B.jt1993], confidence: established}
     I.F.valuation: {type: DIRECTIONAL, item_sign: -1, basis: [B.mandate], confidence: established}

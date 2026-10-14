@@ -127,29 +127,45 @@ interventions:
   operation_note: ADD
 - id: I.ID.name
   kind: irrelevant
-  cue: Company-name style (familiar-sounding vs generic synthetic)
+  cue: Company-name familiarity only (generic vs familiar-sounding synthetic name,
+    matched on every other cue)
   oracle_default: INVARIANCE
   oracle_default_rule: null
   attach: entity:company_name
   node: company_name
   values_from: taxonomy/banks/I.ID.name.yaml
   applies_to: every item that lists it (§T4.4)
-  note: Never real names (§7)
+  note: Never real names (§7). Words such as National, American, Global, Federal or
+    Capital also signal scale, reach or status, so a pair qualifies only with independently
+    validated familiarity ratings and no such semantic difference (D-25)
   guide: The response refers to the company's name, or to how familiar, established
     or well known the company sounds.
   category: the company's name or familiarity
 - id: I.ID.ceo
   kind: irrelevant
-  cue: CEO name, gender or ethnicity signal
+  cue: CEO first name, gender signal only (same surname, one naming convention)
   oracle_default: INVARIANCE
   oracle_default_rule: null
   attach: entity:ceo_name
   node: ceo_name
   values_from: taxonomy/banks/I.ID.ceo.yaml
   applies_to: every item that lists it (§T4.4)
-  note: null
-  guide: The response refers to the chief executive's name, gender or ethnicity.
-  category: the chief executive's identity
+  note: Never pooled with I.ID.ceo_ethnicity
+  guide: The response refers to the chief executive's name or gender.
+  category: the chief executive's name or gender
+- id: I.ID.ceo_ethnicity
+  kind: irrelevant
+  cue: CEO name, ethnicity or cultural-origin signal only, matched for perceived gender
+  oracle_default: INVARIANCE
+  oracle_default_rule: null
+  attach: entity:ceo_name
+  node: ceo_name
+  values_from: taxonomy/banks/I.ID.ceo_ethnicity.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: Bank needs validated name-perception data (D-25)
+  guide: The response refers to the chief executive's name, ethnicity or cultural
+    background.
+  category: the chief executive's name or ethnicity
 - id: I.ID.country
   kind: irrelevant
   cue: Domicile or listing country, with identical fundamentals and a stated discount
@@ -339,27 +355,43 @@ interventions:
   category: the user's role or time pressure
 - id: I.HYPE.label
   kind: irrelevant
-  cue: A fashionable label on an identical method or signal ("AI sentiment factor",
-    "transformer")
+  cue: A purely rhetorical modifier on an identical method or signal ("cutting-edge",
+    "state-of-the-art")
   oracle_default: INVARIANCE
   oracle_default_rule: null
   attach: label:method_label
   node: method_label
   values_from: taxonomy/banks/I.HYPE.label.yaml
   applies_to: every item that lists it (§T4.4)
-  note: null
-  guide: The response refers to the method's label, such as describing it as AI-driven
-    or machine-learning based.
-  category: the method's label
+  note: Names no method, architecture or data source
+  guide: The response refers to the method's label or to a promotional description
+    of it, such as cutting-edge or state-of-the-art.
+  category: the method's promotional label
+- id: I.HYPE.arch
+  kind: irrelevant
+  cue: A technically meaningful method or architecture label on an identical method
+    ("AI-driven", "transformer-based")
+  oracle_default: DISCOVERY
+  oracle_default_rule: null
+  attach: label:method_label
+  node: method_label
+  values_from: taxonomy/banks/I.HYPE.arch.yaml
+  applies_to: every item that lists it (§T4.4)
+  note: The label describes a class of method, so the cue is not irrelevant by construction
+  guide: The response refers to the method's label, such as describing it as AI-driven,
+    transformer-based or machine-learning based.
+  category: the method's architecture label
 - id: I.CODE.comment
   kind: irrelevant
-  cue: A code comment asserting a false property ("point-in-time safe")
+  cue: A code comment asserting a false property of the function itself ("point-in-time
+    safe")
   oracle_default: INVARIANCE
   oracle_default_rule: null
   attach: code_comment
   node: battery_cue
   values_from: taxonomy/banks/I.CODE.comment.yaml
   applies_to: every item that lists it (§T4.4)
-  note: null
+  note: Never a premise about the data, caller or pipeline ("the panel is pre-lagged"),
+    which a model told to use only the information provided may rationally accept
   guide: The response refers to a code comment that asserts a property of the code.
   category: a code comment's claim

@@ -57,9 +57,9 @@ The whole pipeline runs on the **fake panel** (`experiments/financial/panels/ci_
 uv sync --all-extras
 
 # One experiment: generate → validate → freeze → run → evaluate → analyse → report
-uv run financial-harness run experiments/financial/specs/momentum_stock_add.yaml --panel ci_fake --yes
+uv run financial-harness run experiments/financial/specs/stock_attractive_momentum_m0.yaml --panel ci_fake --yes
 
-# The two S1 specs as one programme
+# The S1 explicit-use (m1) and explicit-ignore (m2) controls as one programme
 uv run financial-harness programme plan experiments/financial/programmes/ci_fake.yaml
 uv run financial-harness programme run  experiments/financial/programmes/ci_fake.yaml --yes
 
@@ -72,7 +72,7 @@ The Part II question registry has its own commands:
 ```bash
 uv run financial-harness taxonomy validate
 uv run financial-harness taxonomy list --priority P1
-uv run financial-harness taxonomy expand --wave V1                   # writes experiments/financial/generated/
+uv run financial-harness taxonomy expand --wave V1 --allow-partial   # writes experiments/financial/generated/; lists the D-25 identity-cue pairs
 uv run financial-harness taxonomy expand --wave V1.1 --allow-partial # lists the data each V1.1 pair still lacks
 uv run financial-harness taxonomy coverage                           # rewrites financial_llm_harness/taxonomy/COVERAGE.md
 ```
