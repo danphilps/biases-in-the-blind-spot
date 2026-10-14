@@ -49,7 +49,7 @@ Apply all of these in milestone M0 (§38), in one commit, with `uv.lock` regener
 - **ruff:** `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
 - **pytest:** add `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `markers = ["live: calls a real provider API", "sandbox: needs a Docker or Podman CLI"]` **[E-6]**. Without `testpaths`, a bare `pytest` would collect the `tests_hidden/` fixtures of code tasks.
 - **`.gitignore`:** append the block in §0.9 **[D-16]**.
-- **CI:** the workflow steps stay as they are and MUST pass at every milestone. `ubuntu-latest` has Docker, so sandbox tests run there (§36).
+- **CI:** the workflow steps stay as they are, except that checkout fetches only the LFS files the tests read (CR-7), and MUST pass at every milestone. `ubuntu-latest` has Docker, so sandbox tests run there (§36).
 - Every OpenAI-compatible provider (OpenAI, DeepSeek, Qwen, Kimi, Gemini compatibility mode, OpenRouter, self-hosted) goes through `openai.AsyncOpenAI(base_url=…)`. There are no per-vendor SDKs **[E-1]**.
 
 ### 0.3 Legacy code the harness reuses or follows
@@ -91,7 +91,7 @@ No other legacy behaviour changes, so the paper stays reproducible.
 - `experiments/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json`
 - `experiments/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json`
 
-It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file starts with `version https://git-lfs.github.com/spec/v1` (an LFS pointer that was never pulled), the test skips, unless the environment variable `CI` is `true`, in which case it fails: CI checks out LFS.
+It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file starts with `version https://git-lfs.github.com/spec/v1` (an LFS pointer that was never pulled), the test skips, unless the environment variable `CI` is `true`, in which case it fails: CI fetches these three LFS files (CR-7).
 
 ### 0.7 Boundaries and code conventions
 
@@ -3152,7 +3152,7 @@ Each is reversible and was chosen on repository evidence. Changing one needs a �
 | E-11 | Typed exceptions mapped to exit codes; `assert` only for internal invariants; `logging` in library code | Legacy uses `assert` and `print` for validation and progress, which `-O` strips and tests cannot capture by level | Low |
 | E-12 | Legacy discovery bridge emits hypotheses only, never specs | §27: discovery never supports a confirmatory claim | Low |
 | E-13 | Provider limit defaults: concurrency 8, timeout 600 s, batch poll 180 s | Timeout and poll interval are the legacy values; concurrency is conservative for first-party rate limits | Trivial (data in `providers.yaml`) |
-| E-14 | LFS-pointer files make the legacy results test skip locally and fail in CI | Local clones hold pointers; CI checks out LFS | Trivial |
+| E-14 | LFS-pointer files make the legacy results test skip locally and fail in CI | Local clones hold pointers; CI fetches the three files the test reads (CR-7) | Trivial |
 | E-15 | "Panel" means model panel; the human reviewers' file is `taxonomy/expert_panel.yaml` | v2 used "panel" for both | Trivial |
 | E-16 | A programme runs its experiments one at a time; each run is concurrent across providers | Simplest correct budget enforcement and resume; provider concurrency is already exploited inside a run | Medium |
 | E-17 | Legacy symbols are imported lazily inside functions | Importing `verbalization_detector` or `statistics` imports torch via `util.py` | Trivial |
@@ -3203,6 +3203,13 @@ The cluster is the inferential unit. The matched block is the pairing unit. The 
 ---
 
 ## 41. Change log
+
+**CR-7 — 2026-10-14 — v3.4.** Trigger: the first GitHub CI runs (on the PR and on `main`, 2026-10-13) failed in the checkout step, which fetched every LFS object (145 files, about 9.1 GB) before the disk clean-up step; the user chose to fetch only the LFS files the tests read.
+
+- **Changed:** `.github/workflows/ci.yaml` checks out with `lfs: false`, then `git lfs pull --include` fetches the three `_stage-0.json` files read by `tests/legacy/test_legacy_results_load.py` (about 181 MB). §0.2 CI rule, §0.6 and E-14 updated.
+- **Unchanged:** every other workflow step, their order, and the CI command; the legacy test still fails in CI if any of its files is an LFS pointer.
+- **Blast radius checked:** that test is the only one that reads LFS content or `CI`; the other 142 LFS files are legacy datasets and results no test reads.
+- **Already-built code made non-compliant:** none.
 
 **CR-6 — 2026-10-12 — v3.4.** Trigger: the user asked that only endpoints with a populated API key be run (currently OpenAI and Anthropic), that each platform's model be tested independently (Anthropic `claude-opus-5-5`, OpenAI `gpt-6-luna`), and that the analysis produce output files from which biases can be established.
 
