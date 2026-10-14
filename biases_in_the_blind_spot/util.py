@@ -14,20 +14,24 @@ PROJECT_ROOT_PATH = Path(__file__).parent.parent
 
 EXPERIMENTS_PATH = PROJECT_ROOT_PATH / "experiments"
 CONCEPT_PIPELINE_LLM_BIAS_RESULTS_PATH = (
-    EXPERIMENTS_PATH / "llm_bias" / "concept_pipeline" / "results"
+    EXPERIMENTS_PATH / "archive" / "llm_bias" / "concept_pipeline" / "results"
 )
 CONCEPT_PIPELINE_SPORTS_UNDERSTANDING_RESULTS_PATH = (
     EXPERIMENTS_PATH / "sports_understanding" / "concept_pipeline" / "results"
 )
 LOAN_APPROVAL_RESULTS_PATH = (
-    EXPERIMENTS_PATH / "loan_approval" / "concept_pipeline" / "results"
+    EXPERIMENTS_PATH / "archive" / "loan_approval" / "concept_pipeline" / "results"
 )
 UNIVERSITY_ADMISSION_RESULTS_PATH = (
-    EXPERIMENTS_PATH / "university_admission" / "concept_pipeline" / "results"
+    EXPERIMENTS_PATH
+    / "archive"
+    / "university_admission"
+    / "concept_pipeline"
+    / "results"
 )
 AITA_RESULTS_PATH = EXPERIMENTS_PATH / "aita" / "concept_pipeline" / "results"
 
-LLM_BIAS_ROOT_PATH = Path(__file__).parent / "llm_bias"
+LLM_BIAS_ROOT_PATH = Path(__file__).parent / "archive" / "llm_bias"
 LLM_BIAS_DATA_PATH = LLM_BIAS_ROOT_PATH / "data"
 LLM_BIAS_PROMPTS_PATH = LLM_BIAS_ROOT_PATH / "prompts"
 

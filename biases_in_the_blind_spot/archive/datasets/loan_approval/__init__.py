@@ -4,7 +4,7 @@ This module provides utilities for loading and working with the loan approval da
 that includes demographic variations for bias research.
 
 Example usage:
-    from biases_in_the_blind_spot.datasets.loan_approval import (
+    from biases_in_the_blind_spot.archive.datasets.loan_approval import (
         load_loan_approval_dataset,
         load_approved_loans,
         load_rejected_loans,

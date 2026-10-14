@@ -129,11 +129,17 @@ Before a live run is accepted, clear the list in [What a live run still needs](#
 | `experiments/financial/calibration/` | Calibration records for the semantic evaluator. |
 | `experiments/financial/taxonomy_build/` | Scripts that build the registry, defaults, checklists and authoring inventory. |
 | `tests/harness/` | Harness tests (provider calls use cassettes; live tests need `HARNESS_LIVE=1`). |
-| `biases_in_the_blind_spot/`, `experiments/{loan_approval,university_admission,llm_bias}/` | The original paper's pipeline. |
+| `biases_in_the_blind_spot/concept_pipeline/` | The original paper's concept pipeline (kept; its tests still run). |
+| `experiments/archive/`, `biases_in_the_blind_spot/archive/` | **Archived:** the original paper's three experiments (loan approval, university admission, hiring/résumés) with their datasets, generators and results. Not part of the financial harness; kept for reference and reproducibility only. |
 
 ## Original paper pipeline
 
-The original pipeline lives in `biases_in_the_blind_spot/` (the concept pipeline) and `experiments/` (the paper's experiments). The repository contains the results JSON for each experiment in the `results` directory.
+**Archived.** The original paper's three experiments are not part of the financial harness and are kept only for reference and reproducibility. The harness never reads them. They are:
+- loan approval: `experiments/archive/loan_approval/`, dataset and generator in `biases_in_the_blind_spot/archive/datasets/`;
+- university admission: `experiments/archive/university_admission/`, dataset and generator in `biases_in_the_blind_spot/archive/datasets/`;
+- hiring (résumé screening, `llm_bias`): `experiments/archive/llm_bias/`, data and prompts in `biases_in_the_blind_spot/archive/llm_bias/`.
+
+The concept pipeline itself stays in `biases_in_the_blind_spot/concept_pipeline/`. Each archived experiment holds its results JSON in its `results` directory.
 
 Each experiment runs in two steps:
 1. Run `prepare_dataset.py` to set up the initial dataset and generate concepts.
@@ -143,14 +149,14 @@ Results are saved as JSON in the `results` directory. Put API keys for Anthropic
 
 ### Synthetic datasets
 
-The generators for the synthetic loan-approval and university-admission datasets are in `biases_in_the_blind_spot/datasets`. They need `OPENAI_API_KEY`.
+The generators for the synthetic loan-approval and university-admission datasets are in `biases_in_the_blind_spot/archive/datasets`. They need `OPENAI_API_KEY`.
 
 ```bash
 # Loan approval (default 10,000 samples)
-uv run python -m biases_in_the_blind_spot.datasets.loan_approval.generate_loan_approval_dataset -n 5000
+uv run python -m biases_in_the_blind_spot.archive.datasets.loan_approval.generate_loan_approval_dataset -n 5000
 
 # University admission (default 1,000 samples)
-uv run python -m biases_in_the_blind_spot.datasets.university_admission.generate_university_admission_dataset -n 2000
+uv run python -m biases_in_the_blind_spot.archive.datasets.university_admission.generate_university_admission_dataset -n 2000
 ```
 
 Common options: `-n` (number of samples), `-o` (output file), `-m` (model name), `--seed` (random seed).

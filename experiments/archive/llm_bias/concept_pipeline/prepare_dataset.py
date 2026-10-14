@@ -5,7 +5,7 @@ import concurrent.futures
 
 from dotenv import load_dotenv
 
-from experiments.llm_bias.concept_pipeline.prompts_and_parse_functions import (
+from experiments.archive.llm_bias.concept_pipeline.prompts_and_parse_functions import (
     load_resumes_with_pronouns,
 )
 from biases_in_the_blind_spot.concept_pipeline.concept_deduplicator import (

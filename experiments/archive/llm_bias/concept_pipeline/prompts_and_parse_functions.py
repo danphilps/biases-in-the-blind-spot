@@ -2,8 +2,8 @@ from biases_in_the_blind_spot.concept_pipeline.input_id import InputId
 import pandas as pd
 
 
-from biases_in_the_blind_spot.llm_bias.dataset import balanced_downsample
-from biases_in_the_blind_spot.llm_bias.hiring_bias_prompts import (
+from biases_in_the_blind_spot.archive.llm_bias.dataset import balanced_downsample
+from biases_in_the_blind_spot.archive.llm_bias.hiring_bias_prompts import (
     fix_inconsistencies_in_resume,
     remove_resume_title,
 )

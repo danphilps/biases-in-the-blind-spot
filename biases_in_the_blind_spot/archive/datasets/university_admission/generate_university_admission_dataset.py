@@ -939,7 +939,7 @@ def parse_args() -> argparse.Namespace:
         "-o",
         type=Path,
         default=PROJECT_ROOT_PATH
-        / "biases_in_the_blind_spot/datasets/data/university_admission_dataset.json",
+        / "biases_in_the_blind_spot/archive/datasets/data/university_admission_dataset.json",
         help="Output file path for the generated dataset",
     )
 

@@ -18,12 +18,12 @@ This document is the only build instruction for `financial_llm_harness/`. A codi
 
 | Concern | How the testbed does it today | Evidence |
 |---|---|---|
-| Running an experiment | Two `# %%` scripts per dataset, run by hand: `prepare_dataset.py`, then `concept_pipeline.py`. The target model is chosen by editing `model_name` in the script; `load_dotenv()` loads keys. There is no CLI and no multi-model loop: one script run = one model on one dataset | `experiments/loan_approval/concept_pipeline/concept_pipeline.py:20-50` |
+| Running an experiment | Two `# %%` scripts per dataset, run by hand: `prepare_dataset.py`, then `concept_pipeline.py`. The target model is chosen by editing `model_name` in the script; `load_dotenv()` loads keys. There is no CLI and no multi-model loop: one script run = one model on one dataset | `experiments/archive/loan_approval/concept_pipeline/concept_pipeline.py:20-50` |
 | Target-model calls | `ResponsesGenerator.generate(input_template, input_parameters_list, temperature, max_new_tokens, batch_size) -> list[str]`. Each prompt is `input_template.format(**params)`, sent as one user message with no system prompt. Routing: `use_openai_batches` → OpenAI Batch API (model name must start `openai/`); `use_anthropic_batches` → Anthropic Message Batches (`anthropic/`); otherwise OpenRouter via `chat_limiter`, with `seed=42`, `top_p=0.95`, and upstream `hyperbolic/bf16` forced for QwQ | `responses_generator.py:66-146, 193-504, 506-666, 668-786` |
 | Auxiliary LLM calls (concept hypotheses, deduplication, sanitising, variation generation, quality checks, verbalisation) | `APILLMBase` dataclass subclasses, via `chat_limiter.ChatLimiter.for_model` or the OpenAI Batch API. All default models are OpenAI: `o3`, `gpt-5-mini`, `gpt-4.1-mini`, `gpt-4o-mini` | `api_llm_base.py:479-564`; `implicit_concept_detector.py:146`; `variations_generator.py:90`; `verbalization_detector.py` (`llm_model_name = "gpt-5-mini"`) |
 | Providers reachable | OpenAI, Anthropic and OpenRouter only. The locked `chat_limiter` 0.16.0 knows only these three, sends message content as plain strings, and has no structured-output or provider-specific body fields | `uv.lock` (`chat-limiter` 0.16.0) |
 | Failures | A failed request becomes `""`. Failed OpenAI batch items are re-sent through the non-batch path, which goes to OpenRouter. An errored Anthropic batch item aborts the run. `BiasTester` regenerates empty responses up to 10 times, then raises | `responses_generator.py:436-442, 466-501, 633-640, 751`; `api_llm_base.py:284, 310-313`; `bias_tester.py:175-194` |
-| Parsing | Per-dataset `parse_cot_response(input_id, text) -> int \| None`: substring search after `"final decision:"` | `experiments/loan_approval/concept_pipeline/prompts_and_parse_functions.py:68-96` |
+| Parsing | Per-dataset `parse_cot_response(input_id, text) -> int \| None`: substring search after `"final decision:"` | `experiments/archive/loan_approval/concept_pipeline/prompts_and_parse_functions.py:68-96` |
 | Statistics | `compute_mcnemar`: exact when b + c < 25, otherwise χ² with continuity correction (statsmodels default). Fisher as an alternative. O'Brien–Fleming spending; conditional-power futility; Bonferroni over a cumulative concept count | `statistics.py:31-50, 95-139, 297-323, 326-373, 627-716` |
 | Results | `ConceptPipelineResult` and `StageResults` (dataclass-wizard `JSONWizard`, snake-case keys) written to `<results>/concept_pipeline_<experiment_key>.json` plus `_stage-<i>.json`, via tmp → fsync → `os.replace`. Resume reloads the files and raises if any stored config differs from the current one. Figures go to `<results>/figures/<experiment_key>/` | `pipeline_persistence.py:11-44, 47-186, 189-229`; `concept_pipeline_result.py` |
 | What is stored per call | Raw response text and the parsed decision. No usage, finish reason, latency, request ID, effective parameters or cost. Identifiers are random UUID4 | `concept_pipeline_result.py`; `input_id.py:13`; `response_id.py:13` |
@@ -44,7 +44,7 @@ Apply all of these in milestone M0 (§38), in one commit, with `uv.lock` regener
 - **Runtime dependencies** += `pyyaml>=6.0`, `httpx>=0.28`. Both are already locked transitively (6.0.2 and 0.28.1); they are declared because the harness imports them directly. YAML is read only through `HarnessSafeLoader` and written only through `HarnessSafeDumper` (§0.11) **[E-28]**.
 - **Dev dependencies** (`[dependency-groups].dev`, which `uv sync` installs by default) += `hypothesis>=6`, `jsonschema>=4.25`. `jsonschema` is already locked (4.25.1); `hypothesis` is new.
 - **Anthropic SDK bound:** change `anthropic>=0.75.0` to `anthropic>=0.75.0,<1` **[E-20]**. The 1.x line moves the SDK from `httpx` to `httpx2`, which would break the `httpx.MockTransport` cassettes (§20.10) and the `http_client` argument. `uv lock` keeps the locked 0.75.0.
-- **Not added:** no ORM (stdlib `sqlite3`); no pydantic (dataclasses plus explicit validators); no plotting library (SVG via `reporting/svg.py`, §32A.6); no CLI framework (stdlib `argparse`, as in `biases_in_the_blind_spot/datasets/*/generate_*_dataset.py`) **[E-8]**; no SDK beyond the locked `openai` 1.90.0 and `anthropic` 0.75.0. numpy, scipy and statsmodels are already locked.
+- **Not added:** no ORM (stdlib `sqlite3`); no pydantic (dataclasses plus explicit validators); no plotting library (SVG via `reporting/svg.py`, §32A.6); no CLI framework (stdlib `argparse`, as in `biases_in_the_blind_spot/archive/datasets/*/generate_*_dataset.py`) **[E-8]**; no SDK beyond the locked `openai` 1.90.0 and `anthropic` 0.75.0. numpy, scipy and statsmodels are already locked.
 - **pyright:** `include` += `"financial_llm_harness/**/*.py"`; `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
 - **ruff:** `exclude` += `"financial_llm_harness/families/code_task/fixtures"` **[E-7]**.
 - **pytest:** add `[tool.pytest.ini_options]` with `testpaths = ["tests"]` and `markers = ["live: calls a real provider API", "sandbox: needs a Docker or Podman CLI"]` **[E-6]**. Without `testpaths`, a bare `pytest` would collect the `tests_hidden/` fixtures of code tasks.
@@ -87,9 +87,9 @@ No other legacy behaviour changes, so the paper stays reproducible.
 ### 0.6 Legacy results check **[E-14]**
 
 `tests/legacy/test_legacy_results_load.py` loads, via `StageResults.from_json`:
-- `experiments/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json`
-- `experiments/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json`
-- `experiments/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json`
+- `experiments/archive/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json`
+- `experiments/archive/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json`
+- `experiments/archive/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json`
 
 It asserts `stage_idx == 0` and `len(get_stage_input_ids()) > 0`. If a file starts with `version https://git-lfs.github.com/spec/v1` (an LFS pointer that was never pulled), the test skips, unless the environment variable `CI` is `true`, in which case it fails: CI fetches these three LFS files (CR-7).
 
@@ -3203,6 +3203,13 @@ The cluster is the inferential unit. The matched block is the pairing unit. The 
 ---
 
 ## 41. Change log
+
+**CR-8 — 2026-10-14 — v3.4.** Trigger: the user asked that the original paper's questions and experiments (loan approval, university admission, and hiring/résumés) be moved into `archive` folders so they cannot be confused with, or rerun as part of, the financial harness.
+
+- **Changed:** `experiments/{loan_approval,university_admission,llm_bias}/` moved to `experiments/archive/`; `biases_in_the_blind_spot/datasets/` and `biases_in_the_blind_spot/llm_bias/` moved to `biases_in_the_blind_spot/archive/`. Imports, `util.py` path constants, `.gitattributes` LFS patterns, the CI LFS include list, `tests/legacy/` and the §0 and §0.6 path references follow the move.
+- **Unchanged:** `biases_in_the_blind_spot/concept_pipeline/` and every legacy behaviour (§0.5); the archived code still runs from its new path and its tests stay green.
+- **Blast radius checked:** `financial_llm_harness/` imports nothing from the moved paths; the discovery bridge (§27.1) uses only the concept pipeline.
+- **Already-built code made non-compliant:** none.
 
 **CR-7 — 2026-10-14 — v3.4.** Trigger: the first GitHub CI runs (on the PR and on `main`, 2026-10-13) failed in the checkout step, which fetched every LFS object (145 files, about 9.1 GB) before the disk clean-up step; the user chose to fetch only the LFS files the tests read.
 
