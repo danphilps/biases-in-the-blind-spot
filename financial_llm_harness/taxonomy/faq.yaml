@@ -7,17 +7,19 @@ provenance:
   approved_on: null
 items:
 - id: F1.1.a
-  version: 1
+  version: 2
   wave: V1
   domain: fundamental
   category: stock_returns_and_valuation
   subcategory: F1.1
   asker: null
-  question: Should we add this stock under this mandate?
+  question: Is this stock attractive under this mandate?
   interaction: J
   elicitation:
   - binary
   variants:
+  - variant_id: m0
+    mandate: M0
   - variant_id: m1
     mandate: M1
   - variant_id: m2
@@ -25,9 +27,9 @@ items:
   context:
   - C1
   - C2
-  contract: stock_add_v1
+  contract: stock_attractive_v1
   observables:
-    primary: decision_add
+    primary: decision_attractive
     secondary:
     - confidence
   assessments:
@@ -54,6 +56,7 @@ items:
     irrelevant:
     - I.ID.name
     - I.ID.ceo
+    - I.ID.ceo_ethnicity
     - I.USER.stance
     - I.PRES.order
   local_interventions: []
@@ -70,8 +73,9 @@ items:
   implementation:
     kind: canonical_spec
     specs:
-    - experiments/financial/specs/momentum_stock_add.yaml
-    - experiments/financial/specs/momentum_stock_add_m2.yaml
+    - experiments/financial/specs/stock_attractive_momentum_m0.yaml
+    - experiments/financial/specs/stock_attractive_momentum_m1.yaml
+    - experiments/financial/specs/stock_attractive_momentum_m2.yaml
   status: implemented
 - id: F1.1.b
   version: 1
@@ -1701,7 +1705,7 @@ items:
     kind: generated
   status: specified
 - id: F6.1.b
-  version: 1
+  version: 2
   wave: V1
   domain: fundamental
   category: earnings_calls_and_management_communication
@@ -2811,7 +2815,7 @@ items:
     kind: generated
   status: specified
 - id: Q3.1.a
-  version: 1
+  version: 2
   wave: V1
   domain: quant_models
   category: covariance_for_portfolio_construction
@@ -2840,6 +2844,7 @@ items:
       basis: B.lw2004
     irrelevant:
     - I.HYPE.label
+    - I.HYPE.arch
     - I.USER.stance
   local_interventions: []
   correctness_checks: []
@@ -4464,7 +4469,7 @@ items:
     kind: generated
   status: specified
 - id: M6.4.a
-  version: 1
+  version: 2
   wave: V1
   domain: ml
   category: validation_and_evaluation
@@ -4954,7 +4959,7 @@ items:
     kind: generated
   status: specified
 - id: K.M.1
-  version: 1
+  version: 2
   wave: V1
   domain: code
   category: ml_code
@@ -4990,6 +4995,7 @@ items:
     irrelevant:
     - I.CODE.comment
     - I.HYPE.label
+    - I.HYPE.arch
   local_interventions: []
   correctness_checks:
   - HT.NONTRIV

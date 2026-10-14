@@ -9,7 +9,7 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v1
+experiment_key: f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v2
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -40,7 +40,7 @@ scenario_spec:
   generator: {name: structured_world, version: 1}
   distributions:
     s_guidance_cut: "categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
-    v1_guidance_cut: uniform(low=0.02, high=0.15)
+    v1_guidance_cut: uniform(low=0.12, high=0.2)
     v2_guidance_cut: uniform(low=1000000000, high=50000000000)
     s_segment_results: "categorical(values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
     v1_segment_results: uniform(low=0.01, high=0.25)

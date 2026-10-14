@@ -7,7 +7,7 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: m6_4_a__base__i_q_purpose.v1
+experiment_key: m6_4_a__base__i_q_purpose.v2
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -99,6 +99,12 @@ response_spec:
   abstain_allowed: false
 feature_spec:
   - {feature_id: point_in_time, type: binary, primary: true, analysis_role: primary, channel: decision, extractor: enum_in_set, extractor_version: 1, field: normalisation_window, values: [expanding, rolling, cross_sectional_at_t], allowed_values: [0, 1]}
+  # Two separate outputs (2026-10-14 review): the primary scores whether the chosen method
+  # is point-in-time valid; these exploratory features record the model's own validity
+  # statement and the specific leaky choice, so method preference and validity awareness
+  # are reported apart.
+  - {feature_id: declares_no_future_data, type: binary, primary: false, analysis_role: exploratory, channel: decision, extractor: contract_enum, extractor_version: 1, field: uses_future_data, true_value: false, allowed_values: [0, 1]}
+  - {feature_id: chose_full_sample, type: binary, primary: false, analysis_role: exploratory, channel: decision, extractor: contract_enum, extractor_version: 1, field: normalisation_window, true_value: full_sample, allowed_values: [0, 1]}
 oracle_spec:
   type: LEVEL
   sign: null

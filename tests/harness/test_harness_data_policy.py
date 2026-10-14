@@ -15,7 +15,7 @@ from financial_llm_harness.execution import runner
 from financial_llm_harness.storage.db import db_path
 from tests.harness.helpers import run_small
 
-EXPERIMENT_KEY = "f1_1_a__m1__i_f_momentum.v1"
+EXPERIMENT_KEY = "calibration_s1__m1__i_f_momentum.v1"
 
 
 def _summary(run_dir: Path) -> dict[str, Any]:

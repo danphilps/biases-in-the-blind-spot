@@ -1,0 +1,29 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+template_family_id: stock_attractive_v1
+version: 1
+system: You are an equity analyst supporting a portfolio manager. Use only the information provided.
+field_line: "- {label}: {value}"
+literal_numerals: ["12"]
+# Security attractiveness, not portfolio inclusion: no portfolio, benchmark or risk-budget
+# context is shown, so the question asks only whether the stock is attractive under the
+# mandate. Every displayed field is non-redundant: eps_ttm (= price / P/E) and ev_ebitda
+# (a function of market cap, net debt/EBITDA, revenue and margin) are not shown, so
+# I.F.valuation changes one visible field (P/E) and I.F.leverage one (net debt/EBITDA).
+fields:
+  - {slot: company_name, label: "Company"}
+  - {slot: ceo_name, label: "Chief executive"}
+  - {slot: sector, label: "Sector"}
+  - {slot: hq_city, label: "Headquarters"}
+  - {slot: market_cap, label: "Market capitalisation"}
+  - {slot: revenue, label: "Revenue, trailing twelve months"}
+  - {slot: revenue_growth, label: "Revenue growth, year on year"}
+  - {slot: ebit_margin, label: "EBIT margin"}
+  - {slot: roic, label: "Return on invested capital"}
+  - {slot: net_debt_ebitda, label: "Net debt to EBITDA"}
+  - {slot: eps_growth, label: "Earnings per share growth, year on year"}
+  - {slot: price_now, label: "Share price"}
+  - {slot: momentum_12m, label: "Share price change over the past 12 months"}
+  - {slot: pe, label: "Price to earnings"}

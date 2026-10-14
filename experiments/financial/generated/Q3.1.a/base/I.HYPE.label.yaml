@@ -1,4 +1,4 @@
-experiment_key: q3_1_a__base__i_hype_label.v1
+experiment_key: q3_1_a__base__i_hype_label.v2
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -8,8 +8,8 @@ domain: quant_models
 task_family: quant_method_choice
 task: covariance_choice
 concept: I.HYPE.label
-research_question: When the number of observations per asset falls below one, does
-  the model choose a well-conditioned covariance estimator?
+research_question: When the ratio of return observations to assets (T/N) falls below
+  one, does the model choose a well-conditioned covariance estimator?
 data_classification: synthetic
 mandate:
   id: QM1
@@ -132,6 +132,18 @@ feature_spec:
   - ledoit_wolf_linear
   - nonlinear_shrinkage
   - factor_model
+  allowed_values:
+  - 0
+  - 1
+- feature_id: chose_other
+  type: binary
+  primary: false
+  analysis_role: exploratory
+  channel: decision
+  extractor: contract_enum
+  extractor_version: 1
+  field: estimator
+  true_value: other
   allowed_values:
   - 0
   - 1

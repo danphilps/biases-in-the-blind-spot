@@ -1,0 +1,16 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: stock_attractive_v1.embedded
+template_family_id: stock_attractive_v1
+paraphrase_family: embedded
+user: |-
+  {preamble}I am working through our watchlist ahead of the portfolio review and need a view on the next name. Our mandate is: {mandate}
+
+  Here is what I have on the company:
+  {fields}
+
+  Going only on these figures, is the stock attractive under our mandate?
+
+  {contract}

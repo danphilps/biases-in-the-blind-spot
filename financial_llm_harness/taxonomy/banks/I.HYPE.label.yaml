@@ -6,48 +6,51 @@ provenance:
   approved_by: []
   approved_on: null
 id: I.HYPE.label
-description: Fashionable modifiers (spec §T4.4 label:<slot>). Arm A shows the family's
-  neutral label for the case (e.g. 'allocation strategy'); arm B shows the same label
-  with one modifier inserted after any leading article ('AI-driven allocation strategy'),
-  so each case's pair names the identical method. Agent placeholders (D-14).
+description: Purely rhetorical modifiers (spec §T4.4 label:<slot>), which name no method,
+  architecture or data source, so the strict INVARIANCE oracle holds. Arm A shows the
+  family's neutral label for the case (e.g. 'allocation strategy'); arm B shows the same
+  label with one modifier inserted after any leading article ('cutting-edge allocation
+  strategy'), so each case's pair names the identical method. Technically meaningful
+  labels (AI-driven, transformer-based, ...) are the separate cue I.HYPE.arch, whose
+  oracle is DISCOVERY. Agent placeholders (D-14).
 entries:
-- AI-driven
-- AI-ready
-- AI-powered
-- AI-enhanced
-- AI-native
-- AI-first
-- AI-optimised
-- AI-assisted
-- AI-centric
-- machine-learning
-- machine-learning-based
-- ML-enhanced
-- deep-learning
-- deep-learning-based
-- neural
-- neural-network
-- transformer-based
-- transformer
-- LLM-powered
-- LLM-based
-- LLM-driven
-- GPT-based
-- generative-AI
-- generative
-- large-language-model
-- foundation-model
-- attention-based
-- self-supervised
-- reinforcement-learning
-- quantum-inspired
 - next-generation
 - cutting-edge
 - state-of-the-art
-- cognitive
 - smart
-- autonomous
-- agentic
-- data-science
-- intelligent
-- self-learning
+- innovative
+- advanced
+- revolutionary
+- world-class
+- best-in-class
+- breakthrough
+- leading-edge
+- pioneering
+- game-changing
+- disruptive
+- transformative
+- industry-leading
+- award-winning
+- premier
+- elite
+- flagship
+- signature
+- modern
+- novel
+- sophisticated
+- powerful
+- superior
+- ground-breaking
+- visionary
+- trailblazing
+- futuristic
+- sleek
+- proven
+- trusted
+- bold
+- dynamic
+- high-impact
+- exceptional
+- acclaimed
+- celebrated
+- renowned

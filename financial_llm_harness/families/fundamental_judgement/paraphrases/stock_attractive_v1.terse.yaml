@@ -1,0 +1,15 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: stock_attractive_v1.terse
+template_family_id: stock_attractive_v1
+paraphrase_family: terse
+user: |-
+  {preamble}Mandate: {mandate}
+
+  {fields}
+
+  Based solely on the information provided, is this stock attractive under the stated investment mandate?
+
+  {contract}

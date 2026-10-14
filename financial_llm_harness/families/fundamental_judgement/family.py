@@ -102,6 +102,8 @@ def fake_response(
     reasoning_mode: str = "reasoning_before",
 ) -> str:
     """A contract-valid response whose primary feature equals ``y``."""
+    if contract_id == "stock_attractive_v1":
+        return _fake_attractive(y, rng, reasoning_mode)
     if contract_id != "stock_add_v1":
         raise ValueError(f"fake_response: unknown contract {contract_id!r}")
     decision = "ADD" if int(y) == 1 else "DO_NOT_ADD"
@@ -136,4 +138,24 @@ def fake_response(
             "confidence": confidence,
             "material_factors": factors,
         }
+    return json.dumps(body)
+
+
+def _fake_attractive(
+    y: int | float, rng: np.random.Generator, reasoning_mode: str
+) -> str:
+    """stock_attractive_v1: decision, confidence and free text, with no factor list."""
+    decision = "ATTRACTIVE" if int(y) == 1 else "NOT_ATTRACTIVE"
+    text = _REASONING[int(rng.integers(0, len(_REASONING)))]
+    confidence = round(float(rng.uniform(0.5, 0.9)), 2)
+    if reasoning_mode == "reasoning_before":
+        body: dict[str, Any] = {
+            "reasoning": text,
+            "decision": decision,
+            "confidence": confidence,
+        }
+    elif reasoning_mode == "rationale_after":
+        body = {"decision": decision, "confidence": confidence, "rationale": text}
+    else:
+        body = {"decision": decision, "confidence": confidence}
     return json.dumps(body)

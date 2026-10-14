@@ -1,0 +1,18 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+paraphrase_id: stock_attractive_v1.memo
+template_family_id: stock_attractive_v1
+paraphrase_family: memo
+user: |-
+  {preamble}Research request
+
+  The fund is managed to the following mandate: {mandate}
+
+  Please review the company profile below and assess, based solely on the information provided, whether the stock is attractive under this mandate.
+
+  Company profile
+  {fields}
+
+  {contract}

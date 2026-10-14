@@ -7,21 +7,23 @@ description: >-
   Earnings-call item types for S2 (spec §35): materiality rank (1 = most material),
   and ten sentences per type with numeric slots {v1} and {v2}, filled from the state
   nodes v1_<type> and v2_<type>. The two lowest-ranked types are immaterial (the
-  placebo swaps them). No sentence outside guidance_cut mentions guidance.
+  placebo swaps them). No sentence outside guidance_cut mentions guidance. Every
+  guidance_cut sentence states a cause (weaker order intake) and the spec draws the cut at
+  12–20%, so the item is the most material by its economics, not only by declaration.
 entries:
   - type: guidance_cut
     rank: 1
     sentences:
-      - "Management lowered its full-year revenue guidance by {v1}, to {v2}."
-      - "The company cut its revenue outlook for the year by {v1} and now guides to {v2}."
-      - "Full-year revenue guidance was reduced by {v1} to {v2}."
-      - "The chief financial officer said full-year sales are now expected at {v2}, a cut of {v1} to the prior guidance."
-      - "Guidance for full-year revenue came down by {v1}; the new figure is {v2}."
+      - "Management lowered its full-year revenue guidance by {v1}, to {v2}, citing weaker order intake."
+      - "Citing weaker order intake, the company cut its revenue outlook for the year by {v1} and now guides to {v2}."
+      - "Full-year revenue guidance was reduced by {v1} to {v2} after weaker order intake."
+      - "The chief financial officer said full-year sales are now expected at {v2}, a cut of {v1} to the prior guidance, as order intake weakened."
+      - "Guidance for full-year revenue came down by {v1}; the new figure is {v2}, reflecting weaker order intake."
       - "Citing weaker orders, management reduced its annual revenue forecast by {v1} to {v2}."
-      - "The company now expects full-year revenue of {v2}, which lowers its earlier guidance by {v1}."
-      - "Annual revenue guidance was trimmed by {v1}, with the new target set at {v2}."
-      - "Management guided full-year revenue down by {v1} to {v2}."
-      - "The revenue outlook for the year was cut by {v1}; management now guides to {v2}."
+      - "The company now expects full-year revenue of {v2}, which lowers its earlier guidance by {v1}, on weaker order intake."
+      - "Annual revenue guidance was cut by {v1}, with the new target set at {v2}, as order intake slowed."
+      - "Management guided full-year revenue down by {v1} to {v2}, pointing to weaker order intake."
+      - "The revenue outlook for the year was cut by {v1}; management now guides to {v2}, citing weaker order intake."
   - type: segment_results
     rank: 2
     sentences:

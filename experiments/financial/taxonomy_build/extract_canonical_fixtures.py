@@ -1,4 +1,4 @@
-"""Writes generator-regression fixtures: the first three cases of each V1 canonical spec (§7, §35).
+"""Writes generator-regression fixtures: the first three cases of each V1 canonical spec and of the S1-cal calibration specs (§7, §35).
 
 Each fixture holds, per case, the sampled state, the arm A and arm B states and the
 arm A and B renderings of paraphrase 0, from the spec's own seeds in discovery mode
@@ -20,6 +20,9 @@ from financial_llm_harness.generation.corpus import build_corpus
 SPECS = (
     "momentum_stock_add.yaml",
     "momentum_stock_add_m2.yaml",
+    "stock_attractive_momentum_m0.yaml",
+    "stock_attractive_momentum_m1.yaml",
+    "stock_attractive_momentum_m2.yaml",
     "transcript_summary.yaml",
     "covariance_choice.yaml",
     "temporal_norm_design.yaml",

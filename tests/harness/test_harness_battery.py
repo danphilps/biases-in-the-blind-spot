@@ -10,7 +10,6 @@ from typing import Any
 
 import numpy as np
 import pytest
-from scipy import stats
 
 from financial_llm_harness.errors import HarnessValidationError
 from financial_llm_harness.evaluation.rules import FeatureContext, extract
@@ -21,14 +20,19 @@ from financial_llm_harness.taxonomy import expand as X
 from financial_llm_harness.taxonomy.registry import family_listing, load_registry
 from tests.harness.helpers import FAKE_A, read_csv, run_slice
 
+# I.ID.name and I.ID.ceo_ethnicity are listed on F1.1.a but have no bank until the
+# validated data of D-25 exist, so they build no spec (test_identity_cues_await_d25).
 V1_BATTERY = {
-    ("F1.1.a", "m1"): ["I.ID.name", "I.ID.ceo", "I.USER.stance", "I.PRES.order"],
-    ("F1.1.a", "m2"): ["I.ID.name", "I.ID.ceo", "I.USER.stance", "I.PRES.order"],
+    ("F1.1.a", "m0"): ["I.ID.ceo", "I.USER.stance", "I.PRES.order"],
+    ("F1.1.a", "m1"): ["I.ID.ceo", "I.USER.stance", "I.PRES.order"],
+    ("F1.1.a", "m2"): ["I.ID.ceo", "I.USER.stance", "I.PRES.order"],
     ("F6.1.b", "base"): ["I.PRES.distractor"],
-    ("Q3.1.a", "base"): ["I.HYPE.label", "I.USER.stance"],
+    ("Q3.1.a", "base"): ["I.HYPE.label", "I.HYPE.arch", "I.USER.stance"],
     ("M6.4.a", "base"): ["I.USER.stance"],
-    ("K.M.1", "base"): ["I.CODE.comment", "I.HYPE.label"],
+    ("K.M.1", "base"): ["I.CODE.comment", "I.HYPE.label", "I.HYPE.arch"],
 }
+# Cues that are not irrelevant by construction (§T4.2): DISCOVERY, so discovery mode.
+DISCOVERY_CUES = {"I.HYPE.arch"}
 
 
 @pytest.fixture(scope="module")
@@ -58,7 +62,7 @@ def test_every_v1_cue_pair_is_built_from_its_base(
     expected = {(f, v, c) for (f, v), cues in V1_BATTERY.items() for c in cues}
     assert set(battery_specs) == expected
     base_paths = {
-        "F1.1.a": "experiments/financial/specs/momentum_stock_add.yaml",
+        "F1.1.a": "experiments/financial/specs/stock_attractive_momentum_{vid}.yaml",
         "F6.1.b": "experiments/financial/specs/transcript_summary.yaml",
         "Q3.1.a": "experiments/financial/specs/covariance_choice.yaml",
         "M6.4.a": "experiments/financial/specs/temporal_norm_design.yaml",
@@ -66,10 +70,7 @@ def test_every_v1_cue_pair_is_built_from_its_base(
     }
     for (faq, vid, cue), spec in battery_specs.items():
         b = spec["battery"]
-        if faq == "F1.1.a" and vid == "m2":
-            assert b["base"]["ref"].endswith("momentum_stock_add_m2.yaml")
-        else:
-            assert b["base"]["ref"] == base_paths[faq]
+        assert b["base"]["ref"] == base_paths[faq].format(vid=vid)
         base = X.yaml_io.load(X.repo_root() / b["base"]["ref"])
         # copied unchanged: controls, sizing, seeds, statistics, contract (§T4.4)
         assert spec["controls"] == base["controls"]
@@ -79,13 +80,18 @@ def test_every_v1_cue_pair_is_built_from_its_base(
         assert spec["response_spec"] == base["response_spec"]
         # set by the battery
         assert spec["intervention_id"] == cue and spec["concept"] == cue
-        assert spec["oracle_spec"]["type"] == "INVARIANCE"
         assert spec["oracle_spec"]["basis"] == ["B.irrelevant"]
         assert spec["hypothesis"]["source"] == "a_priori"
         assert spec["hypothesis"]["estimand"] == "mean_paired_difference"
         assert spec["hypothesis"]["level_arm"] is None
-        assert spec["hypothesis"]["direction"] == "none"
-        assert spec["mode"] == "confirmatory"  # P1 and B.irrelevant is established
+        if cue in DISCOVERY_CUES:
+            assert spec["oracle_spec"]["type"] == "DISCOVERY"
+            assert spec["hypothesis"]["direction"] == "two_sided"
+            assert spec["mode"] == "discovery"
+        else:
+            assert spec["oracle_spec"]["type"] == "INVARIANCE"
+            assert spec["hypothesis"]["direction"] == "none"
+            assert spec["mode"] == "confirmatory"  # P1 and B.irrelevant is established
         assert not any(
             f.get("extractor") == "concept_factor" for f in spec["feature_spec"]
         )
@@ -128,11 +134,12 @@ def _renders(corpus: Any) -> dict[tuple[int, str, int], str]:
     "key",
     [
         ("F1.1.a", "m1", "I.USER.stance"),
-        ("F1.1.a", "m1", "I.ID.name"),
+        ("F1.1.a", "m0", "I.ID.ceo"),
         ("F1.1.a", "m2", "I.ID.ceo"),
         ("F1.1.a", "m1", "I.PRES.order"),
         ("F6.1.b", "base", "I.PRES.distractor"),
         ("Q3.1.a", "base", "I.HYPE.label"),
+        ("Q3.1.a", "base", "I.HYPE.arch"),
         ("K.M.1", "base", "I.CODE.comment"),
     ],
 )
@@ -162,7 +169,11 @@ def test_arms_differ_only_by_the_cue(
             elif key[2] in ("I.ID.name", "I.ID.ceo"):
                 va, vb = case["cue"]["pair"]
                 assert ua.replace(va, vb) == ub
-            elif key[2] == "I.HYPE.label":
+                if key[2] == "I.ID.ceo":
+                    # gender cue only: the surname is shared (§T4.2)
+                    assert va.split()[-1] == vb.split()[-1]
+                    assert case["cue"]["contrast"] == "gender"
+            elif key[2] in ("I.HYPE.label", "I.HYPE.arch"):
                 va, vb = case["cue"]["pair"]
                 assert ua.replace(va, vb) == ub
                 assert set(va.split()) < set(
@@ -188,14 +199,16 @@ def test_arms_differ_only_by_the_cue(
                 assert tokens >= 0.25 * sum(len(x.split()) for x in lb)
 
 
-def test_stance_targets_are_uniform_and_numeric_quantiles() -> None:
+def test_stance_targets_are_balanced_and_numeric_quantiles() -> None:
     stance = {"kind": "option", "values": ["a", "b", "c", "d", "e"]}
     rng = np.random.default_rng(20261007)
-    counts = Counter(BT.draw_stance(stance, rng) for _ in range(10_000))
-    assert set(counts) == set(stance["values"])
-    assert stats.chisquare(list(counts.values())).pvalue > 0.001
+    counts = Counter(BT.draw_stance(stance, rng, i) for i in range(10_000))
+    assert counts == dict.fromkeys(stance["values"], 2000)  # exactly balanced
+    # any run of consecutive cases is balanced to within one
+    window = Counter(BT.draw_stance(stance, rng, i) for i in range(37, 37 + 23))
+    assert max(window.values()) - min(window.values()) <= 1
     numeric = {"kind": "value", "low": 0.0, "high": 1.0, "quantiles": [0.2, 0.8]}
-    values = {BT.draw_stance(numeric, rng) for _ in range(200)}
+    values = {BT.draw_stance(numeric, rng, i) for i in range(200)}
     assert values == {0.2, 0.8}
 
 
@@ -211,6 +224,14 @@ def test_stance_construction_follows_the_contract_and_interaction() -> None:
     }
     for interaction in ("S", "D", "P", "C"):
         assert BT.stance_design(fam, s1, interaction) == {"kind": "dismissive"}
+    s1_v2 = X.yaml_io.load(
+        X.repo_root() / "experiments/financial/specs/stock_attractive_momentum_m0.yaml"
+    )
+    assert BT.stance_design(fam, s1_v2, "J") == {
+        "kind": "option",
+        "field": "decision",
+        "values": ["ATTRACTIVE", "NOT_ATTRACTIVE"],
+    }
     # M6.4.a: the stance targets an enum value of normalisation_window (§35 S4)
     s4 = X.yaml_io.load(
         X.repo_root() / "experiments/financial/specs/temporal_norm_design.yaml"
@@ -236,14 +257,14 @@ def test_agrees_with_stance_is_a_discovery_secondary(
     ctx = FeatureContext(
         arm="B",
         concept_factor=None,
-        stance_target="ADD",
+        stance_target="ATTRACTIVE",
         truth=None,
         code_outcomes=None,
         state=None,
     )
     module = load_family("fundamental_judgement").module
-    assert extract(feat, {"decision": "ADD"}, ctx, module).value == 1
-    assert extract(feat, {"decision": "DO_NOT_ADD"}, ctx, module).value == 0
+    assert extract(feat, {"decision": "ATTRACTIVE"}, ctx, module).value == 1
+    assert extract(feat, {"decision": "NOT_ATTRACTIVE"}, ctx, module).value == 0
     # a dismissive stance (S2) has no categorical target, so no agreement feature
     s2 = battery_specs[("F6.1.b", "base", "I.PRES.distractor")]
     assert not any(f["feature_id"] == "agrees_with_stance" for f in s2["feature_spec"])
@@ -261,6 +282,8 @@ def test_conditional_defaults() -> None:
     assert BT.oracle_type_for("I.SRC.consensus_label", "D", {}) == "INVARIANCE"
     assert BT.oracle_type_for("I.SRC.consensus_label", "S", {}) == "DISCOVERY"
     assert BT.oracle_type_for("I.USER.stance", "J", {}) == "INVARIANCE"
+    assert BT.oracle_type_for("I.HYPE.label", "M", {}) == "INVARIANCE"
+    assert BT.oracle_type_for("I.HYPE.arch", "M", {}) == "DISCOVERY"
 
 
 def test_missing_slot_or_bank_is_named_exactly(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -274,11 +297,9 @@ def test_missing_slot_or_bank_is_named_exactly(monkeypatch: pytest.MonkeyPatch) 
     )
     cues = BT.load_cues()
     mandate = load_mandate("ml_design", "MLD1")
-    spec, missing = BT.battery_design(base, cues["I.ID.name"], fam, "M", mandate)
+    spec, missing = BT.battery_design(base, cues["I.ID.ceo"], fam, "M", mandate)
     assert spec is None
-    assert missing == [
-        "families/ml_design/family.yaml#battery_slots/entity:company_name"
-    ]
+    assert missing == ["families/ml_design/family.yaml#battery_slots/entity:ceo_name"]
     real = BT.resolve_bank
     monkeypatch.setattr(
         BT, "resolve_bank", lambda logical: real(logical).with_name("absent.yaml")
@@ -290,13 +311,13 @@ def test_missing_slot_or_bank_is_named_exactly(monkeypatch: pytest.MonkeyPatch) 
 def test_irrelevance_by_construction_is_enforced(
     battery_specs: dict[tuple[str, str, str], dict[str, Any]],
 ) -> None:
-    spec = battery_specs[("F1.1.a", "m1", "I.ID.name")]
+    spec = battery_specs[("F1.1.a", "m1", "I.ID.ceo")]
     bad = copy.deepcopy(spec)
-    bad["oracle_spec"]["nodes"] = ["company_name"]
+    bad["oracle_spec"]["nodes"] = ["ceo_name"]
     with pytest.raises(HarnessValidationError, match="references the cue node"):
         BT.validate_irrelevance(bad)
     bad = copy.deepcopy(spec)
-    bad["controls"]["placebo"] = {"node": "company_name", "values": ["x", "y"]}
+    bad["controls"]["placebo"] = {"node": "ceo_name", "values": ["x", "y"]}
     with pytest.raises(HarnessValidationError, match="placebo control intervenes"):
         BT.validate_irrelevance(bad)
     bad = copy.deepcopy(spec)
@@ -312,9 +333,9 @@ def test_irrelevance_by_construction_is_enforced(
 def test_bank_sizes_and_placeholder_provenance() -> None:
     for cue in (
         "I.USER.stance",
-        "I.ID.name",
         "I.ID.ceo",
         "I.HYPE.label",
+        "I.HYPE.arch",
         "I.CODE.comment",
     ):
         bank = X.yaml_io.load(BT.bank_path(cue))
@@ -324,10 +345,32 @@ def test_bank_sizes_and_placeholder_provenance() -> None:
             bank["provenance"]["drafted_by"]["kind"] == "llm"
         )  # refused for live runs (D-14)
         assert bank["provenance"]["approved_by"] == []
-    for p in (BT.bank_path("I.ID.name"), BT.bank_path("I.ID.ceo")):
-        pairs = X.yaml_io.load(p)["pairs"]
-        assert len({(e["a"], e["b"]) for e in pairs}) == len(pairs)
-        assert all(not re.search(r"\d", e["a"] + e["b"]) for e in pairs)
+    pairs = X.yaml_io.load(BT.bank_path("I.ID.ceo"))["pairs"]
+    assert len({(e["a"], e["b"]) for e in pairs}) == len(pairs)
+    assert all(not re.search(r"\d", e["a"] + e["b"]) for e in pairs)
+    # gender cue only: same surname, contrast recorded (§T4.2)
+    assert all(e["a"].split()[-1] == e["b"].split()[-1] for e in pairs)
+    assert {e["contrast"] for e in pairs} == {"gender"}
+    # rhetorical and architecture labels never overlap (§T4.2)
+    hype = set(X.yaml_io.load(BT.bank_path("I.HYPE.label"))["entries"])
+    arch = set(X.yaml_io.load(BT.bank_path("I.HYPE.arch"))["entries"])
+    assert not hype & arch
+
+
+def test_identity_cues_await_d25() -> None:
+    """I.ID.name and I.ID.ceo_ethnicity need validated banks (D-25): no file, a report row."""
+    for cue in ("I.ID.name", "I.ID.ceo_ethnicity"):
+        assert not BT.bank_path(cue).exists()
+    reg = load_registry()
+    rows = [
+        r
+        for r in X.expand_item(reg, reg.items["F1.1.a"], family_listing())
+        if r.intervention_id in ("I.ID.name", "I.ID.ceo_ethnicity")
+    ]
+    assert len(rows) == 6  # three variants × two cues
+    for r in rows:
+        assert r.spec is None and r.reason == "unimplemented_content"
+        assert r.missing == [f"taxonomy/banks/{r.intervention_id}.yaml"]
 
 
 def test_a_battery_experiment_runs_end_to_end(
@@ -342,9 +385,9 @@ def test_a_battery_experiment_runs_end_to_end(
         (r["model_key"], r["feature_id"]): r
         for r in read_csv(run / "results" / "labels.csv")
     }
-    primary = labels[(FAKE_A, "decision_add")]
+    primary = labels[(FAKE_A, "decision_attractive")]
     assert primary["oracle_type"] == "INVARIANCE" and primary["experiment_key"] == (
-        "f1_1_a__m1__i_user_stance.v1"
+        "f1_1_a__m1__i_user_stance.v2"
     )
     assert labels[(FAKE_A, "agrees_with_stance")]["oracle_type"] == "DISCOVERY"
     controls = read_csv(run / "results" / "controls.csv")

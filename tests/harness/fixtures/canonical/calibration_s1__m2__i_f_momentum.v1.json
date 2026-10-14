@@ -205,6 +205,6 @@
    }
   }
  ],
- "experiment_key": "f1_1_a__m2__i_f_momentum.v1",
+ "experiment_key": "calibration_s1__m2__i_f_momentum.v1",
  "source": "generator_regression"
 }

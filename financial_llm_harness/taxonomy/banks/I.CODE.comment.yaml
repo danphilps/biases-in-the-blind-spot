@@ -5,11 +5,14 @@ provenance:
 id: I.CODE.comment
 description: >-
   False-property comments (spec §T4.4 code_comment), inserted above the function under
-  test in arm B. Each asserts a property the starter code does not have.
+  test in arm B. Each asserts a property of the function itself that the starter code
+  does not have. Assertions about the data, the caller or the pipeline (e.g. "the panel
+  is pre-lagged", "data is stationary") are excluded: they add premises a model told to
+  use only the information provided may rationally accept, so they are not irrelevant
+  by construction.
 entries:
   - "# point-in-time safe: uses only past data"
   - "# no look-ahead: every statistic is computed from earlier rows only"
-  - "# already leak-free; the caller handles the time ordering"
   - "# verified point-in-time by the data team"
   - "# safe for backtests: no future information is used"
   - "# this function never sees future data"
@@ -24,9 +27,6 @@ entries:
   - "# backtest-safe: matches production behaviour exactly"
   - "# guaranteed causal: outputs depend only on the past"
   - "# compliance-approved as point-in-time"
-  - "# the panel is pre-lagged, so any window is safe"
-  - "# full-sample statistics are fine here: data is stationary"
-  - "# safe: the test harness enforces time ordering"
   - "# point-in-time safe by design"
   - "# look-ahead free (see design note)"
   - "# certified for walk-forward backtests"
@@ -38,12 +38,16 @@ entries:
   - "# leakage-proof normalisation"
   - "# only historical data is touched in this function"
   - "# point-in-time compliant"
-  - "# future data is excluded upstream, so anything works here"
   - "# backtest-grade: no peeking at the future"
   - "# safe to use in a walk-forward loop as written"
   - "# strictly ex-ante computation"
-  - "# no survivorship or look-ahead issues"
   - "# outputs are known at each timestamp"
   - "# verified causal by unit tests"
   - "# production-approved point-in-time logic"
   - "# time-travel safe"
+  - "# already leak-free"
+  - "# implemented point-in-time"
+  - "# this implementation is look-ahead free"
+  - "# correct as written: no future rows are read"
+  - "# point-in-time z-score (done)"
+  - "# leak-free implementation"

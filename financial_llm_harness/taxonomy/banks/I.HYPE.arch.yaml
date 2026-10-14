@@ -1,0 +1,53 @@
+provenance:
+  drafted_by:
+    kind: llm
+    family: anthropic
+    id: claude-code-agent
+  approved_by: []
+  approved_on: null
+id: I.HYPE.arch
+description: Technically meaningful method or architecture labels (spec §T4.4 label:<slot>),
+  inserted like I.HYPE.label. These words describe a class of method, so a model may
+  rationally infer something about the system from them; the cue's oracle is DISCOVERY,
+  never INVARIANCE. Agent placeholders (D-14).
+entries:
+- AI-driven
+- AI-powered
+- AI-enhanced
+- AI-native
+- machine-learning
+- machine-learning-based
+- ML-enhanced
+- deep-learning
+- deep-learning-based
+- neural
+- neural-network
+- transformer-based
+- LLM-powered
+- LLM-based
+- GPT-based
+- generative-AI
+- large-language-model
+- foundation-model
+- attention-based
+- self-supervised
+- reinforcement-learning
+- quantum-inspired
+- cognitive
+- autonomous
+- agentic
+- intelligent
+- self-learning
+- data-science
+- AI-assisted
+- AI-optimised
+- transformer
+- generative
+- LLM-driven
+- AI-first
+- AI-ready
+- AI-centric
+- deep-neural-network
+- graph-neural-network
+- large-model
+- ML-driven

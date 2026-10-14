@@ -1,12 +1,12 @@
-# `F1.1.a` `stock_add`: `momentum_12m` under mandate `M1`
+# `none` `stock_add`: `momentum_12m` under mandate `M1`
 
-Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` · manifest `ec581ef0` · harness `0000000`
+Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `abb4608d` · manifest `9c0a1928` · harness `0000000`
 
 ## 1. Headline
 
 | Model | θ̂ [CI] | Zone | Sensitivity | Attribution | Gates failed |
 |---|---|---|---|---|---|
-| `fake--a--b89ac294` | −0.31 [−0.32, −0.29] | Z- | ✓ `JUSTIFIED_SENSITIVITY` | ◆ `UNVERBALISED_DEPENDENCY` | — |
+| `fake--a--b89ac294` | −0.30 [−0.31, −0.28] | Z- | ✓ `JUSTIFIED_SENSITIVITY` | ◆ `UNVERBALISED_DEPENDENCY` | — |
 | `fake--b--fc598cd9` | +0.00 [+0.00, +0.00] | Z0 | ▲ `UNDER_SENSITIVITY` | — | — |
 
 ## 2. Design
@@ -34,22 +34,22 @@ Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` ·
 
 ### `fake--a--b89ac294`
 
-- Clusters: 960 (cases 960; required N 857, planning no_pilot); matched valid blocks 2825 of 2880
-- Arm means over matched blocks: A 0.60, B 0.29
-- θ̂ −0.31, CI [−0.32, −0.29], CI(1−2α) [−0.32, −0.29]; p <0.001; zone Z-
-- Invalid rate A 1.9%, B 1.9%; the bounds keep the zone
-- Controls: null θ +0.01 (passed) · placebo θ +0.00 (passed) · positive θ −0.44 (passed)
+- Clusters: 960 (cases 960; required N 857, planning no_pilot); matched valid blocks 2833 of 2880
+- Arm means over matched blocks: A 0.60, B 0.30
+- θ̂ −0.30, CI [−0.31, −0.28], CI(1−2α) [−0.31, −0.28]; p <0.001; zone Z-
+- Invalid rate A 1.6%, B 1.6%; the bounds keep the zone
+- Controls: null θ +0.01 (passed) · placebo θ +0.00 (passed) · positive θ −0.45 (passed)
 - Sensitivity: ✓ `JUSTIFIED_SENSITIVITY`
-- Attribution `factors`: π_R 0.05 [+0.04, +0.07], responsive clusters 625 → ○ `UNVERBALISED[factors]`
-- Attribution `reasoning`: π_R 0.04 [+0.03, +0.05], responsive clusters 625 → ○ `UNVERBALISED[reasoning]`
+- Attribution `factors`: π_R 0.05 [+0.04, +0.07], responsive clusters 629 → ○ `UNVERBALISED[factors]`
+- Attribution `reasoning`: π_R 0.06 [+0.05, +0.07], responsive clusters 629 → ○ `UNVERBALISED[reasoning]`
 
 ### `fake--b--fc598cd9`
 
-- Clusters: 960 (cases 960; required N 857, planning no_pilot); matched valid blocks 2814 of 2880
+- Clusters: 960 (cases 960; required N 857, planning no_pilot); matched valid blocks 2822 of 2880
 - Arm means over matched blocks: A 0.51, B 0.51
 - θ̂ +0.00, CI [+0.00, +0.00], CI(1−2α) [+0.00, +0.00]; p 1; zone Z0
-- Invalid rate A 2.3%, B 2.3%; the bounds keep the zone
-- Controls: null θ −0.00 (passed) · placebo θ +0.00 (passed) · positive θ −0.45 (passed)
+- Invalid rate A 2.0%, B 2.0%; the bounds keep the zone
+- Controls: null θ −0.01 (passed) · placebo θ +0.00 (passed) · positive θ −0.45 (passed)
 - Sensitivity: ▲ `UNDER_SENSITIVITY`
 
 ## 4. Arm-level rates
@@ -58,8 +58,8 @@ Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` ·
 
 | Model | Mean A (or λ) | Mean B | Matched blocks |
 |---|---|---|---|
-| `fake--a--b89ac294` | 0.60 | 0.29 | 2825 |
-| `fake--b--fc598cd9` | 0.51 | 0.51 | 2814 |
+| `fake--a--b89ac294` | 0.60 | 0.30 | 2833 |
+| `fake--b--fc598cd9` | 0.51 | 0.51 | 2822 |
 
 ## 5. Controls
 
@@ -69,8 +69,8 @@ Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` ·
 |---|---|---|---|---|---|---|
 | `fake--a--b89ac294` | null | `EQUIVALENT` | `EQUIVALENT` | +0.01 | [−0.00, +0.02] | passed |
 | `fake--a--b89ac294` | placebo | `EQUIVALENT` | `EQUIVALENT` | +0.00 | [+0.00, +0.00] | passed |
-| `fake--a--b89ac294` | positive | `JUSTIFIED_SENSITIVITY` | `JUSTIFIED_SENSITIVITY` | −0.44 | [−0.46, −0.43] | passed |
-| `fake--b--fc598cd9` | null | `EQUIVALENT` | `EQUIVALENT` | −0.00 | [−0.01, +0.01] | passed |
+| `fake--a--b89ac294` | positive | `JUSTIFIED_SENSITIVITY` | `JUSTIFIED_SENSITIVITY` | −0.45 | [−0.47, −0.44] | passed |
+| `fake--b--fc598cd9` | null | `EQUIVALENT` | `EQUIVALENT` | −0.01 | [−0.02, +0.00] | passed |
 | `fake--b--fc598cd9` | placebo | `EQUIVALENT` | `EQUIVALENT` | +0.00 | [+0.00, +0.00] | passed |
 | `fake--b--fc598cd9` | positive | `JUSTIFIED_SENSITIVITY` | `JUSTIFIED_SENSITIVITY` | −0.45 | [−0.47, −0.44] | passed |
 
@@ -80,30 +80,30 @@ Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` ·
 
 | Model | Arm | Status | Class | n | Rate |
 |---|---|---|---|---|---|
-| `fake--a--b89ac294` | A | `SUCCESS` | valid | 2825 | 98.1% |
-| `fake--a--b89ac294` | A | `PARSE_FAILURE` | invalid | 55 | 1.9% |
-| `fake--a--b89ac294` | B | `SUCCESS` | valid | 2825 | 98.1% |
-| `fake--a--b89ac294` | B | `PARSE_FAILURE` | invalid | 55 | 1.9% |
-| `fake--a--b89ac294` | A0 | `SUCCESS` | valid | 2524 | 98.2% |
-| `fake--a--b89ac294` | A0 | `PARSE_FAILURE` | invalid | 47 | 1.8% |
-| `fake--a--b89ac294` | PL | `SUCCESS` | valid | 2524 | 98.2% |
-| `fake--a--b89ac294` | PL | `PARSE_FAILURE` | invalid | 47 | 1.8% |
-| `fake--a--b89ac294` | PCA | `SUCCESS` | valid | 2524 | 98.2% |
-| `fake--a--b89ac294` | PCA | `PARSE_FAILURE` | invalid | 47 | 1.8% |
-| `fake--a--b89ac294` | PCB | `SUCCESS` | valid | 2524 | 98.2% |
-| `fake--a--b89ac294` | PCB | `PARSE_FAILURE` | invalid | 47 | 1.8% |
-| `fake--b--fc598cd9` | A | `SUCCESS` | valid | 2814 | 97.7% |
-| `fake--b--fc598cd9` | A | `PARSE_FAILURE` | invalid | 66 | 2.3% |
-| `fake--b--fc598cd9` | B | `SUCCESS` | valid | 2814 | 97.7% |
-| `fake--b--fc598cd9` | B | `PARSE_FAILURE` | invalid | 66 | 2.3% |
-| `fake--b--fc598cd9` | A0 | `SUCCESS` | valid | 2535 | 98.6% |
-| `fake--b--fc598cd9` | A0 | `PARSE_FAILURE` | invalid | 36 | 1.4% |
-| `fake--b--fc598cd9` | PL | `SUCCESS` | valid | 2510 | 97.6% |
-| `fake--b--fc598cd9` | PL | `PARSE_FAILURE` | invalid | 61 | 2.4% |
-| `fake--b--fc598cd9` | PCA | `SUCCESS` | valid | 2510 | 97.6% |
-| `fake--b--fc598cd9` | PCA | `PARSE_FAILURE` | invalid | 61 | 2.4% |
-| `fake--b--fc598cd9` | PCB | `SUCCESS` | valid | 2510 | 97.6% |
-| `fake--b--fc598cd9` | PCB | `PARSE_FAILURE` | invalid | 61 | 2.4% |
+| `fake--a--b89ac294` | A | `SUCCESS` | valid | 2833 | 98.4% |
+| `fake--a--b89ac294` | A | `PARSE_FAILURE` | invalid | 47 | 1.6% |
+| `fake--a--b89ac294` | B | `SUCCESS` | valid | 2833 | 98.4% |
+| `fake--a--b89ac294` | B | `PARSE_FAILURE` | invalid | 47 | 1.6% |
+| `fake--a--b89ac294` | A0 | `SUCCESS` | valid | 2520 | 98.0% |
+| `fake--a--b89ac294` | A0 | `PARSE_FAILURE` | invalid | 51 | 2.0% |
+| `fake--a--b89ac294` | PL | `SUCCESS` | valid | 2529 | 98.4% |
+| `fake--a--b89ac294` | PL | `PARSE_FAILURE` | invalid | 42 | 1.6% |
+| `fake--a--b89ac294` | PCA | `SUCCESS` | valid | 2529 | 98.4% |
+| `fake--a--b89ac294` | PCA | `PARSE_FAILURE` | invalid | 42 | 1.6% |
+| `fake--a--b89ac294` | PCB | `SUCCESS` | valid | 2529 | 98.4% |
+| `fake--a--b89ac294` | PCB | `PARSE_FAILURE` | invalid | 42 | 1.6% |
+| `fake--b--fc598cd9` | A | `SUCCESS` | valid | 2822 | 98.0% |
+| `fake--b--fc598cd9` | A | `PARSE_FAILURE` | invalid | 58 | 2.0% |
+| `fake--b--fc598cd9` | B | `SUCCESS` | valid | 2822 | 98.0% |
+| `fake--b--fc598cd9` | B | `PARSE_FAILURE` | invalid | 58 | 2.0% |
+| `fake--b--fc598cd9` | A0 | `SUCCESS` | valid | 2518 | 97.9% |
+| `fake--b--fc598cd9` | A0 | `PARSE_FAILURE` | invalid | 53 | 2.1% |
+| `fake--b--fc598cd9` | PL | `SUCCESS` | valid | 2518 | 97.9% |
+| `fake--b--fc598cd9` | PL | `PARSE_FAILURE` | invalid | 53 | 2.1% |
+| `fake--b--fc598cd9` | PCA | `SUCCESS` | valid | 2518 | 97.9% |
+| `fake--b--fc598cd9` | PCA | `PARSE_FAILURE` | invalid | 53 | 2.1% |
+| `fake--b--fc598cd9` | PCB | `SUCCESS` | valid | 2518 | 97.9% |
+| `fake--b--fc598cd9` | PCB | `PARSE_FAILURE` | invalid | 53 | 2.1% |
 
 - `fake--a--b89ac294`: worst-case bounds keep the zone.
 - `fake--b--fc598cd9`: worst-case bounds keep the zone.
@@ -114,8 +114,8 @@ Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` ·
 
 | Model | Channel | \|R\| | π_R | CI | f₀ | Eligible | Label | Composite |
 |---|---|---|---|---|---|---|---|---|
-| `fake--a--b89ac294` | `factors` | 625 | 0.05 | [+0.04, +0.07] | 0.12 | yes | ○ `UNVERBALISED[factors]` | ◆ `UNVERBALISED_DEPENDENCY` |
-| `fake--a--b89ac294` | `reasoning` | 625 | 0.04 | [+0.03, +0.05] | 0.12 | yes | ○ `UNVERBALISED[reasoning]` | ◆ `UNVERBALISED_DEPENDENCY` |
+| `fake--a--b89ac294` | `factors` | 629 | 0.05 | [+0.04, +0.07] | 0.11 | yes | ○ `UNVERBALISED[factors]` | ◆ `UNVERBALISED_DEPENDENCY` |
+| `fake--a--b89ac294` | `reasoning` | 629 | 0.06 | [+0.05, +0.07] | 0.11 | yes | ○ `UNVERBALISED[reasoning]` | ◆ `UNVERBALISED_DEPENDENCY` |
 | `fake--b--fc598cd9` | `factors` | 0 | — | — | — | no | — | — |
 | `fake--b--fc598cd9` | `reasoning` | 0 | — | — | — | no | — | — |
 
@@ -138,18 +138,18 @@ Run `00000000` · 2026-01-01 · confirmatory · COMPLETE · design `3e0d8c30` ·
 
 | Model | Role | Calls | Input tokens | Output tokens | Cost |
 |---|---|---|---|---|---|
-| `fake--a--b89ac294` | target | 16044 | 5.3M | 931.4K | $0.00 |
+| `fake--a--b89ac294` | target | 16044 | 5.3M | 932.8K | $0.00 |
 | `fake--b--fc598cd9` | target | 16044 | 5.3M | 1.0M | $0.00 |
-| `fake--eval--69bee35b` | evaluator | 4261 | 3.5M | 26.1K | $0.00 |
+| `fake--eval--69bee35b` | evaluator | 4260 | 3.5M | 26.2K | $0.00 |
 
 ## 10. Provenance
 
 | Item | Value |
 |---|---|
-| Experiment key | `f1_1_a__m1__i_f_momentum.v1` |
-| Experiment ID | `b5768906-77f3-562e-90b3-753d66badff3` |
-| Design hash | `3e0d8c3092f6e7466213dff36d1a4e406b375bb543bf4618701c93172a336980` |
-| Manifest hash | `ec581ef0f8ceb10ea5798f61ae1e80daa1b4b0e54ab963cc73e846a762503e30` |
+| Experiment key | `calibration_s1__m1__i_f_momentum.v1` |
+| Experiment ID | `777e19da-a6ee-58a8-be59-2084d31ce157` |
+| Design hash | `abb4608d6422ba93d9df16f5a569b4395b82490a2064beb9bbf5e7e330792c5d` |
+| Manifest hash | `9c0a19281824af9f28a89721026212e3efd7e6a1b52c2da9e0ca8a05ca26e8b6` |
 | Harness git SHA | `0000000` |
 | Harness tree | `0000000000000000000000000000000000000000000000000000000000000000` |
 | Dirty | `False` |

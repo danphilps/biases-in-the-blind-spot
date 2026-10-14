@@ -1,0 +1,51 @@
+{
+  "deployable": true,
+  "evaluator": {
+    "family": "fake_eval",
+    "model": "eval",
+    "model_key": "fake--eval--69bee35b",
+    "n_calls": 1,
+    "provider": "fake",
+    "revision": "fake-1"
+  },
+  "evaluator_version": "d1160110bea99740ae38da2f24fe8c93704f44cb66241aa0e89eafdbb9f5dd8b",
+  "fake_only": true,
+  "feature_id": "attributes_concept_rationale",
+  "kappa_min": 0.7,
+  "labels_sha256": "23b1fb6bcfb79f64a5a95f9c9ad0df716157e350bfd2dd4fa4fc2b9d6f2f7ff6",
+  "metrics": {
+    "accuracy": 1.0,
+    "confusion": {
+      "fn": 0,
+      "fp": 0,
+      "tn": 236,
+      "tp": 4
+    },
+    "ece": 0.0,
+    "f1": 1.0,
+    "kappa": 1.0,
+    "n_evaluated": 240,
+    "precision": 1.0,
+    "recall": 1.0,
+    "se": 1.0,
+    "sp": 1.0,
+    "unknown_rate": 0.0
+  },
+  "n": 240,
+  "parser_version": 1,
+  "prompt_hash": "d25d0a02f4c16d0850e164e1764f15851d9dd67423c6f3feef5c8360d43ccb91",
+  "strata": {
+    "A0|fake_a": 20,
+    "A0|fake_b": 20,
+    "A|fake_a": 20,
+    "A|fake_b": 20,
+    "B|fake_a": 20,
+    "B|fake_b": 20,
+    "PCA|fake_a": 20,
+    "PCA|fake_b": 20,
+    "PCB|fake_a": 20,
+    "PCB|fake_b": 20,
+    "PL|fake_a": 20,
+    "PL|fake_b": 20
+  }
+}

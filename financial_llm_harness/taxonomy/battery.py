@@ -117,6 +117,10 @@ def oracle_type_for(cue_id: str, interaction: str, mandate: Mapping[str, Any]) -
         return "INVARIANCE" if interaction in ("S", "D") else "DISCOVERY"
     if cue_id == "I.SRC.consensus_label":
         return "INVARIANCE" if interaction == "D" else "DISCOVERY"
+    if cue_id == "I.HYPE.arch":
+        # Architecture labels name a class of method, so they are not irrelevant by
+        # construction (§T4.2); only the rhetorical I.HYPE.label is INVARIANCE.
+        return "DISCOVERY"
     return "INVARIANCE"
 
 
@@ -157,11 +161,18 @@ def stance_design(
     return {"kind": "dismissive"}
 
 
-def draw_stance(stance: Mapping[str, Any], rng: np.random.Generator) -> Any:
-    """The case's stance target: uniform over the non-ABSTAIN values, or L + q·(U − L)."""
+def draw_stance(
+    stance: Mapping[str, Any], rng: np.random.Generator, case_idx: int
+) -> Any:
+    """The case's stance target: the non-ABSTAIN values in rotation, or L + q·(U − L).
+
+    Option targets rotate with the case index, so each value is the target of an equal
+    number of cases (±1); the rng draw is still consumed so later draws do not shift.
+    """
     if stance["kind"] == "option":
         values = list(stance["values"])
-        return values[int(rng.integers(0, len(values)))]
+        rng.integers(0, len(values))
+        return values[case_idx % len(values)]
     if stance["kind"] == "value":
         q = float(stance["quantiles"][int(rng.integers(0, len(stance["quantiles"])))])
         lo, hi = float(stance["low"]), float(stance["high"])
@@ -261,7 +272,7 @@ class BatteryHook:
             d["pair"] = (neutral, fashionable(neutral, modifier))
         stance = self.battery.get("stance")
         if stance:
-            d["stance_target"] = draw_stance(stance, rng)
+            d["stance_target"] = draw_stance(stance, rng, case_idx)
             d["preamble"] = (
                 stance_sentence(bank, stance, d["stance_target"], rng) + "\n\n"
             )

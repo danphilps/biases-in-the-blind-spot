@@ -14,6 +14,15 @@ from financial_llm_harness.core.code_ref import CodeRef
 ROOT = Path(__file__).resolve().parents[2]
 S1_SPEC = ROOT / "experiments" / "financial" / "specs" / "momentum_stock_add.yaml"
 S1_M2_SPEC = ROOT / "experiments" / "financial" / "specs" / "momentum_stock_add_m2.yaml"
+# F1.1.a v2 canonical specs (§35 S1); S1_SPEC and S1_M2_SPEC are the S1-cal calibration specs
+F1_SPECS = {
+    v: ROOT
+    / "experiments"
+    / "financial"
+    / "specs"
+    / f"stock_attractive_momentum_{v}.yaml"
+    for v in ("m0", "m1", "m2")
+}
 GOLDEN_RUN_ID = "00000000-0000-4000-8000-000000000001"
 FAKE_A = "fake--a--b89ac294"
 FAKE_B = "fake--b--fc598cd9"
@@ -30,7 +39,9 @@ def load_spec(path: Path = S1_SPEC) -> dict[str, Any]:
     return data
 
 
-def fake_planning_refs(variance: float = 0.05) -> list[dict[str, Any]]:
+def fake_planning_refs(
+    variance: float = 0.05, feature_id: str = "decision_add"
+) -> list[dict[str, Any]]:
     """Fake-design planning variances (§22): run_id null, analytic derivation stated, fake models only."""
     refs = []
     for mk in (FAKE_A, FAKE_B):
@@ -39,7 +50,7 @@ def fake_planning_refs(variance: float = 0.05) -> list[dict[str, Any]]:
                 {
                     "run_id": None,
                     "model_key": mk,
-                    "feature_id": "decision_add",
+                    "feature_id": feature_id,
                     "contrast": contrast,
                     "variance": variance,
                     "source_row_id": None,
@@ -60,7 +71,9 @@ def small_spec(
     """A small S1-shaped spec planned with fake-design variances, for fast lifecycle tests."""
     spec = copy.deepcopy(load_spec(base))
     spec["scenario_spec"]["n_cases"] = n_cases
-    spec["statistical_spec"]["planning_ref"] = fake_planning_refs()
+    spec["statistical_spec"]["planning_ref"] = fake_planning_refs(
+        feature_id=spec["hypothesis"]["primary_feature"]
+    )
     spec["statistical_spec"]["bootstrap_B"] = 500
     for key, value in overrides.items():
         cur: Any = spec
@@ -368,8 +381,19 @@ def assert_level_slice(
     assert manifest["scenario_spec"]["n_cases"] == n_cases
     assert manifest["controls"]["subset_n"] == subset_n
     labels = read_csv(run_dir / "results" / "labels.csv")
+    exploratory = {
+        f["feature_id"]
+        for f in manifest["feature_spec"]
+        if f["analysis_role"] == "exploratory"
+    }
+    primary_rows = [row for row in labels if row["feature_id"] == feature]
+    assert primary_rows
     for row in labels:
-        assert row["feature_id"] == feature
+        if row["feature_id"] != feature:
+            # exploratory features (§35 S3, S4) are DISCOVERY rows, never a LEVEL label
+            assert row["feature_id"] in exploratory
+            assert row["oracle_type"] == "DISCOVERY"
+            continue
         assert row["oracle_type"] == "LEVEL"
         assert row["zone"] == ""
         assert row["sensitivity_label"] in ("MEETS_STANDARD", "BELOW_STANDARD")

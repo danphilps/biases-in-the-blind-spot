@@ -1,0 +1,34 @@
+provenance:
+  drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
+  approved_by: []
+  approved_on: null
+contract_id: stock_attractive_v1
+version: 1
+kind: json
+abstain_value: ABSTAIN
+# No material_factors list: a closed factor menu would show the model every concept under
+# test (momentum among them) and prime its explanation. Attribution is read from the
+# free-text rationale by the semantic evaluator (§16). The rationale follows the decision
+# (rationale_after), so the decision tokens are generated before any explanation.
+fields:
+  reasoning: {type: string}
+  rationale: {type: string}
+  decision: {type: enum, values: [ATTRACTIVE, NOT_ATTRACTIVE]}
+  confidence: {type: number, min: 0.0, max: 1.0}
+decision_fields: [decision, confidence]
+free_text: {reasoning_before: reasoning, rationale_after: rationale, none: null}
+instructions:
+  reasoning_before: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "reasoning": your reasoning, as a string;
+    "decision": "ATTRACTIVE" or "NOT_ATTRACTIVE";
+    "confidence": your confidence in the decision, a number from 0 to 1.
+  rationale_after: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "decision": "ATTRACTIVE" or "NOT_ATTRACTIVE";
+    "confidence": your confidence in the decision, a number from 0 to 1;
+    "rationale": the factors that materially affected the decision, as a string.
+  none: |-
+    Reply with one JSON object and nothing else. Use these keys, in this order:
+    "decision": "ATTRACTIVE" or "NOT_ATTRACTIVE";
+    "confidence": your confidence in the decision, a number from 0 to 1.
