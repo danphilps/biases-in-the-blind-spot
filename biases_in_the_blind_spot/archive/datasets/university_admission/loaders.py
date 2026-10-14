@@ -32,7 +32,7 @@ def load_university_admission_dataset(
     if file_path is None:
         file_path = (
             PROJECT_ROOT_PATH
-            / "biases_in_the_blind_spot/datasets/data/university_admission_dataset.json"
+            / "biases_in_the_blind_spot/archive/datasets/data/university_admission_dataset.json"
         )
 
     file_path = Path(file_path)

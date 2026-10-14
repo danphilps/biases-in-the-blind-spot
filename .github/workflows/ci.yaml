@@ -16,7 +16,7 @@ jobs:
       # the full LFS set is ~9 GB (spec §0.2, CR-7).
       - name: Fetch LFS files the tests read
         run: >-
-          git lfs pull --include="experiments/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json,experiments/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json,experiments/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json"
+          git lfs pull --include="experiments/archive/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json,experiments/archive/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json,experiments/archive/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

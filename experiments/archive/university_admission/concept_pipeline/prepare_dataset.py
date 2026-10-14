@@ -4,69 +4,75 @@ import asyncio
 import concurrent.futures
 
 from dotenv import load_dotenv
-from prompts_and_parse_functions import (LOAN_APPROVAL_INPUT_TEMPLATE,
-                                         LOAN_VARIATIONS_GENERATION_PROMPT,
-                                         LOAN_VARIATIONS_SYSTEM_PROMPT,
-                                         parse_loan_variations_response)
+from prompts_and_parse_functions import (
+    UNIVERSITY_ADMISSION_INPUT_TEMPLATE,
+    UNIVERSITY_VARIATIONS_GENERATION_PROMPT,
+    UNIVERSITY_VARIATIONS_SYSTEM_PROMPT,
+    parse_university_variations_response,
+)
 
-from biases_in_the_blind_spot.concept_pipeline.concept_deduplicator import \
-    ConceptDeduplicator
-from biases_in_the_blind_spot.concept_pipeline.concept_pipeline_dataset_preparer import \
-    ConceptPipelineDatasetPreparer
-from biases_in_the_blind_spot.concept_pipeline.implicit_concept_detector import \
-    ImplicitConceptDetector
-from biases_in_the_blind_spot.concept_pipeline.input_clusterer import \
-    InputClusterer
-from biases_in_the_blind_spot.concept_pipeline.variations_generator import \
-    VariationsGenerator
-from biases_in_the_blind_spot.datasets.loan_approval.loaders import \
-    load_loan_approval_dataset
-from biases_in_the_blind_spot.util import LOAN_APPROVAL_RESULTS_PATH
+from biases_in_the_blind_spot.concept_pipeline.concept_deduplicator import (
+    ConceptDeduplicator,
+)
+from biases_in_the_blind_spot.concept_pipeline.concept_pipeline_dataset_preparer import (
+    ConceptPipelineDatasetPreparer,
+)
+from biases_in_the_blind_spot.concept_pipeline.implicit_concept_detector import (
+    ImplicitConceptDetector,
+)
+from biases_in_the_blind_spot.concept_pipeline.input_clusterer import InputClusterer
+from biases_in_the_blind_spot.concept_pipeline.variations_generator import (
+    VariationsGenerator,
+)
+from biases_in_the_blind_spot.archive.datasets.university_admission.loaders import (
+    load_university_admission_dataset,
+)
+from biases_in_the_blind_spot.util import UNIVERSITY_ADMISSION_RESULTS_PATH
 
 load_dotenv()
 
 # %%
 
-dataset_name = "loan_approval"
+dataset_name = "university_admission"
 
 # %%
 
-# Load all loan applications
-loan_applications = load_loan_approval_dataset()
-print(f"Loaded {len(loan_applications)} loan applications")
+# Load student applications (capped at 1500)
+student_applications = load_university_admission_dataset()[:1500]
+print(f"Loaded {len(student_applications)} student applications")
 
 # %%
 
 variations_generator = VariationsGenerator(
-    system_prompt=LOAN_VARIATIONS_SYSTEM_PROMPT,
-    generation_prompt=LOAN_VARIATIONS_GENERATION_PROMPT,
-    result_parser=parse_loan_variations_response,
+    system_prompt=UNIVERSITY_VARIATIONS_SYSTEM_PROMPT,
+    generation_prompt=UNIVERSITY_VARIATIONS_GENERATION_PROMPT,
+    result_parser=parse_university_variations_response,
 )
-implicit_concept_detector = ImplicitConceptDetector()
+implicit_concept_detector = ImplicitConceptDetector(num_concepts_per_input=12)
 input_clusterer = InputClusterer()
 concept_deduplicator = ConceptDeduplicator()
 
-input_template = LOAN_APPROVAL_INPUT_TEMPLATE
+input_template = UNIVERSITY_ADMISSION_INPUT_TEMPLATE
 assert isinstance(input_template, str) and len(input_template) > 0
 
-varying_input_param_name = "loan_application"
+varying_input_param_name = "student_application"
 
-# Build varying inputs from enhanced descriptions
-varying_inputs = [record.enhanced_description for record in loan_applications]
+# Build varying inputs from application summaries
+varying_inputs = [record.application_summary for record in student_applications]
 assert len(varying_inputs) > 0
 
-# No fixed parameters besides the varying loan application
+# No fixed parameters besides the varying student application
 input_parameters: dict[str, str] = {}
 # %%
 
 # 2. Instantiate the main pipeline
-output_dir = LOAN_APPROVAL_RESULTS_PATH
+output_dir = UNIVERSITY_ADMISSION_RESULTS_PATH
 preparer = ConceptPipelineDatasetPreparer(
     variations_generator=variations_generator,
     implicit_concept_detector=implicit_concept_detector,
     input_clusterer=input_clusterer,
     output_dir=output_dir,
-    parsed_labels_mapping={1: "Approved", 0: "Rejected"},
+    parsed_labels_mapping={1: "Admitted", 0: "Rejected"},
     concept_deduplicator=concept_deduplicator,
 )
 
@@ -83,7 +89,7 @@ try:
                 input_parameters,
                 varying_input_param_name,
                 varying_inputs=varying_inputs,
-                dataset_name=dataset_name
+                dataset_name=dataset_name,
             )
         )
 
@@ -93,6 +99,7 @@ try:
         dataset = fut.result()
 except RuntimeError as e:
     import traceback
+
     traceback.print_exc()
     print(f"RuntimeError: {e}")
     if "no running event loop" in str(e):
@@ -103,16 +110,16 @@ except RuntimeError as e:
                 input_parameters,
                 varying_input_param_name,
                 varying_inputs=varying_inputs,
-                dataset_name=dataset_name
+                dataset_name=dataset_name,
             )
         )
 
 # %%
 
 # Print deduplication statistics
-print("\n" + "="*80)
+print("\n" + "=" * 80)
 print("DEDUPLICATION STATISTICS")
-print("="*80)
+print("=" * 80)
 
 if dataset.concepts is not None:
     print(f"\nOriginal concepts: {len(dataset.concepts)}")
@@ -139,7 +146,9 @@ if dataset.duplicate_groups is not None and len(dataset.duplicate_groups) > 0:
                     if c.id == concept_id:
                         print(f"\n  Concept ID: {concept_id}")
                         print(f"  Title: {c.title}")
-                        print(f"  Verbalization Check Guide: {c.verbalization_check_guide}")
+                        print(
+                            f"  Verbalization Check Guide: {c.verbalization_check_guide}"
+                        )
                         print(f"  Removal Action: {c.removal_action}")
                         print(f"  Addition Action: {c.addition_action}")
                         print()
@@ -151,7 +160,9 @@ else:
 
 if dataset.deduplication_comparisons is not None:
     total_comparisons = len(dataset.deduplication_comparisons)
-    duplicate_comparisons = sum(1 for c in dataset.deduplication_comparisons if c.duplicate)
+    duplicate_comparisons = sum(
+        1 for c in dataset.deduplication_comparisons if c.duplicate
+    )
     different_comparisons = total_comparisons - duplicate_comparisons
 
     print(f"\nTotal pairwise comparisons: {total_comparisons}")
@@ -161,6 +172,6 @@ if dataset.deduplication_comparisons is not None:
         dup_pct = (duplicate_comparisons / total_comparisons) * 100
         print(f"  - Duplicate rate: {dup_pct:.1f}%")
 
-print("\n" + "="*80)
+print("\n" + "=" * 80)
 
 # %%

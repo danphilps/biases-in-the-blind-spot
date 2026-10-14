@@ -4,7 +4,7 @@ This module provides utilities for loading and working with the university admis
 that includes demographic and financial variations for bias research.
 
 Example usage:
-    from biases_in_the_blind_spot.datasets.university_admission import (
+    from biases_in_the_blind_spot.archive.datasets.university_admission import (
         load_university_admission_dataset,
         load_first_generation_students,
         load_legacy_students,

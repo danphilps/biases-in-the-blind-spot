@@ -9,9 +9,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 FILES = [
-    "experiments/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json",
-    "experiments/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json",
-    "experiments/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json",
+    "experiments/archive/llm_bias/concept_pipeline/results/concept_pipeline_llm_bias_gpt-4.1_stage-0.json",
+    "experiments/archive/loan_approval/concept_pipeline/results/concept_pipeline_loan_approval_gpt-4.1_stage-0.json",
+    "experiments/archive/university_admission/concept_pipeline/results/concept_pipeline_university_admission_gpt-4.1_stage-0.json",
 ]
 LFS_POINTER = "version https://git-lfs.github.com/spec/v1"
 

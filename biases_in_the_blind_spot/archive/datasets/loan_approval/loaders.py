@@ -31,7 +31,7 @@ def load_loan_approval_dataset(
     if file_path is None:
         file_path = (
             PROJECT_ROOT_PATH
-            / "biases_in_the_blind_spot/datasets/data/loan_approval_dataset.json"
+            / "biases_in_the_blind_spot/archive/datasets/data/loan_approval_dataset.json"
         )
 
     file_path = Path(file_path)
