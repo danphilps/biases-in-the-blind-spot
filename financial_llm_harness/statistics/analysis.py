@@ -30,6 +30,7 @@ from financial_llm_harness.oracles import (
     composite_label,
     meaningful_lower_bound,
     oracle_row_label,
+    saturate_positive_control,
     zone,
 )
 from financial_llm_harness.statistics import ANALYSIS_VERSION
@@ -384,6 +385,14 @@ def analyse_sensitivity(ctx: Any) -> None:
                 tol=po.get("tol"),
             )
             cr = classify_positive_control(po, st, delta)
+            if h["estimand"] == "arm_level":
+                pca = arm_level(obs, case_cluster, "PCA")
+                cr = saturate_positive_control(
+                    cr,
+                    po,
+                    level_stats(pca.x, calpha, float(oracle_spec["tau"])),
+                    float(oracle_spec["tau"]),
+                )
             control_results.append(cr)
             _write_control(
                 ctx, mk, primary, "PCB_vs_PCA", cd, st, cr, calpha, single_case

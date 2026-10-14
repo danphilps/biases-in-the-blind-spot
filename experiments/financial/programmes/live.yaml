@@ -1,20 +1,26 @@
-# Live programme (spec §32B.1). HARNESS CALIBRATION, not the financial-reasoning study
-# (2026-10-14 experiment review, CR-8): the two S1-cal specs (F1.1.a v1 design, kept as
-# calibration) and the S3–S5 canonical specs, against the live panel
-# (Anthropic claude-opus-5-5, OpenAI gpt-6-luna). Each model is planned, run and
-# corrected (BH per model, D-17) on its own; models whose provider key is unset are
-# skipped at generate and listed in the plan.
-# Budget caps are user-owned (D-2). The 2026-10-12 plan upper bound for all five
-# specs, at max_output_tokens on every call, is about $3,780 over 142,536 calls
-# (Opus 5.5 ≈ $3,684, GPT-6 Luna ≈ $92); `programme plan` refuses to start a
-# programme whose upper bound exceeds these caps.
+# Live programme (spec §32B.1): the scientific V1, i.e. the seven canonical slice specs
+# (S1 m0/m1/m2, S2–S5; §35), against the live panel (Anthropic claude-opus-5-5, OpenAI
+# gpt-6-luna). Each model is planned, run and corrected (BH per model, D-17) on its own;
+# models whose provider key is unset are skipped at generate and listed in the plan.
+# The S1-cal harness-calibration specs (F1.1.a v1, `faq_id: none`) are not part of the
+# study: they live in programmes/calibration_live.yaml (2026-10-14 audit, CR-01).
+# Live `validate` still refuses every spec here until its prompt-visible and
+# oracle-bearing files are human-authored and approved (D-14), and S1 and S2 need an
+# outside-family evaluator in panels/live.yaml with a deployable calibration (D-2, D-3);
+# see experiments/financial/READINESS.md.
+# Budget caps are user-owned (D-2). They were set on 2026-10-12 for the earlier
+# five-spec selection; that plan's call and cost estimates do not apply to this
+# selection. Re-run `programme plan`: it refuses to start a programme whose upper bound
+# exceeds these caps.
 schema_version: 1
 programme_key: live_openai_anthropic
 panel: live
 select:
   specs:
-    - experiments/financial/specs/momentum_stock_add.yaml
-    - experiments/financial/specs/momentum_stock_add_m2.yaml
+    - experiments/financial/specs/stock_attractive_momentum_m0.yaml
+    - experiments/financial/specs/stock_attractive_momentum_m1.yaml
+    - experiments/financial/specs/stock_attractive_momentum_m2.yaml
+    - experiments/financial/specs/transcript_summary.yaml
     - experiments/financial/specs/covariance_choice.yaml
     - experiments/financial/specs/temporal_norm_design.yaml
     - experiments/financial/specs/temporal_norm_code.yaml

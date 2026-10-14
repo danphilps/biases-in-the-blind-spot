@@ -14,13 +14,16 @@ import json
 import platform
 import sqlite3
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from financial_llm_harness.core import bundle as B
 from financial_llm_harness.core import ids, yaml_io
+from financial_llm_harness.core.canonical_json import sha256_canonical
 from financial_llm_harness.oracles import (
     ATTRIBUTION_ELIGIBLE,
     Oracle,
@@ -34,6 +37,7 @@ from financial_llm_harness.reporting import markdown as MD
 from financial_llm_harness.reporting import tables as T
 from financial_llm_harness.reporting.tables import csv_text
 from financial_llm_harness.statistics.correction import benjamini_hochberg
+from financial_llm_harness.statistics.paired import ci, p_two_sided
 
 ANSWERS_COLUMNS = (
     "row_id",
@@ -97,6 +101,27 @@ CONSISTENCY_COLUMNS = (
     "rate",
     "ci_low",
     "ci_high",
+)
+CROSS_VARIANT_COLUMNS = (
+    "row_id",
+    "model_key",
+    "faq_id",
+    "intervention_id",
+    "feature_id",
+    "variant_x",
+    "variant_ref",
+    "experiment_key_x",
+    "experiment_key_ref",
+    "estimand",
+    "n_clusters",
+    "theta_x",
+    "theta_ref",
+    "gamma",
+    "ci_low",
+    "ci_high",
+    "p_two_sided",
+    "alpha",
+    "analysis_role",
 )
 FDR_COLUMNS = (
     "row_id",
@@ -162,6 +187,10 @@ class Experiment:
     attribution: dict[str, dict[str, Any] | None]
     calls: int
     cost_usd: float
+    # CR-14: the primary B − A cluster outcomes x_c per model, and a fingerprint of the
+    # case set (case_idx, cluster_ordinal, arm A and B states) that pairs runs on it
+    primary_clusters: dict[str, dict[int, float]] = field(default_factory=dict)
+    case_fingerprint: str | None = None
 
     @property
     def complete(self) -> bool:
@@ -190,6 +219,13 @@ def _load_experiment(pdir: Path, e: Mapping[str, Any]) -> Experiment:
             }
             labels = {(r["model_key"], r["feature_id"]): r for r in T.labels_rows(rd)}
             attribution = {mk: T.headline_attribution(rd, mk) for mk in rd.model_keys}
+            primary_clusters = _primary_clusters(rd)
+            fingerprint = sha256_canonical(
+                [
+                    [i, c["cluster_ordinal"], c["arms"].get("A"), c["arms"].get("B")]
+                    for i, c in sorted(rd.cases.items())
+                ]
+            )
             calls, cost = conn.execute(
                 "SELECT COUNT(*), COALESCE(SUM(cost_usd), 0) FROM response"
             ).fetchone()
@@ -205,7 +241,110 @@ def _load_experiment(pdir: Path, e: Mapping[str, Any]) -> Experiment:
         attribution,
         int(calls),
         float(cost),
+        primary_clusters,
+        fingerprint,
     )
+
+
+def _primary_clusters(rd: Any) -> dict[str, dict[int, float]]:
+    """x_c of the primary B_vs_A row per model (empty for LEVEL primaries)."""
+    out: dict[str, dict[int, float]] = {}
+    for mk in rd.model_keys:
+        prim = rd.primary_row(mk)
+        if prim is None or prim["contrast"] != "B_vs_A":
+            continue
+        out[mk] = {
+            int(c["cluster_ordinal"]): float(c["x_c"])
+            for c in prim["results"].get("clusters") or []
+            if c.get("x_c") is not None
+        }
+    return out
+
+
+def cross_variant_rows(
+    exps: Sequence[Experiment],
+    models: Sequence[str],
+    variant_order: Mapping[str, Sequence[str]] | None = None,
+) -> list[dict[str, Any]]:
+    """Matched cross-variant contrasts γ = θ_x − θ_ref (CR-14; exploratory, never a label).
+
+    Two COMPLETE runs of one item and intervention, with different variants (mandates),
+    the same primary feature, a ``mean_paired_difference`` primary and the identical case
+    set, are compared cluster by cluster: g_c = d_c^x − d_c^ref over the clusters with an
+    outcome in both, then the §23.3 one-sample t-test and CI_{1−α} on g. The reference is
+    the item's first variant (``faq.yaml`` order, else sorted). This estimates how the
+    mandate changes the dependence directly, rather than comparing two p-values.
+    """
+    groups: dict[tuple[str, str, str], list[Experiment]] = {}
+    for x in exps:
+        m = x.manifest
+        if not x.complete or m.get("faq_id") in (None, "none"):
+            continue
+        if m["hypothesis"]["estimand"] != "mean_paired_difference":
+            continue
+        key = (m["faq_id"], m["intervention_id"], m["hypothesis"]["primary_feature"])
+        groups.setdefault(key, []).append(x)
+    out: list[dict[str, Any]] = []
+    for (faq_id, iid, pf), members in sorted(groups.items()):
+        order = list((variant_order or {}).get(faq_id) or [])
+        members = sorted(
+            members,
+            key=lambda e: (
+                order.index(e.manifest["variant_id"])
+                if e.manifest["variant_id"] in order
+                else len(order),
+                e.manifest["variant_id"],
+            ),
+        )
+        if len({e.manifest["variant_id"] for e in members}) < 2:
+            continue
+        ref = members[0]
+        for x in members[1:]:
+            if x.case_fingerprint is None or x.case_fingerprint != ref.case_fingerprint:
+                continue
+            alpha = float(x.manifest["hypothesis"]["alpha"])
+            for mk in models:
+                cx, cr = x.primary_clusters.get(mk), ref.primary_clusters.get(mk)
+                if not cx or not cr:
+                    continue
+                common = sorted(set(cx) & set(cr))
+                g = np.array([cx[c] - cr[c] for c in common], dtype=float)
+                tx = np.array([cx[c] for c in common], dtype=float)
+                tr = np.array([cr[c] for c in common], dtype=float)
+                ci_ = ci(g, alpha)
+                out.append(
+                    {
+                        "row_id": ids.row_id("cross_variant", mk, x.key, ref.key),
+                        "model_key": mk,
+                        "faq_id": faq_id,
+                        "intervention_id": iid,
+                        "feature_id": pf,
+                        "variant_x": x.manifest["variant_id"],
+                        "variant_ref": ref.manifest["variant_id"],
+                        "experiment_key_x": x.key,
+                        "experiment_key_ref": ref.key,
+                        "estimand": "difference_of_mean_paired_differences",
+                        "n_clusters": len(common),
+                        "theta_x": float(tx.mean()) if len(common) else None,
+                        "theta_ref": float(tr.mean()) if len(common) else None,
+                        "gamma": float(g.mean()) if len(common) else None,
+                        "ci_low": None if ci_ is None else ci_[0],
+                        "ci_high": None if ci_ is None else ci_[1],
+                        "p_two_sided": p_two_sided(g, 0.0),
+                        "alpha": alpha,
+                        "analysis_role": "exploratory",
+                    }
+                )
+    order_m = {mk: i for i, mk in enumerate(models)}
+    out.sort(
+        key=lambda r: (
+            order_m[r["model_key"]],
+            r["faq_id"],
+            r["intervention_id"],
+            r["experiment_key_x"],
+        )
+    )
+    return out
 
 
 def _primary_contrast(manifest: Mapping[str, Any]) -> str:
@@ -789,6 +928,15 @@ def render_programme(pdir: Path) -> None:
     coverage = coverage_rows(exps, programme)
     runs = runs_rows(exps)
     policy = output_policy(exps)
+    faq, _ = _registry()
+    cross = cross_variant_rows(
+        exps,
+        models,
+        {
+            fid: [str(v["variant_id"]) for v in (item.get("variants") or [])]
+            for fid, item in (faq or {}).items()
+        },
+    )
     results = pdir / "results"
     report = pdir / "report"
     (report / "figures").mkdir(parents=True, exist_ok=True)
@@ -805,6 +953,7 @@ def render_programme(pdir: Path) -> None:
         "answers.csv": csv_text(ANSWERS_COLUMNS, answers),
         "question_answers.csv": csv_text(QUESTION_COLUMNS, questions),
         "consistency.csv": csv_text(CONSISTENCY_COLUMNS, []),
+        "cross_variant.csv": csv_text(CROSS_VARIANT_COLUMNS, cross),
         "fdr.csv": csv_text(FDR_COLUMNS, fdr),
         "runs.csv": csv_text(RUNS_COLUMNS, runs),
         "coverage.csv": csv_text(COVERAGE_COLUMNS, coverage),
@@ -905,6 +1054,10 @@ def render_programme(pdir: Path) -> None:
                     "covered items and unimplemented pairs",
                 ],
                 [MD.code("results/consistency.csv"), "cross-format checks (§T2.2)"],
+                [
+                    MD.code("results/cross_variant.csv"),
+                    "matched cross-mandate contrasts γ = θ_x − θ_ref (CR-14, exploratory)",
+                ],
                 [MD.code("report/programme.md"), "the programme report"],
                 [MD.code("manifests/"), "the frozen bundle of every experiment"],
             ],

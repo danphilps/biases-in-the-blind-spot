@@ -9,7 +9,7 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v2
+experiment_key: f6_1_b__base__i_item_f6_1_b_guidance_cut_position.v3
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -132,7 +132,7 @@ response_spec:
   max_output_tokens: 1024
   abstain_allowed: false
 feature_spec:
-  - {feature_id: includes_guidance_cut, type: binary, primary: true, analysis_role: primary, channel: decision, extractor: semantic_inclusion, rule: key_points_rule, extractor_version: 1, field: key_points, allowed_values: [0, 1], unknown_allowed: true, confidence_threshold: 0.7}
+  - {feature_id: includes_guidance_cut, type: binary, primary: true, analysis_role: primary, channel: decision, extractor: semantic_inclusion, rule: output_inclusion_rule, extractor_version: 2, fields: [summary, key_points], allowed_values: [0, 1], unknown_allowed: true, confidence_threshold: 0.7}
 oracle_spec:
   type: INVARIANCE
   sign: null

@@ -402,3 +402,41 @@ def test_eligibility_uses_upper_f0_on_a0_contrast(s1_run) -> None:  # type: igno
     assert float(a["f0_upper_times_n"]) == pytest.approx(float(a["f0_ci_high"]) * 960)
     assert a["eligible"] == "true"
     assert float(a["f0_upper_times_n"]) <= 0.5 * int(a["n_responsive"])
+
+
+def test_level_positive_control_at_the_ceiling_does_not_gate() -> None:
+    """CR-08: a model already correct in PCA is not INSTRUMENT_INSENSITIVE."""
+    from financial_llm_harness.oracles import saturate_positive_control
+    from financial_llm_harness.statistics.equivalence import level_stats
+
+    po = {"type": "DIRECTIONAL", "sign": 1, "confidence": "established"}
+    rng = np.random.default_rng(3)
+    flat = classify_positive_control(po, _st(0.0, oracle="DIRECTIONAL", sign=1), 0.1)
+    assert flat.passed is False
+    ceiling = level_stats((rng.random(400) < 0.99).astype(float), 0.05, 0.95)
+    sat = saturate_positive_control(flat, po, ceiling, 0.95)
+    assert sat.passed is True and sat.observed_label == "SATURATED"
+    # headroom in PCA: the failure stands
+    low = level_stats((rng.random(400) < 0.6).astype(float), 0.05, 0.95)
+    assert saturate_positive_control(flat, po, low, 0.95) is flat
+    # a passing control is never rewritten; a negative-sign control is never saturated
+    ok = classify_positive_control(po, _st(0.3, oracle="DIRECTIONAL", sign=1), 0.1)
+    assert saturate_positive_control(ok, po, ceiling, 0.95) is ok
+    neg = {**po, "sign": -1}
+    assert saturate_positive_control(flat, neg, ceiling, 0.95) is flat
+    level = Oracle("LEVEL", tau=0.95)
+    st = level_stats((rng.random(400) < 0.99).astype(float), 0.05, 0.95)
+    null = classify_equivalence_control("null", "A0_vs_A", _st(0.0), 0.1)
+    cls = classify_primary(
+        "confirmatory",
+        level,
+        st,
+        0.1,
+        [null, sat],
+        missingness_sensitive=False,
+        semantic_uncalibrated=False,
+        model_incomplete=False,
+        n_clusters=400,
+    )
+    assert cls.label == "MEETS_STANDARD" and "positive_control" not in cls.gates_failed
+    assert "POSITIVE_CONTROL_SATURATED" in cls.reasons

@@ -39,10 +39,20 @@ from financial_llm_harness.families import load_family
 from financial_llm_harness.generation.corpus import load_design_contract
 from financial_llm_harness.storage.artifacts import ArtifactStore
 
-BLIND_COLUMNS = ("item_id", "formatted_input", "response_text", "concept_title", "guide", "category", "label")
+BLIND_COLUMNS = (
+    "item_id",
+    "formatted_input",
+    "response_text",
+    "concept_title",
+    "guide",
+    "category",
+    "label",
+)
 
 
-def export(run_dir: Path, feature_id: str, out_dir: Path, n: int = 200, seed: int = 20261008) -> None:
+def export(
+    run_dir: Path, feature_id: str, out_dir: Path, n: int = 200, seed: int = 20261008
+) -> None:
     manifest = B.load_manifest(run_dir / "manifest")
     feature = next(f for f in manifest["feature_spec"] if f["feature_id"] == feature_id)
     family = load_family(manifest["task_family"])
@@ -56,7 +66,9 @@ def export(run_dir: Path, feature_id: str, out_dir: Path, n: int = 200, seed: in
         (r["case_idx"], r["arm"], r["paraphrase_idx"]): r
         for r in B.read_jsonl(run_dir / "manifest" / B.RENDERINGS_FILE)
     }
-    families = {m["model_key"]: m["family"] for m in manifest["sampling_spec"]["models"]}
+    families = {
+        m["model_key"]: m["family"] for m in manifest["sampling_spec"]["models"]
+    }
     store = ArtifactStore(run_dir / "artifacts")
     db = sqlite3.connect(run_dir / "db" / "run.sqlite")
     db.row_factory = sqlite3.Row
@@ -78,35 +90,62 @@ def export(run_dir: Path, feature_id: str, out_dir: Path, n: int = 200, seed: in
         rendering = renderings[(row["case_idx"], row["arm"], row["paraphrase_idx"])]
         fam = families.get(row["model_key"], "unknown")
         strata[(row["arm"], fam)].append(
-            {"trial_id": row["trial_id"], "arm": row["arm"], "model_family": fam,
-             "formatted_input": rendering["user"], "response_text": response}
+            {
+                "trial_id": row["trial_id"],
+                "arm": row["arm"],
+                "model_family": fam,
+                "formatted_input": rendering["user"],
+                "response_text": response,
+            }
         )
     rng = np.random.default_rng(uint64("calibration_export", seed))
-    pools = {k: [v[int(i)] for i in rng.permutation(len(v))] for k, v in sorted(strata.items())}
+    pools = {
+        k: [v[int(i)] for i in rng.permutation(len(v))]
+        for k, v in sorted(strata.items())
+    }
     chosen: list[dict[str, Any]] = []
     while len(chosen) < n and any(pools.values()):
         for k in sorted(pools):
             if pools[k] and len(chosen) < n:
                 chosen.append(pools[k].pop())
     if len(chosen) < n:
-        print(f"warning: only {len(chosen)} eligible responses (< {n})", file=sys.stderr)
+        print(
+            f"warning: only {len(chosen)} eligible responses (< {n})", file=sys.stderr
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
-    order = [int(i) for i in rng.permutation(len(chosen))]  # labellers see a shuffled order
+    order = [
+        int(i) for i in rng.permutation(len(chosen))
+    ]  # labellers see a shuffled order
     with (out_dir / "items_blind.csv").open("w", encoding="utf-8", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(BLIND_COLUMNS))
         w.writeheader()
         for k, idx in enumerate(order):
             c = chosen[idx]
-            w.writerow({
-                "item_id": f"{feature_id}-{k:04d}", "formatted_input": c["formatted_input"],
-                "response_text": c["response_text"], "concept_title": manifest["concept"],
-                "guide": guide, "category": category, "label": "",
-            })
+            w.writerow(
+                {
+                    "item_id": f"{feature_id}-{k:04d}",
+                    "formatted_input": c["formatted_input"],
+                    "response_text": c["response_text"],
+                    "concept_title": manifest["concept"],
+                    "guide": guide,
+                    "category": category,
+                    "label": "",
+                }
+            )
     with (out_dir / "key.jsonl").open("w", encoding="utf-8") as fh:
         for k, idx in enumerate(order):
             c = chosen[idx]
-            fh.write(json.dumps({"item_id": f"{feature_id}-{k:04d}", "arm": c["arm"],
-                                 "model_family": c["model_family"], "trial_id": c["trial_id"]}) + "\n")
+            fh.write(
+                json.dumps(
+                    {
+                        "item_id": f"{feature_id}-{k:04d}",
+                        "arm": c["arm"],
+                        "model_family": c["model_family"],
+                        "trial_id": c["trial_id"],
+                    }
+                )
+                + "\n"
+            )
     print(f"wrote {len(chosen)} items to {out_dir}")
 
 
@@ -118,10 +157,16 @@ def merge(out_dir: Path, labels_csv: Path, items_jsonl: Path) -> None:
         for r in rows:
             label = (r.get("label") or "").strip().upper()
             if label not in ("TRUE", "FALSE"):
-                raise SystemExit(f"{r['item_id']}: label must be TRUE or FALSE, got {r.get('label')!r}")
+                raise SystemExit(
+                    f"{r['item_id']}: label must be TRUE or FALSE, got {r.get('label')!r}"
+                )
             k = key[r["item_id"]]
-            item = {**{c: r[c] for c in BLIND_COLUMNS if c != "label"}, "label": label,
-                    "arm": k["arm"], "model_family": k["model_family"]}
+            item = {
+                **{c: r[c] for c in BLIND_COLUMNS if c != "label"},
+                "label": label,
+                "arm": k["arm"],
+                "model_family": k["model_family"],
+            }
             assert set(ITEM_KEYS) <= set(item)
             fh.write(json.dumps(item, ensure_ascii=False) + "\n")
     print(f"wrote {len(rows)} labelled items to {items_jsonl}")

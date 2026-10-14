@@ -12,7 +12,7 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: f1_1_a__m0__i_f_momentum.v2
+experiment_key: f1_1_a__m0__i_f_momentum.v3
 variant_id: m0
 mode: discovery
 parent_discovery_experiment_id: null

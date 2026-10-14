@@ -37,7 +37,9 @@ def write(path: Path, doc: dict) -> None:
 
 def main() -> None:
     reg = load_registry()
-    conventional = {b for b, e in reg.bases.items() if e.get("confidence") == "conventional"}
+    conventional = {
+        b for b, e in reg.bases.items() if e.get("confidence") == "conventional"
+    }
     users: dict[str, set[str]] = defaultdict(set)
     for item in reg.items.values():
         for b in _item_bases(item):

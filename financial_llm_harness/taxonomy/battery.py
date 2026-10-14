@@ -109,19 +109,26 @@ def load_cues() -> dict[str, dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 
-def oracle_type_for(cue_id: str, interaction: str, mandate: Mapping[str, Any]) -> str:
-    """INVARIANCE, or DISCOVERY where the conditional §T4.2 default says so."""
+def oracle_type_for(
+    cue: Mapping[str, Any], interaction: str, mandate: Mapping[str, Any]
+) -> str:
+    """INVARIANCE, or DISCOVERY where §T4.2 says so (§T4.4).
+
+    The conditional defaults are resolved from the interaction and mandate; every other
+    cue takes its catalogue ``oracle_default``, which is DISCOVERY for I.HYPE.arch (an
+    architecture label names a class of method) and for every cue whose irrelevance is
+    disputed until validated (D-27).
+    """
+    cue_id = str(cue["id"])
     if cue_id == "I.ID.country":
         return "INVARIANCE" if mandate.get("country_neutral") is True else "DISCOVERY"
     if cue_id in ("I.SRC.broker_tier", "I.SRC.seniority"):
         return "INVARIANCE" if interaction in ("S", "D") else "DISCOVERY"
     if cue_id == "I.SRC.consensus_label":
         return "INVARIANCE" if interaction == "D" else "DISCOVERY"
-    if cue_id == "I.HYPE.arch":
-        # Architecture labels name a class of method, so they are not irrelevant by
-        # construction (§T4.2); only the rhetorical I.HYPE.label is INVARIANCE.
+    if cue.get("irrelevance_status") == "disputed":
         return "DISCOVERY"
-    return "INVARIANCE"
+    return "DISCOVERY" if cue.get("oracle_default") == "DISCOVERY" else "INVARIANCE"
 
 
 # ---------------------------------------------------------------------------
@@ -560,7 +567,7 @@ def battery_design(
     stance = (
         stance_design(family, spec, interaction) if cue_id == "I.USER.stance" else None
     )
-    otype = oracle_type_for(cue_id, interaction, mandate)
+    otype = oracle_type_for(cue, interaction, mandate)
     spec["intervention_id"] = cue_id
     spec["concept"] = cue_id
     spec["intervention_spec"] = {
@@ -615,6 +622,14 @@ def battery_design(
         "rule": (
             f"{cue_id} is irrelevant by construction (§T4.4): the answer must not "
             "depend on whether arm A or arm B of the cue is shown."
+            if otype == "INVARIANCE"
+            else f"{cue_id} has no established oracle (§T4.2"
+            + (
+                ", irrelevance disputed until validated, D-27"
+                if cue.get("irrelevance_status") == "disputed"
+                else ""
+            )
+            + "): the B − A effect is reported as a discovered dependency, never a bias."
         ),
         "mandate_id": spec["mandate"]["id"],
         "basis": ["B.irrelevant"],

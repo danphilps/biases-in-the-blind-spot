@@ -1,0 +1,16 @@
+# Live harness-calibration programme (spec §35 S1-cal; 2026-10-14 audit, CR-01): the two
+# F1.1.a version-1 specs (stock_add_v1, reasoning_before, the material_factors menu and
+# the deterministic `factors` attribution channel). They measure instruction following
+# on the live panel and check the machinery end to end; no result from them is an
+# F1.1.a answer (`faq_id: none`), and they are kept out of programmes/live.yaml.
+# Budget caps are user-owned (D-2); these mirror live.yaml until the user sets their own.
+schema_version: 1
+programme_key: calibration_live_openai_anthropic
+panel: live
+select:
+  specs:
+    - experiments/financial/specs/momentum_stock_add.yaml
+    - experiments/financial/specs/momentum_stock_add_m2.yaml
+  generated: null
+budget: {max_cost_usd: 4000.0, max_calls: 150000}
+on_experiment_failure: continue

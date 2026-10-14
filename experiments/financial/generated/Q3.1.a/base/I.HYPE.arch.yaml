@@ -1,4 +1,4 @@
-experiment_key: q3_1_a__base__i_hype_arch.v2
+experiment_key: q3_1_a__base__i_hype_arch.v3
 variant_id: base
 mode: discovery
 parent_discovery_experiment_id: null
@@ -8,8 +8,10 @@ domain: quant_models
 task_family: quant_method_choice
 task: covariance_choice
 concept: I.HYPE.arch
-research_question: When the ratio of return observations to assets (T/N) falls below
-  one, does the model choose a well-conditioned covariance estimator?
+research_question: 'Does well_conditioned_choice change between arm A and arm B of
+  the cue I.HYPE.arch (§T4.2), on the base design experiments/financial/specs/covariance_choice.yaml;
+  the base intervention I.Q.tn held at its arm-B value, under mandate QM1? Oracle:
+  DISCOVERY.'
 data_classification: synthetic
 mandate:
   id: QM1
@@ -151,8 +153,8 @@ oracle_spec:
   type: DISCOVERY
   sign: null
   item_sign: null
-  rule: 'I.HYPE.arch is irrelevant by construction (§T4.4): the answer must not depend
-    on whether arm A or arm B of the cue is shown.'
+  rule: 'I.HYPE.arch has no established oracle (§T4.2): the B − A effect is reported
+    as a discovered dependency, never a bias.'
   mandate_id: QM1
   basis:
   - B.irrelevant

@@ -24,8 +24,15 @@ PROV = {
 }
 
 
-def num(display: str, precision: int, unit: str | None = None, relevant: bool = True) -> dict[str, Any]:
-    d: dict[str, Any] = {"kind": "primitive", "type": "numeric", "precision": precision, "display": display}
+def num(
+    display: str, precision: int, unit: str | None = None, relevant: bool = True
+) -> dict[str, Any]:
+    d: dict[str, Any] = {
+        "kind": "primitive",
+        "type": "numeric",
+        "precision": precision,
+        "display": display,
+    }
     if unit:
         d["unit"] = unit
     if relevant:
@@ -58,10 +65,21 @@ def c1_nodes() -> dict[str, Any]:
         "shares0": num("int", 0),
     }
     per_year = {
-        "growth": PCT, "gross_margin": PCT, "opex_ratio": PCT, "capex_ratio": PCT,
-        "dso": ("number", 1, None), "dio": ("number", 1, None), "dpo": ("number", 1, None),
-        "accruals": MONEY_M, "unusual": MONEY_M, "impairment": MONEY_M, "payout": PCT,
-        "buyback": MONEY_M, "issuance": MONEY_M, "repayment": MONEY_M, "share_change": PCT,
+        "growth": PCT,
+        "gross_margin": PCT,
+        "opex_ratio": PCT,
+        "capex_ratio": PCT,
+        "dso": ("number", 1, None),
+        "dio": ("number", 1, None),
+        "dpo": ("number", 1, None),
+        "accruals": MONEY_M,
+        "unusual": MONEY_M,
+        "impairment": MONEY_M,
+        "payout": PCT,
+        "buyback": MONEY_M,
+        "issuance": MONEY_M,
+        "repayment": MONEY_M,
+        "share_change": PCT,
     }
     for name, (disp, prec, unit) in per_year.items():
         for k in range(1, 6):
@@ -129,7 +147,9 @@ def c7_nodes() -> dict[str, Any]:
     for i in range(1, 4):
         nodes[f"factor_vol_{i}"] = num("pct", 2)
     for i in range(1, 6):
-        nodes[f"gamma_{i}"] = num("number", 4, relevant=False)  # planted: never shown in the prompt
+        nodes[f"gamma_{i}"] = num(
+            "number", 4, relevant=False
+        )  # planted: never shown in the prompt
     return nodes
 
 
@@ -143,9 +163,15 @@ FAMILIES = {
             "roe": {"fn": "score_roe", "args": ["field", "convention", "tolerance"]},
             "roa": {"fn": "score_roa", "args": ["field", "convention", "tolerance"]},
             "roic": {"fn": "score_roic", "args": ["field", "convention", "tolerance"]},
-            "dupont": {"fn": "score_dupont", "args": ["fields", "convention", "tolerance"]},
+            "dupont": {
+                "fn": "score_dupont",
+                "args": ["fields", "convention", "tolerance"],
+            },
             "terp": {"fn": "score_terp", "args": ["field", "tolerance"]},
-            "dilution": {"fn": "score_dilution", "args": ["field", "definition", "tolerance"]},
+            "dilution": {
+                "fn": "score_dilution",
+                "args": ["field", "definition", "tolerance"],
+            },
         },
     },
     "corporate_action": {

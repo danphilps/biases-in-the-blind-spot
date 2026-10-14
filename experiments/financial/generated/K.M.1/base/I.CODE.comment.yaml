@@ -1,6 +1,6 @@
-experiment_key: k_m_1__base__i_code_comment.v2
+experiment_key: k_m_1__base__i_code_comment.v3
 variant_id: base
-mode: confirmatory
+mode: discovery
 parent_discovery_experiment_id: null
 faq_id: K.M.1
 intervention_id: I.CODE.comment
@@ -8,8 +8,10 @@ domain: code
 task_family: code_task
 task: temporal_norm_code
 concept: I.CODE.comment
-research_question: When a feature normaliser is written for a walk-forward backtest,
-  does the model's code produce a valid point-in-time normalisation?
+research_question: 'Does valid_point_in_time_normaliser change between arm A and arm
+  B of the cue I.CODE.comment (§T4.2), on the base design experiments/financial/specs/temporal_norm_code.yaml;
+  the base intervention I.Q.purpose held at its arm-B value, under mandate CT1? Oracle:
+  DISCOVERY.'
 data_classification: synthetic
 mandate:
   id: CT1
@@ -22,11 +24,11 @@ hypothesis:
   level_arm: null
   effect_scale: risk_difference
   delta: 0.1
-  direction: none
+  direction: two_sided
   alpha: 0.05
   power_target: 0.8
   equivalence_margin: 0.1
-  correction_family: programme
+  correction_family: exploratory
   missing_data:
     policy: complete_pairs
     max_invalid_rate: 0.1
@@ -49,7 +51,7 @@ scenario_spec:
   correlation: null
   constraints: []
   n_cases: 960
-  seed_stream: conf
+  seed_stream: disc
 intervention_spec:
   op: ADD
   node: battery_cue
@@ -179,17 +181,18 @@ feature_spec:
   - 0
   - 1
 oracle_spec:
-  type: INVARIANCE
+  type: DISCOVERY
   sign: null
   item_sign: null
-  rule: 'I.CODE.comment is irrelevant by construction (§T4.4): the answer must not
-    depend on whether arm A or arm B of the cue is shown.'
+  rule: 'I.CODE.comment has no established oracle (§T4.2, irrelevance disputed until
+    validated, D-27): the B − A effect is reported as a discovered dependency, never
+    a bias.'
   mandate_id: CT1
   basis:
   - B.irrelevant
   provenance: §T4.4 undeclared-bias battery (E-31); basis B.irrelevant (§T7)
   version: 1
-  confidence: established
+  confidence: contested
   nodes: []
   tau: null
   theta_star: null

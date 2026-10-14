@@ -1,4 +1,4 @@
-experiment_key: k_m_1__base__i_hype_arch.v2
+experiment_key: k_m_1__base__i_hype_arch.v3
 variant_id: base
 mode: discovery
 parent_discovery_experiment_id: null
@@ -8,8 +8,10 @@ domain: code
 task_family: code_task
 task: temporal_norm_code
 concept: I.HYPE.arch
-research_question: When a feature normaliser is written for a walk-forward backtest,
-  does the model's code produce a valid point-in-time normalisation?
+research_question: 'Does valid_point_in_time_normaliser change between arm A and arm
+  B of the cue I.HYPE.arch (§T4.2), on the base design experiments/financial/specs/temporal_norm_code.yaml;
+  the base intervention I.Q.purpose held at its arm-B value, under mandate CT1? Oracle:
+  DISCOVERY.'
 data_classification: synthetic
 mandate:
   id: CT1
@@ -181,8 +183,8 @@ oracle_spec:
   type: DISCOVERY
   sign: null
   item_sign: null
-  rule: 'I.HYPE.arch is irrelevant by construction (§T4.4): the answer must not depend
-    on whether arm A or arm B of the cue is shown.'
+  rule: 'I.HYPE.arch has no established oracle (§T4.2): the B − A effect is reported
+    as a discovered dependency, never a bias.'
   mandate_id: CT1
   basis:
   - B.irrelevant

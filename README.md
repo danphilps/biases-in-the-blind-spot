@@ -115,7 +115,8 @@ uv run financial-harness run experiments/financial/specs/covariance_choice.yaml 
 Before a live run is accepted, clear the list in [What a live run still needs](#what-a-live-run-still-needs), and also:
 - **Placeholder family (§2.7).** The placeholders are Anthropic-drafted, and §2.7 bars text drafted by any target's own family.
 - **Evaluator.** Without an evaluator, the S1 specs' semantic reasoning channel is `SKIPPED_INVALID`; the structured `factors` channel needs none.
-- **Prices and budget.** The `pricing.yaml` rates for both models come from secondary sources, so confirm them. The programme caps (D-2) cover the plan's upper bound of about $3,780 for the five specs in `programmes/live.yaml`.
+- **Prices and budget.** The `pricing.yaml` rates for both models come from secondary sources, so confirm them. `programmes/live.yaml` now selects the seven V1 slice specs (S1 m0/m1/m2, S2–S5); the S1-cal harness-calibration specs are in `programmes/calibration_live.yaml`. The earlier $3,780 upper bound was for a different five-spec selection: re-run `programme plan`, which refuses a programme whose upper bound exceeds the caps (D-2).
+- **Readiness.** `experiments/financial/READINESS.md` lists every item of the 2026-10-14 audit with its status and what blocks it.
 
 ## Repository layout
 

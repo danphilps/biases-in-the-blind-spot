@@ -253,6 +253,36 @@ def classify_positive_control(
     )
 
 
+def saturate_positive_control(
+    cr: ControlResult, oracle: Mapping[str, Any], pca: OracleStats, tau: float
+) -> ControlResult:
+    """§22 (CR-08): a LEVEL experiment's positive control at the ceiling does not gate.
+
+    When the primary is LEVEL(τ) and the positive control is DIRECTIONAL(+) on the
+    1 = correct feature, a model already correct in PCA (its one-sided (1 − α) lower
+    bound of λ_PCA ≥ τ, i.e. MEETS_STANDARD there) has no headroom for the clause to
+    show, so a missing PCB − PCA effect is no evidence of an insensitive instrument.
+    The result is then SATURATED and passes; every other result is returned unchanged.
+    """
+    if (
+        cr.passed is True
+        or str(oracle.get("type")) != "DIRECTIONAL"
+        or int(oracle.get("sign") or 1) != 1
+        or pca.ci2a is None
+        or pca.ci2a[0] < tau
+    ):
+        return cr
+    return ControlResult(
+        cr.control,
+        cr.contrast,
+        True,
+        "SATURATED",
+        cr.expected,
+        cr.margin,
+        "oracle_ungated_ceiling",
+    )
+
+
 @dataclass
 class Classification:
     zone: str
@@ -287,6 +317,8 @@ def classify_primary(
     by = {c.control: c for c in controls}
     if by.get("placebo") is not None and by["placebo"].passed is False:
         reasons.append("PLACEBO_FAILED")
+    if by.get("positive") is not None and by["positive"].observed_label == "SATURATED":
+        reasons.append("POSITIVE_CONTROL_SATURATED")
     if mode != "confirmatory":
         _, disc = oracle_row_label("DISCOVERY", st, delta)
         label = disc + (

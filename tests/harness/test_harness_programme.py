@@ -26,8 +26,8 @@ from tests.harness.helpers import (
 
 CI_PROGRAMME = ROOT / "experiments" / "financial" / "programmes" / "ci_fake.yaml"
 PROGRAMME_RUN_ID = "99999999-0000-4000-8000-000000000001"
-M1_KEY = "f1_1_a__m1__i_f_momentum.v2"
-M2_KEY = "f1_1_a__m2__i_f_momentum.v2"
+M1_KEY = "f1_1_a__m1__i_f_momentum.v3"
+M2_KEY = "f1_1_a__m2__i_f_momentum.v3"
 RUN_IDS = {
     M1_KEY: "aaaaaaaa-0000-4000-8000-000000000001",
     M2_KEY: "bbbbbbbb-0000-4000-8000-000000000002",
@@ -234,6 +234,7 @@ def test_programme_results_validate_against_schemas(ci_programme: Path) -> None:
         "plan.csv",
         "coverage.csv",
         "consistency.csv",
+        "cross_variant.csv",
     ):
         schema = load_schema(f"programme_{name}")
         jsonschema.Draft202012Validator.check_schema(schema)
@@ -464,3 +465,57 @@ def test_canonical_specs_are_paired() -> None:
         "m2",
         "INVARIANCE",
     )
+
+
+def test_cross_variant_contrast_is_matched_by_cluster(ci_programme: Path) -> None:
+    """CR-14: γ = θ_m2 − θ_m1 from the two runs' matched cluster outcomes."""
+    rows = _csv(ci_programme / "results" / "cross_variant.csv")
+    assert rows, "the m1 and m2 runs share their cases, so γ is reported"
+    for r in rows:
+        assert (r["faq_id"], r["variant_ref"], r["variant_x"]) == ("F1.1.a", "m1", "m2")
+        assert r["analysis_role"] == "exploratory"
+        assert int(r["n_clusters"]) > 30
+        gamma = float(r["gamma"])
+        assert abs(gamma - (float(r["theta_x"]) - float(r["theta_ref"]))) < 1e-9
+        assert float(r["ci_low"]) <= gamma <= float(r["ci_high"])
+
+
+def test_cross_variant_needs_identical_cases() -> None:
+    import numpy as np
+
+    def exp(key: str, variant: str, fp: str, xs: dict[int, float]) -> Any:
+        manifest = {
+            "faq_id": "F1.1.a",
+            "intervention_id": "I.F.momentum",
+            "variant_id": variant,
+            "hypothesis": {
+                "estimand": "mean_paired_difference",
+                "primary_feature": "decision_attractive",
+                "alpha": 0.05,
+            },
+        }
+        return RP.Experiment(
+            key,
+            manifest,
+            {"status": "COMPLETE"},
+            Path("."),
+            {},
+            {},
+            {},
+            0,
+            0.0,
+            {"m": xs},
+            fp,
+        )
+
+    rng = np.random.default_rng(0)
+    base = {c: float(v) for c, v in enumerate(rng.normal(0.0, 0.3, 60))}
+    shifted = {c: v - 0.2 for c, v in base.items()}
+    order = {"F1.1.a": ["m0", "m1", "m2"]}
+    rows = RP.cross_variant_rows(
+        [exp("k2", "m2", "same", shifted), exp("k0", "m0", "same", base)], ["m"], order
+    )
+    assert len(rows) == 1 and rows[0]["variant_ref"] == "m0"
+    assert abs(rows[0]["gamma"] + 0.2) < 1e-12 and rows[0]["ci_high"] < 0
+    other_cases = [exp("k2", "m2", "other", shifted), exp("k0", "m0", "same", base)]
+    assert RP.cross_variant_rows(other_cases, ["m"], order) == []

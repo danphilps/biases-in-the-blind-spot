@@ -40,7 +40,10 @@ def small(spec: dict[str, Any]) -> dict[str, Any]:
 
 def fixture(spec: dict[str, Any]) -> dict[str, Any]:
     corpus = build_corpus(small(spec))
-    users = {(r["case_idx"], r["arm"], r["paraphrase_idx"]): r["user"] for r in corpus.renderings}
+    users = {
+        (r["case_idx"], r["arm"], r["paraphrase_idx"]): r["user"]
+        for r in corpus.renderings
+    }
     return {
         "source": "generator_regression",
         "experiment_key": spec["experiment_key"],
@@ -61,7 +64,10 @@ def main() -> None:
         spec = yaml_io.load(Path("experiments/financial/specs") / name)
         fx = fixture(spec)
         path = OUT / f"{spec['experiment_key']}.json"
-        path.write_text(json.dumps(fx, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(fx, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
         print("wrote", path)
 
 

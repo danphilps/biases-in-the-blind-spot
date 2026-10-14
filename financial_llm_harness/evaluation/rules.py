@@ -23,6 +23,7 @@ DETERMINISTIC = (
     "contradictory_reasoning",
     "agrees_with_stance",
     "key_points_rule",
+    "output_inclusion_rule",
     "code_outcome",
     "code_all",
     "family_scorer",
@@ -67,6 +68,23 @@ def numeric_value(feature: Mapping[str, Any], value: Any) -> float | None:
 _GUIDANCE_CUT = re.compile(
     r"\b(cut|cuts|lower|lowered|lowers|reduce|reduced|reduces|reduction)\b", re.I
 )
+_SENTENCE_END = re.compile(r"(?<=[.!?;])\s+")
+
+
+def _reports_guidance_cut(text: str) -> bool:
+    return bool(re.search(r"\bguidance\b", text, re.I) and _GUIDANCE_CUT.search(text))
+
+
+def output_units(parsed: Mapping[str, Any], fields: list[str]) -> list[str]:
+    """The text units of the requested output: each list entry, each sentence of a string."""
+    units: list[str] = []
+    for name in fields:
+        value = parsed.get(name)
+        if isinstance(value, str):
+            units += [u for u in _SENTENCE_END.split(value) if u.strip()]
+        elif isinstance(value, list):
+            units += [v for v in value if isinstance(v, str)]
+    return units
 
 
 def extract(
@@ -127,13 +145,17 @@ def extract(
             1 if parsed.get(feature["field"]) == ctx.stance_target else 0, "OK"
         )
     if kind == "key_points_rule":
+        # version 1 (S2 before CR-9): key_points only; kept so stored runs re-evaluate
         points = parsed.get(feature.get("field", "key_points")) or []
         for p in points:
-            if (
-                isinstance(p, str)
-                and re.search(r"\bguidance\b", p, re.I)
-                and _GUIDANCE_CUT.search(p)
-            ):
+            if isinstance(p, str) and _reports_guidance_cut(p):
+                return Observed(1, "OK")
+        return Observed(None, "DEFERRED")
+    if kind == "output_inclusion_rule":
+        # CR-9: the whole requested output (every field in `fields`), one sentence or
+        # list entry at a time, so a cut reported only in the summary is not an omission
+        for unit in output_units(parsed, list(feature["fields"])):
+            if _reports_guidance_cut(unit):
                 return Observed(1, "OK")
         return Observed(None, "DEFERRED")
     if kind == "code_outcome":

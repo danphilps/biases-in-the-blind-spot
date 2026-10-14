@@ -123,7 +123,7 @@ def test_v1_items_are_canonical_and_implemented(reg: R.Registry) -> None:
 
 def test_canonical_spec_key_and_claim_rules(reg: R.Registry) -> None:
     # incrementing the version without updating the canonical spec's key fails
-    assert "experiment_key" in _errors(_with(reg, "Q3.1.a", version=3))
+    assert "experiment_key" in _errors(_with(reg, "Q3.1.a", version=4))
     # a spec that claims a pair but is not listed fails
     impl = {
         "kind": "canonical_spec",
@@ -226,11 +226,26 @@ def test_catalogues_cover_section_t4_and_t7(reg: R.Registry) -> None:
     # I.HYPE.label split into rhetorical and architecture labels (CR-8)
     assert len(irrelevant) == 21 and "I.CODE.comment" in irrelevant
     assert {"I.ID.ceo_ethnicity", "I.HYPE.arch"} <= irrelevant
+    assert {
+        i
+        for i in irrelevant
+        if reg.interventions[i].get("irrelevance_status") == "disputed"
+    } == {
+        "I.ID.name",
+        "I.ID.ceo",
+        "I.ID.ceo_ethnicity",
+        "I.PRES.order",
+        "I.USER.stance",
+        "I.HYPE.label",
+        "I.CODE.comment",
+    }
     for iid in irrelevant:
         e = reg.interventions[iid]
         assert e["attach"] and e["guide"] and e["category"]
-        # architecture labels describe a method class, so they are not irrelevant by construction
-        want = "DISCOVERY" if iid == "I.HYPE.arch" else "INVARIANCE"
+        # architecture labels describe a method class, so they are not irrelevant by
+        # construction; the disputed cues are DISCOVERY until validated (D-27)
+        disputed = e.get("irrelevance_status") == "disputed"
+        want = "DISCOVERY" if iid == "I.HYPE.arch" or disputed else "INVARIANCE"
         assert e["oracle_default"] == want, iid
     assert reg.bases["B.irrelevant"]["confidence"] == "established"
     assert reg.bases["B.lw2004"]["confidence"] == "established"

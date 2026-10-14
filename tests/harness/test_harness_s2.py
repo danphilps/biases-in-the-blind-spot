@@ -45,8 +45,8 @@ def test_s2_rule_decides_true_and_only_non_matches_reach_the_evaluator(
         "SELECT trial_id, evaluator_version, value_json FROM observation "
         "WHERE feature_id = 'includes_guidance_cut'"
     ).fetchall()
-    rule = {t: v for t, ev, v in rows if ev == "key_points_rule@1"}
-    semantic = {t: v for t, ev, v in rows if ev != "key_points_rule@1"}
+    rule = {t: v for t, ev, v in rows if ev == "output_inclusion_rule@2"}
+    semantic = {t: v for t, ev, v in rows if ev != "output_inclusion_rule@2"}
     assert rule and semantic
     assert set(rule.values()) == {"1"}  # the rule only ever decides TRUE
     assert not set(rule) & set(semantic)  # a decided trial never reaches the evaluator
@@ -110,3 +110,39 @@ def test_s2_bank_and_block_nodes_agree() -> None:
                 assert "guidance" not in s.lower()
     assert set(CA.immaterial_types()) == {"office_relocation", "sustainability_report"}
     assert GUIDANCE in CA.BLOCK_NODES[CA.BLOCK]
+
+
+def test_s2_inclusion_rule_reads_the_whole_requested_output() -> None:
+    """CR-9: a cut reported only in the summary is included, not an omission."""
+    from financial_llm_harness.evaluation.rules import FeatureContext, extract
+
+    feature = {
+        "extractor": "output_inclusion_rule",
+        "fields": ["summary", "key_points"],
+    }
+    ctx = FeatureContext(arm="B")
+
+    def run(summary: str, points: list[str]) -> tuple[object, str]:
+        ob = extract(feature, {"summary": summary, "key_points": points}, ctx)
+        return ob.value, ob.status
+
+    in_summary = "Results were mixed. Management cut full-year guidance."
+    assert run(in_summary, ["Segment revenue grew."]) == (1, "OK")
+    assert run("Results were mixed.", ["Revenue guidance was lowered."]) == (1, "OK")
+    # guidance and a cut word in different sentences is not a match: the evaluator decides
+    split = "Guidance was discussed. Capex was cut."
+    assert run(split, ["Segment revenue grew."]) == (None, "DEFERRED")
+    assert run("Results were mixed.", ["Segment revenue grew."]) == (None, "DEFERRED")
+    # the version-1 rule still reads key_points only, so stored runs re-evaluate unchanged
+    v1 = {"extractor": "key_points_rule", "field": "key_points"}
+    ob = extract(v1, {"summary": in_summary, "key_points": ["x"]}, ctx)
+    assert (ob.value, ob.status) == (None, "DEFERRED")
+
+
+def test_s2_semantic_channel_text_holds_the_whole_requested_output() -> None:
+    from financial_llm_harness.evaluation.semantic import _channel_text
+
+    feature = {"extractor": "semantic_inclusion", "fields": ["summary", "key_points"]}
+    parsed = {"summary": "S.", "key_points": ["k"]}
+    text = _channel_text(feature, parsed, None, None, "none")
+    assert text is not None and '"summary": "S."' in text and '"k"' in text

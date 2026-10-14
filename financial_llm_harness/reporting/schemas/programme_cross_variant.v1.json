@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "financial-harness:programme_cross_variant.csv",
+  "title": "programme_cross_variant.csv",
+  "description": "One row per model × (item, intervention) × non-reference variant whose run shares the reference run's cases; sorted by panel order, faq_id, intervention_id, experiment_key_x.",
+  "x-spec": "§32B.4, CR-14",
+  "x-format": "csv",
+  "x-columns": [
+    "row_id",
+    "model_key",
+    "faq_id",
+    "intervention_id",
+    "feature_id",
+    "variant_x",
+    "variant_ref",
+    "experiment_key_x",
+    "experiment_key_ref",
+    "estimand",
+    "n_clusters",
+    "theta_x",
+    "theta_ref",
+    "gamma",
+    "ci_low",
+    "ci_high",
+    "p_two_sided",
+    "alpha",
+    "analysis_role"
+  ],
+  "type": "object",
+  "properties": {
+    "row_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 of the row's natural key",
+      "x-type": "uuid",
+      "x-unit": null,
+      "x-spec": "§32A.2"
+    },
+    "model_key": {
+      "type": "string",
+      "description": "Model key `<prefix>--<8hex>`",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§20.6"
+    },
+    "faq_id": {
+      "type": "string",
+      "description": "Taxonomy item",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T1"
+    },
+    "intervention_id": {
+      "type": "string",
+      "description": "Intervention shared by both runs",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§T4"
+    },
+    "feature_id": {
+      "type": "string",
+      "description": "Primary feature shared by both runs",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "§16"
+    },
+    "variant_x": {
+      "type": "string",
+      "description": "Variant (mandate) of the compared run",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "CR-14"
+    },
+    "variant_ref": {
+      "type": "string",
+      "description": "Reference variant: the item's first variant",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "CR-14"
+    },
+    "experiment_key_x": {
+      "type": "string",
+      "description": "Experiment key of the compared run",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "CR-14"
+    },
+    "experiment_key_ref": {
+      "type": "string",
+      "description": "Experiment key of the reference run",
+      "x-type": "string",
+      "x-unit": null,
+      "x-spec": "CR-14"
+    },
+    "estimand": {
+      "enum": [
+        "difference_of_mean_paired_differences"
+      ],
+      "description": "γ = mean_c (d_c^x − d_c^ref) over clusters with an outcome in both runs",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "CR-14"
+    },
+    "n_clusters": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Clusters with a primary outcome in both runs",
+      "x-type": "integer",
+      "x-unit": null,
+      "x-spec": "§23.2"
+    },
+    "theta_x": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "θ of the compared run over the common clusters",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "theta_ref": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "θ of the reference run over the common clusters",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "gamma": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "γ = θ_x − θ_ref, matched by cluster",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "ci_low": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Student-t CI_{1−α} lower bound of γ",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "ci_high": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Student-t CI_{1−α} upper bound of γ",
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "p_two_sided": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Two-sided one-sample t-test of γ = 0 (unadjusted)",
+      "minimum": 0,
+      "maximum": 1,
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "alpha": {
+      "type": "number",
+      "description": "Pre-registered α of the runs",
+      "minimum": 0,
+      "maximum": 1,
+      "x-type": "number",
+      "x-unit": null,
+      "x-spec": "§23.3"
+    },
+    "analysis_role": {
+      "enum": [
+        "exploratory"
+      ],
+      "description": "Never a label and never in the FDR families",
+      "x-type": "enum",
+      "x-unit": null,
+      "x-spec": "§25"
+    }
+  },
+  "required": [
+    "row_id",
+    "model_key",
+    "faq_id",
+    "intervention_id",
+    "feature_id",
+    "variant_x",
+    "variant_ref",
+    "experiment_key_x",
+    "experiment_key_ref",
+    "estimand",
+    "n_clusters",
+    "theta_x",
+    "theta_ref",
+    "gamma",
+    "ci_low",
+    "ci_high",
+    "p_two_sided",
+    "alpha",
+    "analysis_role"
+  ],
+  "additionalProperties": false
+}

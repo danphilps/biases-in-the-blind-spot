@@ -18,7 +18,7 @@ from financial_llm_harness.generation.corpus import build_corpus
 from financial_llm_harness.taxonomy import battery as BT
 from financial_llm_harness.taxonomy import expand as X
 from financial_llm_harness.taxonomy.registry import family_listing, load_registry
-from tests.harness.helpers import FAKE_A, read_csv, run_slice
+from tests.harness.helpers import FAKE_A, ROOT, read_csv, run_slice
 
 # I.ID.name and I.ID.ceo_ethnicity are listed on F1.1.a but have no bank until the
 # validated data of D-25 exist, so they build no spec (test_identity_cues_await_d25).
@@ -32,7 +32,16 @@ V1_BATTERY = {
     ("K.M.1", "base"): ["I.CODE.comment", "I.HYPE.label", "I.HYPE.arch"],
 }
 # Cues that are not irrelevant by construction (§T4.2): DISCOVERY, so discovery mode.
-DISCOVERY_CUES = {"I.HYPE.arch"}
+# I.HYPE.arch is not irrelevant by construction; the others are disputed until validated
+# (D-27). Only I.PRES.distractor (S2) stays a confirmatory INVARIANCE cue in V1.
+DISCOVERY_CUES = {
+    "I.HYPE.arch",
+    "I.ID.ceo",
+    "I.USER.stance",
+    "I.PRES.order",
+    "I.HYPE.label",
+    "I.CODE.comment",
+}
 
 
 @pytest.fixture(scope="module")
@@ -271,19 +280,63 @@ def test_agrees_with_stance_is_a_discovery_secondary(
 
 
 def test_conditional_defaults() -> None:
-    assert (
-        BT.oracle_type_for("I.ID.country", "J", {"country_neutral": True})
-        == "INVARIANCE"
-    )
-    assert BT.oracle_type_for("I.ID.country", "J", {}) == "DISCOVERY"
-    assert BT.oracle_type_for("I.SRC.broker_tier", "S", {}) == "INVARIANCE"
-    assert BT.oracle_type_for("I.SRC.seniority", "D", {}) == "INVARIANCE"
-    assert BT.oracle_type_for("I.SRC.broker_tier", "E", {}) == "DISCOVERY"
-    assert BT.oracle_type_for("I.SRC.consensus_label", "D", {}) == "INVARIANCE"
-    assert BT.oracle_type_for("I.SRC.consensus_label", "S", {}) == "DISCOVERY"
-    assert BT.oracle_type_for("I.USER.stance", "J", {}) == "INVARIANCE"
-    assert BT.oracle_type_for("I.HYPE.label", "M", {}) == "INVARIANCE"
-    assert BT.oracle_type_for("I.HYPE.arch", "M", {}) == "DISCOVERY"
+    cues = BT.load_cues()
+
+    def otype(cue_id: str, interaction: str, mandate: dict[str, Any]) -> str:
+        return BT.oracle_type_for(cues[cue_id], interaction, mandate)
+
+    assert otype("I.ID.country", "J", {"country_neutral": True}) == "INVARIANCE"
+    assert otype("I.ID.country", "J", {}) == "DISCOVERY"
+    assert otype("I.SRC.broker_tier", "S", {}) == "INVARIANCE"
+    assert otype("I.SRC.seniority", "D", {}) == "INVARIANCE"
+    assert otype("I.SRC.broker_tier", "E", {}) == "DISCOVERY"
+    assert otype("I.SRC.consensus_label", "D", {}) == "INVARIANCE"
+    assert otype("I.SRC.consensus_label", "S", {}) == "DISCOVERY"
+    assert otype("I.HYPE.arch", "M", {}) == "DISCOVERY"
+    assert otype("I.PRES.distractor", "S", {}) == "INVARIANCE"
+
+
+DISPUTED = (
+    "I.ID.name",
+    "I.ID.ceo",
+    "I.ID.ceo_ethnicity",
+    "I.PRES.order",
+    "I.USER.stance",
+    "I.HYPE.label",
+    "I.CODE.comment",
+)
+
+
+def test_disputed_cues_are_discovery_until_validated() -> None:
+    """CR-07, D-27: a cue whose irrelevance is disputed never yields a confirmatory bias."""
+    cues = BT.load_cues()
+    assert {
+        i for i, c in cues.items() if c.get("irrelevance_status") == "disputed"
+    } == set(DISPUTED)
+    for cue_id in DISPUTED:
+        assert BT.oracle_type_for(cues[cue_id], "J", {}) == "DISCOVERY", cue_id
+    # the status, not the stored default alone, decides
+    validated = {
+        **cues["I.USER.stance"],
+        "irrelevance_status": None,
+        "oracle_default": "INVARIANCE",
+    }
+    assert BT.oracle_type_for(validated, "J", {}) == "INVARIANCE"
+
+
+def test_generated_disputed_cue_specs_are_discovery() -> None:
+    from financial_llm_harness.core import yaml_io
+
+    root = ROOT / "experiments" / "financial" / "generated"
+    seen = 0
+    for path in sorted(root.glob("*/*/I.*.yaml")):
+        spec = yaml_io.load(path)
+        if spec["intervention_id"] in DISPUTED:
+            seen += 1
+            assert spec["mode"] == "discovery", path
+            assert spec["oracle_spec"]["type"] == "DISCOVERY", path
+            assert spec["oracle_spec"]["confidence"] == "contested", path
+    assert seen > 0
 
 
 def test_missing_slot_or_bank_is_named_exactly(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -386,10 +439,12 @@ def test_a_battery_experiment_runs_end_to_end(
         for r in read_csv(run / "results" / "labels.csv")
     }
     primary = labels[(FAKE_A, "decision_attractive")]
-    assert primary["oracle_type"] == "INVARIANCE" and primary["experiment_key"] == (
-        "f1_1_a__m1__i_user_stance.v2"
+    # a disputed cue (D-27): discovery, so never a bias label
+    assert primary["oracle_type"] == "DISCOVERY" and primary["experiment_key"] == (
+        "f1_1_a__m1__i_user_stance.v3"
     )
+    assert primary["is_bias"] == "false"
     assert labels[(FAKE_A, "agrees_with_stance")]["oracle_type"] == "DISCOVERY"
-    controls = read_csv(run / "results" / "controls.csv")
-    assert {c["control"] for c in controls} == {"null", "placebo", "positive"}
+    # discovery mode runs no control gates (§24.2), as for m0
+    assert read_csv(run / "results" / "controls.csv") == []
     assert Path(run / "manifest").is_dir()

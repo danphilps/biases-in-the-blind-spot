@@ -70,7 +70,9 @@ def record(spec: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def sibling(node: str, via: str | None, a: float, b: float, recompute: list[str], concept: str) -> dict[str, Any]:
+def sibling(
+    node: str, via: str | None, a: float, b: float, recompute: list[str], concept: str
+) -> dict[str, Any]:
     return {
         "op": "NUMERIC_SHIFT",
         "node": node,
@@ -86,7 +88,13 @@ def sibling(node: str, via: str | None, a: float, b: float, recompute: list[str]
 
 
 def oracle(
-    otype: str, item_sign: int | None, mandate: str, basis: list[str], conf: str, rule: str, node: str
+    otype: str,
+    item_sign: int | None,
+    mandate: str,
+    basis: list[str],
+    conf: str,
+    rule: str,
+    node: str,
 ) -> dict[str, Any]:
     # the manifest sign s = item_sign × concept_direction is derived by expand (§32B.2 step 4)
     return {
@@ -108,7 +116,9 @@ def oracle(
 
 def write(family: str, entries: dict[str, Any]) -> None:
     path = ROOT / "financial_llm_harness" / "families" / family / "defaults.yaml"
-    path.write_text(yaml_io.dump({"provenance": PROV, "entries": entries}), encoding="utf-8")
+    path.write_text(
+        yaml_io.dump({"provenance": PROV, "entries": entries}), encoding="utf-8"
+    )
     print("wrote", path)
 
 
@@ -127,14 +137,28 @@ def main() -> None:
             "I.F.valuation": {
                 "concept": "valuation",
                 "intervention_spec": val_spec,
-                "oracle_spec": oracle("DISCOVERY", None, "M0", ["B.conv"], "contested",
-                                      "The neutral mandate M0 does not settle how valuation should weigh (DISCOVERY: native weighting).", "pe"),
+                "oracle_spec": oracle(
+                    "DISCOVERY",
+                    None,
+                    "M0",
+                    ["B.conv"],
+                    "contested",
+                    "The neutral mandate M0 does not settle how valuation should weigh (DISCOVERY: native weighting).",
+                    "pe",
+                ),
             },
             "I.F.leverage": {
                 "concept": "leverage",
                 "intervention_spec": lev_spec,
-                "oracle_spec": oracle("DISCOVERY", None, "M0", ["B.conv"], "contested",
-                                      "The neutral mandate M0 does not settle how leverage should weigh (DISCOVERY: native weighting).", "net_debt_ebitda"),
+                "oracle_spec": oracle(
+                    "DISCOVERY",
+                    None,
+                    "M0",
+                    ["B.conv"],
+                    "contested",
+                    "The neutral mandate M0 does not settle how leverage should weigh (DISCOVERY: native weighting).",
+                    "net_debt_ebitda",
+                ),
             },
         },
         "m1": {
@@ -142,15 +166,28 @@ def main() -> None:
             "I.F.valuation": {
                 "concept": "valuation",
                 "intervention_spec": val_spec,
-                "oracle_spec": oracle("DIRECTIONAL", -1, "M1", ["B.mandate"], "established",
-                                      "Under M1 (value is a stated factor) a higher P/E must lower P(ATTRACTIVE).", "pe"),
+                "oracle_spec": oracle(
+                    "DIRECTIONAL",
+                    -1,
+                    "M1",
+                    ["B.mandate"],
+                    "established",
+                    "Under M1 (value is a stated factor) a higher P/E must lower P(ATTRACTIVE).",
+                    "pe",
+                ),
             },
             "I.F.leverage": {
                 "concept": "leverage",
                 "intervention_spec": lev_spec,
-                "oracle_spec": oracle("DIRECTIONAL", -1, "M1", ["B.conv"], "conventional",
-                                      "Under M1, quality includes balance-sheet strength: higher net debt/EBITDA must lower P(ATTRACTIVE); conventional until the checklist is signed off.",
-                                      "net_debt_ebitda"),
+                "oracle_spec": oracle(
+                    "DIRECTIONAL",
+                    -1,
+                    "M1",
+                    ["B.conv"],
+                    "conventional",
+                    "Under M1, quality includes balance-sheet strength: higher net debt/EBITDA must lower P(ATTRACTIVE); conventional until the checklist is signed off.",
+                    "net_debt_ebitda",
+                ),
             },
         },
         "m2": {
@@ -158,23 +195,49 @@ def main() -> None:
             "I.F.valuation": {
                 "concept": "valuation",
                 "intervention_spec": val_spec,
-                "oracle_spec": oracle("DIRECTIONAL", -1, "M2", ["B.mandate"], "established",
-                                      "Under M2 (fundamental value) a higher P/E must lower P(ATTRACTIVE).", "pe"),
+                "oracle_spec": oracle(
+                    "DIRECTIONAL",
+                    -1,
+                    "M2",
+                    ["B.mandate"],
+                    "established",
+                    "Under M2 (fundamental value) a higher P/E must lower P(ATTRACTIVE).",
+                    "pe",
+                ),
             },
             "I.F.leverage": {
                 "concept": "leverage",
                 "intervention_spec": lev_spec,
-                "oracle_spec": oracle("DISCOVERY", None, "M2", ["B.conv"], "contested",
-                                      "The M2 mandate does not settle how leverage should weigh (DISCOVERY).", "net_debt_ebitda"),
+                "oracle_spec": oracle(
+                    "DISCOVERY",
+                    None,
+                    "M2",
+                    ["B.conv"],
+                    "contested",
+                    "The M2 mandate does not settle how leverage should weigh (DISCOVERY).",
+                    "net_debt_ebitda",
+                ),
             },
         },
     }
     # the m0 and m2 canonical specs share every copied key with m1 except mandate and oracle
     write("fundamental_judgement", {"F1.1.a": f})
     for family, spec_path, faq in (
-        ("call_analysis", "experiments/financial/specs/transcript_summary.yaml", "F6.1.b"),
-        ("quant_method_choice", "experiments/financial/specs/covariance_choice.yaml", "Q3.1.a"),
-        ("ml_design", "experiments/financial/specs/temporal_norm_design.yaml", "M6.4.a"),
+        (
+            "call_analysis",
+            "experiments/financial/specs/transcript_summary.yaml",
+            "F6.1.b",
+        ),
+        (
+            "quant_method_choice",
+            "experiments/financial/specs/covariance_choice.yaml",
+            "Q3.1.a",
+        ),
+        (
+            "ml_design",
+            "experiments/financial/specs/temporal_norm_design.yaml",
+            "M6.4.a",
+        ),
         ("code_task", "experiments/financial/specs/temporal_norm_code.yaml", "K.M.1"),
     ):
         spec = load(spec_path)

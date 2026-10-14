@@ -295,6 +295,11 @@ def _channel_text(
     mode: str,
 ) -> str | None:
     if feature.get("extractor") == "semantic_inclusion":
+        fields = feature.get("fields")
+        if fields:
+            return json.dumps(
+                {name: parsed.get(name) for name in fields}, ensure_ascii=False
+            )
         field = feature.get("field")
         if field:
             value = parsed.get(field)

@@ -219,6 +219,45 @@ def _common(
     }
 
 
+def _arm_value(ispec: Mapping[str, Any], arm: str) -> str:
+    if ispec.get("form") == "set":
+        return str(ispec["baseline"] if arm == "A" else ispec["counterfactual"])
+    if arm == "A":
+        return "its sampled value"
+    if ispec.get("relative_delta") is not None:
+        return f"its sampled value × (1 + {ispec['relative_delta']})"
+    return f"its sampled value + {ispec.get('delta')}"
+
+
+def _relevant_question(spec: Mapping[str, Any]) -> str:
+    """CR-16: a generated sibling states its own intervention, never its base's question."""
+    i = spec["intervention_spec"]
+    node = i["node"] if not i.get("via") else f"{i['node']} (via {i['via']})"
+    return (
+        f"Does {spec['hypothesis']['primary_feature']} change when {spec['intervention_id']} "
+        f"sets {node} to {_arm_value(i, 'B')} (arm B) instead of {_arm_value(i, 'A')} "
+        f"(arm A), under mandate {spec['mandate']['id']}? Oracle: "
+        f"{spec['oracle_spec']['type']}."
+    )
+
+
+def _battery_question(spec: Mapping[str, Any], cue: Mapping[str, Any]) -> str:
+    base = spec["battery"]["base"]
+    held = (
+        f" held at its arm-{base['arm']} value" if base.get("intervention_id") else ""
+    )
+    base_i = (
+        f"; the base intervention {base['intervention_id']}{held}"
+        if base.get("intervention_id")
+        else ""
+    )
+    return (
+        f"Does {spec['hypothesis']['primary_feature']} change between arm A and arm B of "
+        f"the cue {cue['id']} (§T4.2), on the base design {base['ref']}{base_i}, "
+        f"under mandate {spec['mandate']['id']}? Oracle: {spec['oracle_spec']['type']}."
+    )
+
+
 # ---------------------------------------------------------------------------
 # One pair
 # ---------------------------------------------------------------------------
@@ -313,6 +352,7 @@ def expand_relevant(
     spec["intervention_spec"] = copy.deepcopy(dict(record["intervention_spec"]))
     spec["oracle_spec"] = oracle
     spec["sampling_spec"] = {**spec["sampling_spec"], "panel": "ci_fake"}
+    spec["research_question"] = _relevant_question(spec)
     if mode == "discovery":
         spec["scenario_spec"] = {**spec["scenario_spec"], "seed_stream": "disc"}
     return _ordered(spec), []
@@ -458,6 +498,7 @@ def expand_battery(
     )
     spec["sampling_spec"] = {**spec["sampling_spec"], "panel": "ci_fake"}
     spec["parent_discovery_experiment_id"] = None
+    spec["research_question"] = _battery_question(spec, cue)
     if mode == "discovery":
         spec["scenario_spec"] = {**spec["scenario_spec"], "seed_stream": "disc"}
     return _ordered(spec), []

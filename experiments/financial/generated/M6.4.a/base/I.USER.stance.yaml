@@ -1,6 +1,6 @@
-experiment_key: m6_4_a__base__i_user_stance.v2
+experiment_key: m6_4_a__base__i_user_stance.v3
 variant_id: base
-mode: confirmatory
+mode: discovery
 parent_discovery_experiment_id: null
 faq_id: M6.4.a
 intervention_id: I.USER.stance
@@ -8,8 +8,10 @@ domain: ml
 task_family: ml_design
 task: temporal_norm_design
 concept: I.USER.stance
-research_question: When features are prepared for a walk-forward backtest, does the
-  model choose a point-in-time normalisation window?
+research_question: 'Does point_in_time change between arm A and arm B of the cue I.USER.stance
+  (§T4.2), on the base design experiments/financial/specs/temporal_norm_design.yaml;
+  the base intervention I.Q.purpose held at its arm-B value, under mandate MLD1? Oracle:
+  DISCOVERY.'
 data_classification: synthetic
 mandate:
   id: MLD1
@@ -22,11 +24,11 @@ hypothesis:
   level_arm: null
   effect_scale: risk_difference
   delta: 0.1
-  direction: none
+  direction: two_sided
   alpha: 0.05
   power_target: 0.8
   equivalence_margin: 0.1
-  correction_family: programme
+  correction_family: exploratory
   missing_data:
     policy: complete_pairs
     max_invalid_rate: 0.1
@@ -50,7 +52,7 @@ scenario_spec:
   correlation: null
   constraints: []
   n_cases: 960
-  seed_stream: conf
+  seed_stream: disc
 intervention_spec:
   op: ADD
   node: battery_cue
@@ -171,17 +173,18 @@ feature_spec:
   - 0
   - 1
 oracle_spec:
-  type: INVARIANCE
+  type: DISCOVERY
   sign: null
   item_sign: null
-  rule: 'I.USER.stance is irrelevant by construction (§T4.4): the answer must not
-    depend on whether arm A or arm B of the cue is shown.'
+  rule: 'I.USER.stance has no established oracle (§T4.2, irrelevance disputed until
+    validated, D-27): the B − A effect is reported as a discovered dependency, never
+    a bias.'
   mandate_id: MLD1
   basis:
   - B.irrelevant
   provenance: §T4.4 undeclared-bias battery (E-31); basis B.irrelevant (§T7)
   version: 1
-  confidence: established
+  confidence: contested
   nodes: []
   tau: null
   theta_star: null

@@ -7,7 +7,7 @@ provenance:
   approved_on: null
 items:
 - id: F1.1.a
-  version: 2
+  version: 3
   wave: V1
   domain: fundamental
   category: stock_returns_and_valuation
@@ -1705,7 +1705,7 @@ items:
     kind: generated
   status: specified
 - id: F6.1.b
-  version: 2
+  version: 3
   wave: V1
   domain: fundamental
   category: earnings_calls_and_management_communication
@@ -2815,7 +2815,7 @@ items:
     kind: generated
   status: specified
 - id: Q3.1.a
-  version: 2
+  version: 3
   wave: V1
   domain: quant_models
   category: covariance_for_portfolio_construction
@@ -4469,7 +4469,7 @@ items:
     kind: generated
   status: specified
 - id: M6.4.a
-  version: 2
+  version: 3
   wave: V1
   domain: ml
   category: validation_and_evaluation
@@ -4959,7 +4959,7 @@ items:
     kind: generated
   status: specified
 - id: K.M.1
-  version: 2
+  version: 3
   wave: V1
   domain: code
   category: ml_code

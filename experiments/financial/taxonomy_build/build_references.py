@@ -23,7 +23,9 @@ def entry(bid: str, text: str) -> str:
     parts = [p.strip() for p in text.split(";")]
     first = parts[0]
     year = re.sub(r"\D", "", bid)[-4:]
-    for p in parts[1:]:  # a row with two works (B.ff1993, B.ff2015): the part with the ID's year
+    for p in parts[
+        1:
+    ]:  # a row with two works (B.ff1993, B.ff2015): the part with the ID's year
         if p.startswith(f"({year})"):
             first = first.split(" (")[0] + " " + p
     m = _CITE.match(first)
@@ -33,7 +35,9 @@ def entry(bid: str, text: str) -> str:
         fields.append(("year", m.group("year")))
         if m.group("venue"):
             fields.append(("howpublished", m.group("venue")))
-    fields.append(("note", f"Spec §T7: {text}. Title and DOI to be added from the source."))
+    fields.append(
+        ("note", f"Spec §T7: {text}. Title and DOI to be added from the source.")
+    )
     body = ",\n".join(f"  {k} = {{{v}}}" for k, v in fields)
     return f"@misc{{{bid},\n{body}\n}}\n"
 

@@ -1,4 +1,4 @@
-experiment_key: f1_1_a__m1__i_f_valuation.v2
+experiment_key: f1_1_a__m1__i_f_valuation.v3
 variant_id: m1
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -8,8 +8,8 @@ domain: fundamental
 task_family: fundamental_judgement
 task: stock_attractiveness
 concept: valuation
-research_question: Does the stock-attractiveness judgement respond to the intervened
-  fundamental as the mandate requires?
+research_question: 'Does decision_attractive change when I.F.valuation sets pe (via
+  eps_ttm) to 30.0 (arm B) instead of 12.0 (arm A), under mandate M1? Oracle: DIRECTIONAL.'
 data_classification: synthetic
 mandate:
   id: M1

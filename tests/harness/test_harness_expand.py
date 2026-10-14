@@ -80,7 +80,7 @@ def test_expand_v1_writes_every_specified_pair_and_reports_d25(gen: Path) -> Non
         spec = yaml_io.load(gen / rel)
         faq, vid, fname = rel.split("/")
         iid = fname[: -len(".yaml")]
-        assert spec["experiment_key"] == R.experiment_key(faq, vid, iid, 2)
+        assert spec["experiment_key"] == R.experiment_key(faq, vid, iid, 3)
         assert (spec["faq_id"], spec["variant_id"], spec["intervention_id"]) == (
             faq,
             vid,
@@ -192,7 +192,7 @@ def test_version_immutability(gen: Path, monkeypatch: pytest.MonkeyPatch) -> Non
     with pytest.raises(HarnessValidationError, match="unchanged version"):
         X.run_expand("Q3.1.a", None, force=True)
     # a file from a lower item version is overwritten only with --force
-    data["experiment_key"] = data["experiment_key"].replace(".v2", ".v1")
+    data["experiment_key"] = data["experiment_key"].replace(".v3", ".v2")
     path.write_text(yaml_io.dump(data), encoding="utf-8")
     with pytest.raises(HarnessValidationError, match="--force"):
         X.run_expand("Q3.1.a", None)
@@ -223,25 +223,25 @@ def test_programme_selects_generated_files_by_registry_wave(gen: Path) -> None:
     chosen = resolve_selection(sel)
     keys = [c.experiment_key for c in chosen]
     assert keys == sorted(keys)
-    assert "f1_1_a__m1__i_f_momentum.v2" in keys  # the canonical spec, listed by path
+    assert "f1_1_a__m1__i_f_momentum.v3" in keys  # the canonical spec, listed by path
     generated = [
         c for c in chosen if c.spec.get("battery") or c.path.is_relative_to(gen)
     ]
     assert {c.spec["variant_id"] for c in generated} == {"m1"}
     assert all(c.spec["mode"] == "confirmatory" for c in generated)
     # m1 leverage is discovery (unsigned B.conv checklist), so a confirmatory selection omits it
-    assert "f1_1_a__m1__i_f_leverage.v2" not in keys
-    assert "f1_1_a__m1__i_f_valuation.v2" in keys
+    assert "f1_1_a__m1__i_f_leverage.v3" not in keys
+    assert "f1_1_a__m1__i_f_valuation.v3" in keys
 
 
 def test_a_higher_version_file_is_never_overwritten(gen: Path) -> None:
     assert main(["taxonomy", "expand", "--item", "M6.4.a"]) == 0
     path = gen / "M6.4.a/base/I.USER.stance.yaml"
     data = yaml_io.load(path)
-    data["experiment_key"] = data["experiment_key"].replace(".v2", ".v3")
+    data["experiment_key"] = data["experiment_key"].replace(".v3", ".v4")
     path.write_text(yaml_io.dump(data), encoding="utf-8")
     for force in (False, True):
-        with pytest.raises(HarnessValidationError, match="version 3"):
+        with pytest.raises(HarnessValidationError, match="version 4"):
             X.run_expand("M6.4.a", None, force=force)
 
 
@@ -317,7 +317,7 @@ def test_correctness_experiment_and_its_missing_inputs(
     )
     rows = {r.intervention_id: r for r in X.expand_item(reg, item, R.family_listing())}
     spec = rows["I.NONE"].spec
-    assert spec is not None and spec["experiment_key"] == "k_m_1__base__i_none.v2"
+    assert spec is not None and spec["experiment_key"] == "k_m_1__base__i_none.v3"
     assert derive_arms(spec) == ["A", "A0"]
     assert spec["controls"]["placebo"] is None and spec["controls"]["positive"] is None
     assert spec["oracle_spec"]["type"] == "LEVEL" and spec["oracle_spec"]["tau"] == 0.90

@@ -76,7 +76,8 @@ features:
     type: binary
     channel: decision
     extractor: semantic_inclusion
-    rule: key_points_rule
+    rule: output_inclusion_rule
+    fields: [summary, key_points]
     # Evaluator text (§16) for non-matches of the rule: the legacy prompt's guide and category.
     guide: "The summary or a key point reports that the company cut, lowered or reduced its revenue guidance or outlook."
     category: "a reduction in revenue guidance"

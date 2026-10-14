@@ -493,7 +493,25 @@ def test_live_programme_plan_lists_tested_and_skipped_models(
     assert code == 0
     assert f"models tested: {LIVE_OPENAI}" in text
     assert f"model skipped: {LIVE_ANTHROPIC} (ANTHROPIC_API_KEY is not set)" in text
-    assert text.count("SKIPPED_INVALID") == 5
+    assert text.count("SKIPPED_INVALID") == 7
+
+
+def test_live_programme_selects_the_scientific_v1_only() -> None:
+    """CR-01: the live study is the seven canonical slices; S1-cal is separate."""
+    from financial_llm_harness.core import yaml_io
+    from financial_llm_harness.execution.programme import load_programme
+
+    live = load_programme(Path("experiments/financial/programmes/live.yaml"))
+    cal = load_programme(Path("experiments/financial/programmes/calibration_live.yaml"))
+    v1 = load_programme(Path("experiments/financial/programmes/v1_fake.yaml"))
+    assert live["select"]["specs"] == v1["select"]["specs"]
+    assert len(live["select"]["specs"]) == 7
+    for spec in live["select"]["specs"]:
+        assert yaml_io.load(spec)["faq_id"] != "none"
+    assert cal["panel"] == "live"
+    assert cal["select"]["specs"]
+    for spec in cal["select"]["specs"]:
+        assert yaml_io.load(spec)["faq_id"] == "none"
 
 
 def test_programme_report_lists_only_tested_models() -> None:

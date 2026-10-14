@@ -7,7 +7,7 @@ provenance:
   drafted_by: {kind: llm, family: anthropic, id: claude-code-agent}
   approved_by: []
   approved_on: null
-experiment_key: q3_1_a__base__i_q_tn.v2
+experiment_key: q3_1_a__base__i_q_tn.v3
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null

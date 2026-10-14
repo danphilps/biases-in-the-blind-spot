@@ -1,4 +1,4 @@
-experiment_key: f6_1_b__base__i_pres_distractor.v2
+experiment_key: f6_1_b__base__i_pres_distractor.v3
 variant_id: base
 mode: confirmatory
 parent_discovery_experiment_id: null
@@ -8,8 +8,10 @@ domain: fundamental
 task_family: call_analysis
 task: transcript_summary
 concept: I.PRES.distractor
-research_question: Does the inclusion of a material guidance cut in the model's call
-  summary depend on where the cut appears in the call?
+research_question: 'Does includes_guidance_cut change between arm A and arm B of the
+  cue I.PRES.distractor (§T4.2), on the base design experiments/financial/specs/transcript_summary.yaml;
+  the base intervention I.ITEM.F6.1.b.guidance_cut_position held at its arm-A value,
+  under mandate CA1? Oracle: INVARIANCE.'
 data_classification: synthetic
 mandate:
   id: CA1
@@ -159,9 +161,11 @@ feature_spec:
   analysis_role: primary
   channel: decision
   extractor: semantic_inclusion
-  rule: key_points_rule
-  extractor_version: 1
-  field: key_points
+  rule: output_inclusion_rule
+  extractor_version: 2
+  fields:
+  - summary
+  - key_points
   allowed_values:
   - 0
   - 1

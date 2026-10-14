@@ -3,8 +3,12 @@ before a live run (spec §2.7, §8.1, D-14, §T10.6, AGENTS.md rule 1).
 
 A file is listed when its provenance block says ``drafted_by.kind: llm`` or its
 ``approved_by`` is empty; `validate` refuses any non-fake target that uses such a
-prompt-visible or oracle-bearing file. Files are grouped by what a person must do.
-Run from the repo root.
+prompt-visible or oracle-bearing file. Files are grouped by what a person must do,
+and each is tagged with the first programme that needs it (2026-10-14 audit, CR-02):
+``live V1`` (programmes/live.yaml), ``S1-cal`` (programmes/calibration_live.yaml) or
+``later``. The tag is read from the specs' references (families, templates,
+paraphrases, contracts, mandates, banks); `validate` on the live panel stays the
+authoritative check. Run from the repo root.
 """
 
 from __future__ import annotations
@@ -18,11 +22,26 @@ from financial_llm_harness.core import yaml_io
 PKG = Path("financial_llm_harness")
 OUT = Path("experiments/financial/AUTHORING_INVENTORY.md")
 GROUPS = (
-    ("Prompt-visible text: write it (D-14)", ("templates", "paraphrases", "banks", "contracts")),
+    (
+        "Prompt-visible text: write it (D-14)",
+        ("templates", "paraphrases", "banks", "contracts"),
+    ),
     ("Mandates: write them and have the panel sign off (D-4, §T10.6)", ("mandates",)),
-    ("Oracle-bearing files: review and approve (§2.7)", ("family.yaml", "defaults.yaml", "faq.yaml", "bases.yaml", "interventions.yaml")),
+    (
+        "Oracle-bearing files: review and approve (§2.7)",
+        (
+            "family.yaml",
+            "defaults.yaml",
+            "faq.yaml",
+            "bases.yaml",
+            "interventions.yaml",
+        ),
+    ),
     ("Checklists: fill and sign off (§T7, §T10.6, D-13)", ("checklists",)),
-    ("Code fixtures: review the starter, hidden tests and references (§T6, §36)", ("fixtures",)),
+    (
+        "Code fixtures: review the starter, hidden tests and references (§T6, §36)",
+        ("fixtures",),
+    ),
     ("Survey and panel (§T10)", ("survey", "expert_panel.yaml")),
 )
 
@@ -45,7 +64,56 @@ def group_of(path: Path) -> str:
     return "Other"
 
 
+PRIORITY = ("live V1", "S1-cal", "later")
+SHARED = ("faq.yaml", "bases.yaml", "interventions.yaml")
+
+
+def programme_refs(programme: Path) -> tuple[set[str], set[str]]:
+    """(families, file stems) the programme's specs reference."""
+    families: set[str] = set()
+    stems: set[str] = set()
+    for spec_path in yaml_io.load(programme)["select"]["specs"]:
+        spec = yaml_io.load(spec_path)
+        families.add(spec["task_family"])
+        stems.update(spec["prompt_spec"]["template_family_ids"])
+        stems.update(Path(t).stem for t in spec["paraphrase_spec"]["template_files"])
+        stems.add(spec["response_spec"]["contract_id"])
+        stems.add(spec["mandate"]["id"])
+        positive = (spec.get("controls") or {}).get("positive") or {}
+        for key in ("mandate_clause", "pcb_clause"):
+            if positive.get(key):
+                stems.add(str(positive[key]))
+    return families, stems
+
+
+def priority(path: Path, refs: dict[str, tuple[set[str], set[str]]]) -> str:
+    if path.name in SHARED:
+        return PRIORITY[0]
+    for tag in PRIORITY[:2]:
+        families, stems = refs[tag]
+        if "families" not in path.parts:
+            continue
+        family = path.parts[path.parts.index("families") + 1]
+        if family not in families:
+            continue
+        sub = path.parent.name
+        if path.name in ("family.yaml", "defaults.yaml") or sub in ("banks", "fixtures"):
+            return tag
+        if "fixtures" in path.parts or path.stem in stems:
+            return tag
+        if any(path.stem.startswith(f"{x}.") for x in stems):
+            return tag
+    return PRIORITY[2]
+
+
 def main() -> None:
+    refs = {
+        "live V1": programme_refs(Path("experiments/financial/programmes/live.yaml")),
+        "S1-cal": programme_refs(
+            Path("experiments/financial/programmes/calibration_live.yaml")
+        ),
+    }
+    counts: dict[str, int] = defaultdict(int)
     rows: dict[str, list[str]] = defaultdict(list)
     for path in sorted(PKG.rglob("*.yaml")):
         if "__pycache__" in path.parts:
@@ -56,8 +124,10 @@ def main() -> None:
         kind = (prov.get("drafted_by") or {}).get("kind")
         approved = bool(prov.get("approved_by"))
         if kind == "llm" or not approved:
+            tag = priority(path, refs)
+            counts[tag] += 1
             rows[group_of(path)].append(
-                f"- `{path.as_posix()}` (drafted by {kind or 'unknown'}; {'approved' if approved else 'not approved'})"
+                f"- **{tag}** `{path.as_posix()}` (drafted by {kind or 'unknown'}; {'approved' if approved else 'not approved'})"
             )
     lines = [
         "# Authoring inventory",
@@ -67,6 +137,11 @@ def main() -> None:
         "a prompt-visible or oracle-bearing file from this list (§2.7, D-14). Replace the text with",
         "human-written text, set `drafted_by: {kind: human, ...}` and fill `approved_by`.",
         "",
+        "Priority (audit CR-02): **live V1** files block `programmes/live.yaml`; **S1-cal** files",
+        "block only `programmes/calibration_live.yaml`; **later** files block neither (battery",
+        "banks, V1.1+ families, checklists, survey). The tag is read from the specs' references;",
+        "`validate` on the live panel is the authoritative check.",
+        "",
     ]
     total = 0
     for title, _ in (*GROUPS, ("Other", ())):
@@ -74,8 +149,10 @@ def main() -> None:
         if not items:
             continue
         total += len(items)
+        items = sorted(items, key=lambda r: PRIORITY.index(r.split("**")[1]))
         lines += [f"## {title} ({len(items)})", "", *items, ""]
-    lines.insert(2, f"{total} files.")
+    by_tag = ", ".join(f"{counts[t]} {t}" for t in PRIORITY)
+    lines.insert(2, f"{total} files: {by_tag}.")
     lines.insert(3, "")
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("wrote", OUT, total, "files")
